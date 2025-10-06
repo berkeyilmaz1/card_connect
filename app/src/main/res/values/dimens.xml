@@ -4,4 +4,12 @@
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_xSmall">4dp</dimen>
     <dimen name="padding_xxSmall">2dp</dimen>
+
+    <dimen name="spacer_48">24dp</dimen>
+    <dimen name="spacer_24">24dp</dimen>
+    <dimen name="spacer_16">16dp</dimen>
+    <dimen name="spacer_8">8dp</dimen>
+    <dimen name="spacer_4">4dp</dimen>
+    <dimen name="spacer_2">2dp</dimen>
+
 </resources>

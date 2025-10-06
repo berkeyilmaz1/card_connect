@@ -13,4 +13,17 @@
     <string name="phone_number">Phone Number</string>
     <string name="already_have_an_account">"Already have an account? "</string>
     <string name="back">Back</string>
+    <string name="sign_up_subtext1">What\'s your full name?</string>
+    <string name="sign_up_error1">Name must be at least 3 characters</string>
+    <string name="what_s_your_email">What\'s your email?</string>
+    <string name="sign_up_subtext2">We\'ll use this for your account</string>
+    <string name="sign_up_error2">Please enter a valid email address</string>
+    <string name="create_a_password">Create a password</string>
+    <string name="sign_up_subtext3">Must be at least 6 characters</string>
+    <string name="sign_up_error3">Password must be at least 6 characters</string>
+    <string name="what_s_your_phone_number">What\'s your phone number?</string>
+    <string name="sign_up_subtext4">We\'ll keep your account secure</string>
+    <string name="sign_up_error4">Phone number must be at least 10 digits</string>
+    <string name="next">Next</string>
+    <string name="create_account">Create Account</string>
 </resources>

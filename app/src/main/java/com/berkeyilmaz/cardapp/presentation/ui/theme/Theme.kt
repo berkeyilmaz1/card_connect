@@ -20,6 +20,8 @@ val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,
     surface = DarkSurface,
     onSurface = Color.White,
+    surfaceVariant = DarkGray,
+    onSurfaceVariant = LightGray,
     outline = OutlineGray,
     error = Color(0xFFCF6679)
 )
@@ -33,6 +35,8 @@ val LightColorScheme = lightColorScheme(
     onBackground = LightText,
     surface = LightSurface,
     onSurface = LightText,
+    surfaceVariant = LightGray,
+    onSurfaceVariant = LightText,
     outline = LightOutline,
     error = Color(0xFFB00020)
 )
