@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.presentation.auth.signin
+package com.berkeyilmaz.cardapp.presentation.auth.signup
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -24,26 +23,28 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.AppButtonStyle
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
-import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInUiEvent
-import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInViewModel
-import com.berkeyilmaz.cardapp.presentation.ui.theme.CardAppTheme
+import com.berkeyilmaz.cardapp.presentation.auth.signup.viewmodel.SignUpUiEvent
+import com.berkeyilmaz.cardapp.presentation.auth.signup.viewmodel.SignUpViewModel
 
 @Composable
-fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
+fun SignUpView(
+    onNavigateToSignIn: () -> Unit, viewModel: SignUpViewModel = hiltViewModel<SignUpViewModel>()
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collect { event ->
             when (event) {
-                is SignInUiEvent.ShowError -> TODO()
-                is SignInUiEvent.Navigate -> TODO()
+                is SignUpUiEvent.ShowError -> TODO()
+                is SignUpUiEvent.Navigate -> {
+                    onNavigateToSignIn()
+                }
             }
         }
     }
@@ -58,15 +59,23 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.align(Alignment.Center)
         ) {
-            Text(stringResource(R.string.welcome), style = MaterialTheme.typography.headlineMedium)
             Text(
-                stringResource(R.string.sign_in_subtext),
-                style = MaterialTheme.typography.bodyMedium
+                stringResource(R.string.create_your_account),
+                style = MaterialTheme.typography.headlineMedium
             )
+
             Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
             CustomTextField(
+                value = uiState.fullName,
+                onValueChange = { viewModel.changeFullName(it) },
+                label = stringResource(R.string.full_name),
+                singleLine = true,
+                maxLines = 1,
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+            )
+            CustomTextField(
                 value = uiState.email,
-
                 onValueChange = { viewModel.changeEmail(it) },
                 label = stringResource(R.string.email),
                 leadingIcon = Icons.Default.Email,
@@ -86,19 +95,17 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
                 imeAction = ImeAction.Next,
                 isPassword = true
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
-            ) {
-                CustomAppButton(
-                    text = stringResource(R.string.forgot_password),
-                    onClick = { },
-                    textButtonContentPadding = PaddingValues(0.dp),
-                    style = AppButtonStyle.TEXT,
-                )
-
-            }
+            CustomTextField(
+                value = uiState.phoneNumber,
+                onValueChange = { viewModel.changePhoneNumber(it) },
+                label = stringResource(R.string.phone_number),
+                singleLine = true,
+                maxLines = 1,
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Done,
+            )
             CustomAppButton(
-                text = stringResource(R.string.sign_in),
+                text = stringResource(R.string.sign_up),
                 onClick = {},
                 fullWidth = true,
             )
@@ -107,22 +114,17 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            Text(stringResource(R.string.dont_you_have_acc))
+            Text(
+                text = stringResource(R.string.already_have_an_account),
+                style = MaterialTheme.typography.bodyMedium
+            )
             CustomAppButton(
                 text = stringResource(R.string.sign_up),
-                onClick = { viewModel.navigateToSignUp() },
+                onClick = { viewModel.navigateToSignIn() },
                 textButtonContentPadding = PaddingValues(0.dp),
                 loading = uiState.isLoading,
                 style = AppButtonStyle.TEXT,
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun SignInViewPreview() {
-    CardAppTheme {
-        SignInView()
     }
 }

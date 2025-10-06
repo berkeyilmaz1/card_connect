@@ -6,13 +6,14 @@ import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.berkeyilmaz.cardapp.core.constants.Constants
+import com.berkeyilmaz.cardapp.presentation.auth.signin.SignInView
+import com.berkeyilmaz.cardapp.presentation.auth.signup.SignUpView
 
 
 sealed class Screen(val route: String, val title: String = "", val icon: ImageVector? = null) {
@@ -26,14 +27,16 @@ sealed class Screen(val route: String, val title: String = "", val icon: ImageVe
 
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController(), modifier: Modifier = Modifier
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = Screen.SignIn.route) {
         composable(Screen.SignIn.route) {
-//            SignInScreen(navController)
+            SignInView()
         }
         composable(Screen.SignUp.route) {
-//            SignUpScreen(navController)
+            SignUpView(onNavigateToSignIn = {
+                navController.popBackStack()
+            })
         }
         composable(Screen.Scan.route) {
 //            ScanScreen(navController)
