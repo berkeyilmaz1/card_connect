@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.ui.theme
+package com.berkeyilmaz.cardapp.presentation.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -21,7 +21,8 @@ val LightColorScheme = lightColorScheme(
     surface = Color.White,
     onSurface = DarkBlue,
     error = Color(0xFFB00020),
-    onError = Color.White
+    onError = Color.White,
+    outline = Color(0xFF717880)
 )
 
 // Koyu Mod Renk Şeması
@@ -35,7 +36,8 @@ val DarkColorScheme = darkColorScheme(
     surface = Gray,
     onSurface = Color.White,
     error = Color(0xFFCF6679),
-    onError = Color.Black
+    onError = Color.Black,
+    outline = Color(0xFF8A919E)
 )
 
 @Composable

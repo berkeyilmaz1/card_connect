@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.berkeyilmaz.cardapp.navigation.AppNavHost
-import com.berkeyilmaz.cardapp.ui.theme.CardAppTheme
+import com.berkeyilmaz.cardapp.presentation.ui.theme.CardAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CardAppTheme {
-                MainView()
+                AppNavHost()
             }
         }
     }

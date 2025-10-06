@@ -70,10 +70,11 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose) // Hilt navigation for Compose
 
     // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.converter.kotlinx.serialization) // Converter for JSON serialization
+//    implementation(libs.converter.kotlinx.serialization) // Converter for JSON serialization
     implementation(libs.logging.interceptor) // Logging interceptor for debugging
 
     // Coil for image loading

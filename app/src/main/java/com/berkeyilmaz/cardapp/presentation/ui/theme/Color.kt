@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.ui.theme
+package com.berkeyilmaz.cardapp.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

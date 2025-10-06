@@ -12,10 +12,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.berkeyilmaz.cardapp.core.constants.Constants
+
 
 sealed class Screen(val route: String, val title: String = "", val icon: ImageVector? = null) {
-    object SignIn : Screen("sign_in", "Sign In")
-    object SignUp : Screen("sign_up", "Sign Up")
+    object SignIn : Screen("sign_in", Constants.APP_NAME)
+    object SignUp : Screen("sign_up", Constants.APP_NAME)
     object Scan : Screen("scan", "Scan", Icons.Filled.CameraAlt)
     object Contacts : Screen("contacts", "Contacts", Icons.Filled.Contacts)
     object Profile : Screen("profile", "Profile", Icons.Filled.Person)
