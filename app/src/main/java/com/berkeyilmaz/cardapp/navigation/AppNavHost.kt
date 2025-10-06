@@ -31,7 +31,9 @@ fun AppNavHost(
 ) {
     NavHost(navController = navController, startDestination = Screen.SignIn.route) {
         composable(Screen.SignIn.route) {
-            SignInView()
+            SignInView(onNavigateToSignUp = {
+                navController.navigate(Screen.SignUp.route)
+            })
         }
         composable(Screen.SignUp.route) {
             SignUpView(onNavigateToSignIn = {

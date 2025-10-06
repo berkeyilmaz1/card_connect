@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,26 +48,24 @@ fun CustomTextField(
     imeAction: ImeAction = ImeAction.Done,
     onImeAction: (() -> Unit)? = null,
     isPassword: Boolean = false,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
-    focusedBorderColor: Color = MaterialTheme.colorScheme.primary,
-    unfocusedBorderColor: Color = MaterialTheme.colorScheme.outline,
-    errorBorderColor: Color = MaterialTheme.colorScheme.error,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+
 
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            label = label?.let { { Text(text = it) } },
-            placeholder = placeholder?.let { { Text(text = it) } },
+            label = label?.let { { Text(it) } },
+            placeholder = placeholder?.let { { Text(it) } },
             leadingIcon = leadingIcon?.let {
                 {
                     Icon(
                         imageVector = it,
                         contentDescription = null,
-                        tint = if (isError) errorBorderColor else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (isError) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
                 }
             },
@@ -76,15 +73,21 @@ fun CustomTextField(
                 {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility
+                            else Icons.Filled.VisibilityOff,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                         )
                     }
                 }
             } else trailingIcon?.let {
                 {
                     IconButton(onClick = { onTrailingIconClick?.invoke() }) {
-                        Icon(imageVector = it, contentDescription = null)
+                        Icon(
+                            imageVector = it,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        )
                     }
                 }
             },
@@ -93,29 +96,28 @@ fun CustomTextField(
             readOnly = readOnly,
             singleLine = singleLine,
             maxLines = maxLines,
-            visualTransformation = if (isPassword && !passwordVisible) {
-                PasswordVisualTransformation()
-            } else {
-                VisualTransformation.None
-            },
+            visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation()
+            else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(
                 keyboardType = if (isPassword) KeyboardType.Password else keyboardType,
                 imeAction = imeAction
             ),
             keyboardActions = KeyboardActions(
-                onDone = { onImeAction?.invoke() },
-                onGo = { onImeAction?.invoke() },
-                onNext = { onImeAction?.invoke() },
-                onSearch = { onImeAction?.invoke() },
-                onSend = { onImeAction?.invoke() }),
+                onDone = { onImeAction?.invoke() }),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = containerColor,
-                unfocusedContainerColor = containerColor,
-                disabledContainerColor = containerColor.copy(alpha = 0.6f),
-                focusedBorderColor = focusedBorderColor,
-                unfocusedBorderColor = unfocusedBorderColor,
-                errorBorderColor = errorBorderColor,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                errorTextColor = MaterialTheme.colorScheme.error,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.outline,
             ))
 
         if (isError && errorMessage != null) {

@@ -11,40 +11,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-val LightColorScheme = lightColorScheme(
-    primary = BluePrimary,
-    onPrimary = Color.White,
-    secondary = BlueSecondary,
-    onSecondary = Color.White,
-    background = Color.White,
-    onBackground = DarkBlue,
-    surface = Color.White,
-    onSurface = DarkBlue,
-    error = Color(0xFFB00020),
-    onError = Color.White,
-    outline = Color(0xFF717880)
-)
-
-// Koyu Mod Renk Şeması
 val DarkColorScheme = darkColorScheme(
     primary = BluePrimary,
     onPrimary = Color.White,
     secondary = BlueSecondary,
     onSecondary = Color.White,
-    background = DarkBlue,
+    background = DarkBackground,
     onBackground = Color.White,
-    surface = Gray,
+    surface = DarkSurface,
     onSurface = Color.White,
-    error = Color(0xFFCF6679),
-    onError = Color.Black,
-    outline = Color(0xFF8A919E)
+    outline = OutlineGray,
+    error = Color(0xFFCF6679)
+)
+
+val LightColorScheme = lightColorScheme(
+    primary = BluePrimary,
+    onPrimary = Color.White,
+    secondary = BlueSecondary,
+    onSecondary = Color.White,
+    background = LightBackground,
+    onBackground = LightText,
+    surface = LightSurface,
+    onSurface = LightText,
+    outline = LightOutline,
+    error = Color(0xFFB00020)
 )
 
 @Composable
 fun CardAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true, content: @Composable () -> Unit
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -57,6 +54,8 @@ fun CardAppTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme, typography = Typography, content = content
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
     )
 }

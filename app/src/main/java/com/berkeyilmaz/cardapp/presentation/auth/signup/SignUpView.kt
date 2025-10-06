@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.presentation.auth.signup
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,8 +10,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,8 +59,21 @@ fun SignUpView(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(dimensionResource(R.dimen.padding_normal))
     ) {
+        IconButton(
+            onClick = { onNavigateToSignIn() },
+            modifier = Modifier.align(Alignment.TopStart),
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.onBackground
+            )
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.back),
+            )
+        }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -61,7 +81,8 @@ fun SignUpView(
         ) {
             Text(
                 stringResource(R.string.create_your_account),
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
@@ -71,6 +92,7 @@ fun SignUpView(
                 label = stringResource(R.string.full_name),
                 singleLine = true,
                 maxLines = 1,
+                leadingIcon = Icons.Default.Person,
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next,
             )
@@ -101,9 +123,12 @@ fun SignUpView(
                 label = stringResource(R.string.phone_number),
                 singleLine = true,
                 maxLines = 1,
+                leadingIcon = Icons.Default.Phone,
                 keyboardType = KeyboardType.Phone,
                 imeAction = ImeAction.Done,
             )
+            Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
+
             CustomAppButton(
                 text = stringResource(R.string.sign_up),
                 onClick = {},
@@ -116,7 +141,8 @@ fun SignUpView(
         ) {
             Text(
                 text = stringResource(R.string.already_have_an_account),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
             CustomAppButton(
                 text = stringResource(R.string.sign_up),

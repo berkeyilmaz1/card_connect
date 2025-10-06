@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.presentation.auth.signin
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,14 +37,18 @@ import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInViewMode
 import com.berkeyilmaz.cardapp.presentation.ui.theme.CardAppTheme
 
 @Composable
-fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
+fun SignInView(
+    onNavigateToSignUp: () -> Unit, viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is SignInUiEvent.ShowError -> TODO()
-                is SignInUiEvent.Navigate -> TODO()
+                is SignInUiEvent.Navigate -> {
+                    onNavigateToSignUp()
+                }
             }
         }
     }
@@ -51,6 +56,7 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(dimensionResource(R.dimen.padding_normal))
     ) {
         Column(
@@ -58,10 +64,11 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.align(Alignment.Center)
         ) {
-            Text(stringResource(R.string.welcome), style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.welcome), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
             Text(
                 stringResource(R.string.sign_in_subtext),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
             CustomTextField(
@@ -107,7 +114,7 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            Text(stringResource(R.string.dont_you_have_acc))
+            Text(stringResource(R.string.dont_you_have_acc), color = MaterialTheme.colorScheme.onBackground)
             CustomAppButton(
                 text = stringResource(R.string.sign_up),
                 onClick = { viewModel.navigateToSignUp() },
@@ -123,6 +130,6 @@ fun SignInView(viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()) {
 @Composable
 fun SignInViewPreview() {
     CardAppTheme {
-        SignInView()
+        SignInView(onNavigateToSignUp = { })
     }
 }
