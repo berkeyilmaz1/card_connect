@@ -2,14 +2,19 @@ package com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.berkeyilmaz.cardapp.navigation.Screen
+import com.berkeyilmaz.cardapp.core.navigation.Screen
+import com.berkeyilmaz.cardapp.data.model.LoginRequest
+import com.berkeyilmaz.cardapp.domain.AuthRepository
+import com.berkeyilmaz.cardapp.domain.AuthResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class SignInState(
@@ -20,11 +25,13 @@ data class SignInState(
 
 sealed class SignInUiEvent {
     data class ShowError(val message: String) : SignInUiEvent()
-    data class Navigate(val route: String) : SignInUiEvent()
+    data class Navigate(val route: String, val email: String) :
+        SignInUiEvent()// todo change this after testing
 }
 
 @HiltViewModel
-class SignInViewModel @Inject constructor() : ViewModel() {
+class SignInViewModel @Inject constructor(private val authRepository: AuthRepository) :
+    ViewModel() {
 
     private val _uiState = MutableStateFlow<SignInState>(SignInState())
     val uiState = _uiState.asStateFlow()
@@ -44,7 +51,6 @@ class SignInViewModel @Inject constructor() : ViewModel() {
         _uiState.update { it.copy(isLoading = isLoading) }
     }
 
-
     fun signIn() {
         setLoading(true)
         val email = uiState.value.email
@@ -52,19 +58,33 @@ class SignInViewModel @Inject constructor() : ViewModel() {
         if (email.isBlank() || password.isBlank()) {
             setLoading(false)
             viewModelScope.launch {
-                _eventFlow.emit(SignInUiEvent.ShowError("Email ve şifre boş olamaz"))
+                _eventFlow.emit(SignInUiEvent.ShowError("Please fill all fields"))
             }
             return
         }
-        setLoading(false)
-        viewModelScope.launch {
-//            _eventFlow.emit(SignInUiEvent.Navigate("home"))
+        val userData = LoginRequest(
+            identifier = email, password = password
+        )
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = authRepository.login(userData)
+            withContext(Dispatchers.Main) {
+                when (response) {
+                    is AuthResult.Success -> _eventFlow.emit(
+                        SignInUiEvent.Navigate(
+                            Screen.Scan.route, email
+                        )
+                    )
+
+                    is AuthResult.Error -> _eventFlow.emit(SignInUiEvent.ShowError(response.exception))
+                }
+            }
+            setLoading(false)
         }
     }
 
     fun navigateToSignUp() {
         viewModelScope.launch {
-            _eventFlow.emit(SignInUiEvent.Navigate(Screen.SignUp.route))
+            _eventFlow.emit(SignInUiEvent.Navigate(Screen.SignUp.route, uiState.value.email))
         }
     }
 }

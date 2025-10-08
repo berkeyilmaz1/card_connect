@@ -39,6 +39,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,57 +65,55 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
 import com.berkeyilmaz.cardapp.presentation.auth.signup.viewmodel.SignUpUiEvent
 import com.berkeyilmaz.cardapp.presentation.auth.signup.viewmodel.SignUpViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpView(
-    onNavigateToSignIn: () -> Unit, viewModel: SignUpViewModel = hiltViewModel<SignUpViewModel>()
+    onNavigate: (route: String, email: String) -> Unit, viewModel: SignUpViewModel = hiltViewModel<SignUpViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var currentStep by remember { mutableIntStateOf(0) }
     val totalSteps = 4
-
-    // Form validation states
-    val isStepValid = remember(currentStep, uiState) {
-        when (currentStep) {
-            0 -> uiState.fullName.length >= 3
-            1 -> uiState.email.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(uiState.email)
-                .matches()
-
-            2 -> uiState.password.length >= 8
-            3 -> uiState.phoneNumber.length >= 8 && uiState.phoneNumber.length <= 15
-            else -> false
-        }
-    }
+    val snackBarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is SignUpUiEvent.ShowError -> {
-                    // Handle error - implement SnackBar or Toast
+                    coroutineScope.launch {
+                        snackBarHostState.showSnackbar(event.message)
+                    }
                 }
-
                 is SignUpUiEvent.Navigate -> {
-                    onNavigateToSignIn()
+                    onNavigate(event.route, event.email)
                 }
             }
         }
     }
 
+    val isStepValid = when (currentStep) {
+        0 -> uiState.fullName.length >= 3
+        1 -> uiState.email.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(uiState.email).matches()
+        2 -> uiState.password.length >= 6
+        3 -> uiState.phoneNumber.length >= 10
+        else -> false
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                MaterialTheme.colorScheme.background
-            )
+            .background(MaterialTheme.colorScheme.background)
             .padding(WindowInsets.systemBars.asPaddingValues())
             .padding(
                 horizontal = dimensionResource(R.dimen.padding_normal)
             )
     ) {
+        SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Center,
         ) {
             // Top Bar with back button
             Row(
@@ -125,7 +126,7 @@ fun SignUpView(
                         if (currentStep > 0) {
                             currentStep--
                         } else {
-                            onNavigateToSignIn()
+                            viewModel.navigateToSignIn()
                         }
                     }, colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -195,6 +196,7 @@ fun SignUpView(
                                     maxLines = 1,
                                     keyboardType = KeyboardType.Text,
                                     imeAction = ImeAction.Next,
+                                    onImeAction = { currentStep++ },
                                 )
 
                                 if (uiState.fullName.isNotBlank() && uiState.fullName.length < 3) {
@@ -220,6 +222,7 @@ fun SignUpView(
                                     maxLines = 1,
                                     keyboardType = KeyboardType.Email,
                                     imeAction = ImeAction.Next,
+                                    onImeAction = { currentStep++ },
                                 )
 
                                 if (uiState.email.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(
@@ -248,6 +251,7 @@ fun SignUpView(
                                     maxLines = 1,
                                     keyboardType = KeyboardType.Password,
                                     imeAction = ImeAction.Next,
+                                    onImeAction = { currentStep++ },
                                     isPassword = true
                                 )
 
@@ -274,6 +278,7 @@ fun SignUpView(
                                     maxLines = 1,
                                     keyboardType = KeyboardType.Phone,
                                     imeAction = ImeAction.Done,
+                                    onImeAction = { viewModel.signUp() },
                                 )
 
                                 if (uiState.phoneNumber.isNotBlank() && uiState.phoneNumber.length < 10) {

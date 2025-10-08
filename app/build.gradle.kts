@@ -74,7 +74,7 @@ dependencies {
 
     // Retrofit
     implementation(libs.retrofit)
-//    implementation(libs.converter.kotlinx.serialization) // Converter for JSON serialization
+    implementation(libs.converter.gson) // Converter for JSON serialization
     implementation(libs.logging.interceptor) // Logging interceptor for debugging
 
     // Coil for image loading
@@ -83,6 +83,9 @@ dependencies {
 
     //Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    //DataStore
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
 

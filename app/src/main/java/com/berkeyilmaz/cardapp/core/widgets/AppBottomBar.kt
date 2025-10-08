@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.berkeyilmaz.cardapp.navigation.Screen
+import com.berkeyilmaz.cardapp.core.navigation.Screen
 
 @Composable
 fun AppBottomBar(navController: NavHostController) {

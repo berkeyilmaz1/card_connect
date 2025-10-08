@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.navigation
+package com.berkeyilmaz.cardapp.core.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
@@ -11,9 +11,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.berkeyilmaz.cardapp.core.constants.Constants
 import com.berkeyilmaz.cardapp.presentation.auth.signin.SignInView
 import com.berkeyilmaz.cardapp.presentation.auth.signup.SignUpView
+import com.berkeyilmaz.cardapp.presentation.scan.ScanView
 
 
 sealed class Screen(val route: String, val title: String = "", val icon: ImageVector? = null) {
@@ -31,17 +33,31 @@ fun AppNavHost(
 ) {
     NavHost(navController = navController, startDestination = Screen.SignIn.route) {
         composable(Screen.SignIn.route) {
-            SignInView(onNavigateToSignUp = {
-                navController.navigate(Screen.SignUp.route)
+            SignInView(onNavigate = { route, email ->
+                navController.navigate(route + "?email=" + email) {
+                    popUpTo(Screen.SignIn.route) {
+                        inclusive = true
+                    }
+                }
             })
         }
         composable(Screen.SignUp.route) {
-            SignUpView(onNavigateToSignIn = {
-                navController.popBackStack()
-            })
+            SignUpView(
+                onNavigate = { route, email ->
+                    navController.navigate(Screen.Scan.route + "?email=$email") {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                })
         }
-        composable(Screen.Scan.route) {
-//            ScanScreen(navController)
+        composable(
+            Screen.Scan.route + "?email={email}",
+            arguments = listOf(
+                navArgument("email") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            ScanView(email = email)
         }
         composable(Screen.Contacts.route) {
 //            ContactsScreen(navController)
