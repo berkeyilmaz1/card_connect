@@ -7,4 +7,5 @@ plugins {
     id("com.google.dagger.hilt.android") version "2.57.2" apply false
     //KSP
     id("com.google.devtools.ksp") version "2.2.20-2.0.3" apply false
+    alias(libs.plugins.google.gms.google.services) apply false
 }

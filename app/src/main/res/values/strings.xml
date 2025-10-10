@@ -17,7 +17,7 @@
     <string name="sign_up_error1">Name must be at least 3 characters</string>
     <string name="what_s_your_email">What\'s your email?</string>
     <string name="sign_up_subtext2">We\'ll use this for your account</string>
-    <string name="sign_up_error2">Please enter a valid email address</string>
+    <string name="valid_email_error">Please enter a valid email address</string>
     <string name="create_a_password">Create a password</string>
     <string name="sign_up_subtext3">Must be at least 6 characters</string>
     <string name="sign_up_error3">Password must be at least 6 characters</string>
@@ -26,4 +26,31 @@
     <string name="sign_up_error4">Phone number must be at least 10 digits</string>
     <string name="next">Next</string>
     <string name="create_account">Create Account</string>
+    <string name="no_user_logged_in">No user is currently logged in.</string>
+    <string name="register_error">Unknown error occurred when creating user</string>
+    <string name="wrong_password">Wrong password</string>
+    <string name="auth_error">An error occurred while logging in</string>
+    <string name="logout_error">An error occurred while logging out</string>
+    <string name="send_forgot_password_error">An error occurred while sending password reset email</string>
+    <string name="send_email_verif_error">An error occurred while sending verification email</string>
+    <string name="account_deletion_error">An error occurred while deleting account</string>
+    <string name="re_authentication_failed">Re-authentication failed</string>
+    <string name="re_authentication_required">Re-authentication required to delete account. Please log in again.</string>
+    <string name="login_successful">Login successful</string>
+    <string name="re_authentication_successful">Re-authentication successful.</string>
+    <string name="registration_successful_welcome">Registration successful! Welcome!</string>
+    <string name="account_deleted_successfully">Account deleted successfully.</string>
+    <string name="logged_out_successfully">Logged out successfully.</string>
+    <string name="verification_email_sent_please_check_your_inbox">Verification email sent. Please check your inbox.</string>
+    <string name="password_reset_email_sent_please_check_your_inbox">Password reset email sent. Please check your inbox.</string>
+    <string name="fill_all_fields">Please fill all fields</string>
+    <string name="or">Or</string>
+    <string name="google_sign_in">Google Sign-In</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="forgot_password_title">Forgot Your Password?</string>
+    <string name="forgot_password_subtitle">Enter your email address below and we’ll send you a link to reset your password.</string>
+    <string name="send_email">Send Email</string>
+    <string name="invalid_email">Invalid email</string>
+    <string name="email_sent_successfully">Email sent successfully</string>
+
 </resources>
