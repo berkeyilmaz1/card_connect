@@ -68,35 +68,11 @@ fun ForgotPasswordView(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.forgot_password_title),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        snackbarHost = {
+        topBar = { ForgotPasswordTopBar(onNavigateBack = onNavigateBack) }, snackbarHost = {
             SnackbarHost(
-                hostState = snackBarHostState,
-                modifier = Modifier.imePadding()
+                hostState = snackBarHostState, modifier = Modifier.imePadding()
             )
-        },
-        modifier = Modifier
+        }, modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) { paddingValues ->
@@ -141,4 +117,27 @@ fun ForgotPasswordView(
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ForgotPasswordTopBar(onNavigateBack: () -> Unit) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.forgot_password_title),
+                style = MaterialTheme.typography.titleLarge
+            )
+        }, navigationIcon = {
+            IconButton(onClick = onNavigateBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }, colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    )
 }

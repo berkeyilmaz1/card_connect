@@ -63,5 +63,6 @@
     <string name="googleSignInCancelled">User cancelled the sign-in process</string>
     <string name="googleCredentialError">Credential error occurred</string>
     <string name="googleSignInUnknownError">Unknown error occurred during Google Sign-In</string>
+    <string name="unknown_error">Unknown error</string>
 
 </resources>

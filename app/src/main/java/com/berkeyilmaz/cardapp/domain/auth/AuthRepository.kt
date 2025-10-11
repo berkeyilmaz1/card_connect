@@ -1,6 +1,5 @@
 package com.berkeyilmaz.cardapp.domain.auth
 
-import com.berkeyilmaz.cardapp.data.model.User
 import com.google.firebase.auth.FirebaseUser
 
 sealed class AuthResult<out T> {
@@ -9,7 +8,6 @@ sealed class AuthResult<out T> {
     sealed class Error(val message: String) : AuthResult<Nothing>() {
         class Generic(message: String) : Error(message)
         class ReAuthNeeded(message: String) : Error(message)
-        class NetworkError(message: String) : Error(message)
     }
 }
 
@@ -21,6 +19,7 @@ interface AuthRepository {
     suspend fun loginOrRegister(email: String, password: String): AuthResult<Unit>
 
     suspend fun signInWithGoogle(): AuthResult<Unit>
+
     suspend fun sendForgotPasswordEmail(email: String): AuthResult<Unit>
 
     suspend fun sendEmailVerification(): AuthResult<Unit>

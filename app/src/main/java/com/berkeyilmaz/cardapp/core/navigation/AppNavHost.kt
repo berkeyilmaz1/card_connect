@@ -34,17 +34,15 @@ fun AppNavHost(
         composable(Screen.SignIn.route) {
             SignInView(
                 onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo(Screen.SignIn.route) {
-                            inclusive = true
-                        }
+                navController.navigate(route) {
+                    popUpTo(Screen.SignIn.route) {
+                        inclusive = true
                     }
-                },
+                }
+            },
                 onNavigateForgotPassword = { navController.navigate(Screen.ForgotPassword.route) })
         }
-        composable(
-            Screen.Scan.route
-        ) {
+        composable(Screen.Scan.route) {
             ScanView()
         }
         composable(Screen.ForgotPassword.route) {
