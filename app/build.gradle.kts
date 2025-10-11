@@ -9,6 +9,7 @@ plugins {
     //Hilt
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    alias(libs.plugins.google.gms.google.services) //firebase
 }
 
 android {
@@ -74,7 +75,7 @@ dependencies {
 
     // Retrofit
     implementation(libs.retrofit)
-//    implementation(libs.converter.kotlinx.serialization) // Converter for JSON serialization
+    implementation(libs.converter.gson) // Converter for JSON serialization
     implementation(libs.logging.interceptor) // Logging interceptor for debugging
 
     // Coil for image loading
@@ -83,6 +84,17 @@ dependencies {
 
     //Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    //DataStore
+    implementation(libs.androidx.datastore.preferences)
+
+    //Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.play.services.auth)
 
     testImplementation(libs.junit)
 
