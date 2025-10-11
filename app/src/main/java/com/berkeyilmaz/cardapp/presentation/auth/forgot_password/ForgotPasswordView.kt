@@ -2,27 +2,25 @@ package com.berkeyilmaz.cardapp.presentation.auth.forgot_password
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,6 +41,7 @@ import com.berkeyilmaz.cardapp.presentation.auth.forgot_password.viewmodel.Forgo
 import com.berkeyilmaz.cardapp.presentation.auth.forgot_password.viewmodel.ForgotPasswordViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordView(
     onNavigateBack: () -> Unit,
@@ -68,56 +67,55 @@ fun ForgotPasswordView(
         }
     }
 
-    Box(
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.forgot_password_title),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.imePadding()
+            )
+        },
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(WindowInsets.systemBars.asPaddingValues())
-            .padding(
-                horizontal = dimensionResource(R.dimen.padding_normal)
-            ),
-
-        ) {
-        SnackbarHost(
-            hostState = snackBarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .imePadding()
-        )
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = dimensionResource(R.dimen.padding_normal)),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start
-            ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back),
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_24)))
-
-            Text(
-                stringResource(R.string.forgot_password_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
-
             Text(
                 stringResource(R.string.forgot_password_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_24)))
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
 
             CustomTextField(
                 value = uiState.email,
@@ -133,7 +131,7 @@ fun ForgotPasswordView(
                 errorMessage = uiState.error
             )
 
-            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_24)))
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_16)))
 
             CustomAppButton(
                 text = stringResource(R.string.send_email),

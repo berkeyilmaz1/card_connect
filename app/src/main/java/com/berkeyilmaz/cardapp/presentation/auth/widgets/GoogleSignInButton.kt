@@ -33,10 +33,10 @@ fun GoogleSignInButton(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp),
+            .height(56.dp),
         shape = RoundedCornerShape(5.dp),
         color = Color.White,
-        shadowElevation = 4.dp,
+        shadowElevation = dimensionResource(R.dimen.elevation_small),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Row(modifier = Modifier
@@ -49,10 +49,10 @@ fun GoogleSignInButton(
                 painter = painterResource(id = R.drawable.ic_google),
                 contentDescription = stringResource(R.string.sign_in_with_google),
                 tint = Color.Unspecified,
-                modifier = Modifier.size(dimensionResource(R.dimen.spacer_24))
+                modifier = Modifier.size(dimensionResource(R.dimen.icon_size_small))
             )
 
-            Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_normal)))
+            Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_small)))
 
             // Text
             Text(

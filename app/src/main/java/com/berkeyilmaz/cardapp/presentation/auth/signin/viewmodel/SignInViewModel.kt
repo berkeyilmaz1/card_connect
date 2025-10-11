@@ -7,6 +7,7 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.domain.auth.AuthResult
 import com.berkeyilmaz.cardapp.domain.auth.usecase.LoginOrRegisterUseCase
+import com.berkeyilmaz.cardapp.domain.auth.usecase.SignInWithGoogleUseCase
 import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInUiEvent.Navigate
 import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInUiEvent.ShowError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +36,7 @@ sealed class SignInUiEvent {
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val loginOrRegisterUseCase: LoginOrRegisterUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -75,6 +77,21 @@ class SignInViewModel @Inject constructor(
             }
             setLoading(false)
         }
+    }
+
+    suspend fun signInWithGoogle() {
+        setLoading(true)
+        val result = signInWithGoogleUseCase()
+        when (result) {
+            is AuthResult.Error -> viewModelScope.launch {
+                _eventFlow.emit(ShowError(result.message))
+            }
+
+            is AuthResult.Success<*> -> viewModelScope.launch {
+                _eventFlow.emit(Navigate(Screen.Scan.route))
+            }
+        }
+        setLoading(false)
     }
 
     fun navigateForgotPasswordView() {

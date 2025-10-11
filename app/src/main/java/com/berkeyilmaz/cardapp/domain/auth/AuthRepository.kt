@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.domain.auth
 
+import com.berkeyilmaz.cardapp.data.model.User
 import com.google.firebase.auth.FirebaseUser
 
 sealed class AuthResult<out T> {
@@ -19,6 +20,7 @@ interface AuthRepository {
 
     suspend fun loginOrRegister(email: String, password: String): AuthResult<Unit>
 
+    suspend fun signInWithGoogle(): AuthResult<Unit>
     suspend fun sendForgotPasswordEmail(email: String): AuthResult<Unit>
 
     suspend fun sendEmailVerification(): AuthResult<Unit>

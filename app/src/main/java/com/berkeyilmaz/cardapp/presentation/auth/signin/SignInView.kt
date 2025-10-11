@@ -7,16 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -47,10 +47,12 @@ import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInViewMode
 import com.berkeyilmaz.cardapp.presentation.auth.widgets.GoogleSignInButton
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInView(
     onNavigate: (route: String) -> Unit,
     onNavigateForgotPassword: () -> Unit,
+    onNavigateBack: () -> Unit = {},
     viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -78,79 +80,99 @@ fun SignInView(
         }
     }
 
-    Box(
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.imePadding()
+            )
+        },
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(WindowInsets.systemBars.asPaddingValues())
-            .padding(
-                horizontal = dimensionResource(R.dimen.padding_normal)
-            )
-    ) {
-        SnackbarHost(
-            hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter)
-        )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(paddingValues)
+                .padding(
+                    horizontal = dimensionResource(R.dimen.padding_normal)
+                )
         ) {
-            Text(
-                stringResource(R.string.welcome),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                stringResource(R.string.sign_in_subtext),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
-            CustomTextField(
-                value = uiState.email,
-                onValueChange = { viewModel.changeEmail(it) },
-                label = stringResource(R.string.email),
-                leadingIcon = Icons.Default.Email,
-                singleLine = true,
-                maxLines = 1,
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next,
-                onImeAction = { passwordFocusRequester.requestFocus() },
-            )
-            CustomTextField(
-                value = uiState.password,
-                onValueChange = { viewModel.changePassword(it) },
-                label = stringResource(R.string.password),
-                leadingIcon = Icons.Default.Lock,
-                singleLine = true,
-                maxLines = 1,
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done,
-                onImeAction = { viewModel.signInOrRegister() },
-                isPassword = true,
-                modifier = Modifier.focusRequester(passwordFocusRequester)
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
-                CustomAppButton(
-                    text = stringResource(R.string.forgot_password),
-                    onClick = { viewModel.navigateForgotPasswordView() },
-                    textButtonContentPadding = PaddingValues(0.dp),
-                    style = AppButtonStyle.TEXT,
+                Text(
+                    stringResource(R.string.welcome),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_xSmall)))
+                Text(
+                    stringResource(R.string.sign_in_subtext),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_large)))
+
+                CustomTextField(
+                    value = uiState.email,
+                    onValueChange = { viewModel.changeEmail(it) },
+                    label = stringResource(R.string.email),
+                    leadingIcon = Icons.Default.Email,
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                    onImeAction = { passwordFocusRequester.requestFocus() },
                 )
 
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
+
+                CustomTextField(
+                    value = uiState.password,
+                    onValueChange = { viewModel.changePassword(it) },
+                    label = stringResource(R.string.password),
+                    leadingIcon = Icons.Default.Lock,
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                    onImeAction = { viewModel.signInOrRegister() },
+                    isPassword = true,
+                    modifier = Modifier.focusRequester(passwordFocusRequester)
+                )
+
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    CustomAppButton(
+                        text = stringResource(R.string.forgot_password),
+                        onClick = { viewModel.navigateForgotPasswordView() },
+                        textButtonContentPadding = PaddingValues(0.dp),
+                        style = AppButtonStyle.TEXT,
+                    )
+                }
+
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_normal)))
+
+                CustomAppButton(
+                    text = stringResource(R.string.sign_in),
+                    onClick = { viewModel.signInOrRegister() },
+                    loading = uiState.isLoading,
+                    fullWidth = true,
+                )
+
+                OrDivider()
+
+                GoogleSignInButton(onClick = { coroutineScope.launch { viewModel.signInWithGoogle() } })
             }
-            CustomAppButton(
-                text = stringResource(R.string.sign_in),
-                onClick = { viewModel.signInOrRegister() },
-                loading = uiState.isLoading,
-                fullWidth = true,
-            )
-
-            OrDivider()
-
-            GoogleSignInButton(onClick = {/* TODO: Handle Google Sign-In */ })
         }
     }
 }
