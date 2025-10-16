@@ -52,7 +52,6 @@ import kotlinx.coroutines.launch
 fun SignInView(
     onNavigate: (route: String) -> Unit,
     onNavigateForgotPassword: () -> Unit,
-    onNavigateBack: () -> Unit = {},
     viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsState()

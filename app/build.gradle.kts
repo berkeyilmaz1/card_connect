@@ -96,6 +96,9 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.play.services.auth)
 
+    //Splash
+    implementation(libs.androidx.core.splashscreen)
+
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.navigation.testing) // Testing Navigation

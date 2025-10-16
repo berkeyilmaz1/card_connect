@@ -16,3 +16,5 @@ val LightSurface = Color(0xFFF3F5F8)
 val LightOutline = Color(0xFFCDD3DB)
 val LightText = Color(0xFF1A1D1F)
 
+val bottomNavBarIndicatorColor = Color(0xFF004BA0)
+val bottomNavBarUnSelectedColor = Color(0xFF1A1D1F)

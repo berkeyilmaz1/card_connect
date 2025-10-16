@@ -64,7 +64,7 @@ class SignInViewModel @Inject constructor(
                 when (response) {
                     is AuthResult.Success -> _eventFlow.emit(
                         Navigate(
-                            Screen.Scan.route
+                            Screen.MainView.route
                         )
                     )
 
@@ -88,7 +88,7 @@ class SignInViewModel @Inject constructor(
             }
 
             is AuthResult.Success<*> -> viewModelScope.launch {
-                _eventFlow.emit(Navigate(Screen.Scan.route))
+                _eventFlow.emit(Navigate(Screen.MainView.route))
             }
         }
         setLoading(false)
