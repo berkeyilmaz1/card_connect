@@ -10,7 +10,6 @@ val DarkSurface = Color(0xFF1A222D)
 val DarkGray = Color(0xFF2B3643)
 val LightGray = Color(0xFFB0B6BE)
 val OutlineGray = Color(0xFF3A4654)
-
 val LightBackground = Color(0xFFFDFDFE)
 val LightSurface = Color(0xFFF3F5F8)
 val LightOutline = Color(0xFFCDD3DB)

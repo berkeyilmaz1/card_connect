@@ -1,10 +1,11 @@
-package com.berkeyilmaz.cardapp
-
+package com.berkeyilmaz.cardapp.di
 
 import android.content.Context
 import androidx.credentials.CredentialManager
 import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl
+import com.berkeyilmaz.cardapp.data.remote.HomeRepositoryImpl
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
+import com.berkeyilmaz.cardapp.domain.home.HomeRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -28,7 +29,7 @@ object AppModule {
     fun provideCredentialManager(
         @ApplicationContext context: Context
     ): CredentialManager {
-        return CredentialManager.create(context)
+        return CredentialManager.Companion.create(context)
     }
 
     @Provides
@@ -38,8 +39,14 @@ object AppModule {
         firebaseAuth: FirebaseAuth,
         credentialManager: CredentialManager
     ): AuthRepository = AuthRepositoryImpl(
-        context = context,
-        firebaseAuth = firebaseAuth,
-        credentialManager = credentialManager
+        context = context, firebaseAuth = firebaseAuth, credentialManager = credentialManager
     )
+
+    @Provides
+    @Singleton
+    fun provideHomeRepository(
+        firebaseAuth: FirebaseAuth
+    ): HomeRepository {
+        return HomeRepositoryImpl(firebaseAuth)
+    }
 }

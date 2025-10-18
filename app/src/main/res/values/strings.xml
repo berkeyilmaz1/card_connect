@@ -64,5 +64,21 @@
     <string name="googleCredentialError">Credential error occurred</string>
     <string name="googleSignInUnknownError">Unknown error occurred during Google Sign-In</string>
     <string name="unknown_error">Unknown error</string>
+    <string name="failed_to_load_user_data">Failed to load user data.</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="close">Close</string>
+    <string name="email_icon">Email Icon</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="add_new">Add New</string>
+    <string name="history">History</string>
+    <string name="favorites">Favorites</string>
+    <string name="settings">Settings</string>
+    <string name="scan_button">Scan Button</string>
+    <string name="scanner_icon">Scanner Icon</string>
+    <string name="scan_a_business_card">Scan a Business Card</string>
+    <string name="scan_a_business_card_subtitle">Tap the scan button to get started and add new contacts instantly.</string>
+    <string name="scan_connect"><![CDATA[Scan & Connect]]></string>
+    <string name="ready_to_scan_a_new_card">Ready to Scan a New Card?</string>
 
 </resources>

@@ -21,7 +21,7 @@ sealed class Screen(val route: String, val title: String? = null) {
     object MainView : Screen("main_view")
 
     // Bottom Nav Screens
-    object Scan : Screen("scan_view", "Scan")
+    object Home : Screen("home_view", "Home")
     object Contact : Screen("contact_view", "Contacts")
     object Profile : Screen("profile_view", "Profile")
 

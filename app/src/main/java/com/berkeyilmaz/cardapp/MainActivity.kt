@@ -19,10 +19,6 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        splashScreen.setKeepOnScreenCondition {
-            val firebaseUser = FirebaseAuth.getInstance().currentUser
-            firebaseUser == null
-        }
         setContent {
             val navController = rememberNavController()
             val firebaseUser = FirebaseAuth.getInstance().currentUser

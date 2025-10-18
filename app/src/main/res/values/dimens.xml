@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="padding_normal">16dp</dimen>
+
+    <dimen name="padding_lowNormal">12dp</dimen>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_xSmall">4dp</dimen>
     <dimen name="padding_xxSmall">2dp</dimen>
     <dimen name="padding_large">24dp</dimen>
     <dimen name="padding_xlarge">32dp</dimen>
 
+    <dimen name="spacer_96">96dp</dimen>
+    <dimen name="spacer_64">64dp</dimen>
     <dimen name="spacer_48">48dp</dimen>
     <dimen name="spacer_32">32dp</dimen>
     <dimen name="spacer_24">24dp</dimen>

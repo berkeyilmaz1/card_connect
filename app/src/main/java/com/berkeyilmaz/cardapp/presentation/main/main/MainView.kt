@@ -2,10 +2,12 @@ package com.berkeyilmaz.cardapp.presentation.main.main
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Contacts
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.automirrored.outlined.Help
+import androidx.compose.material.icons.outlined.Contacts
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -14,43 +16,58 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.presentation.main.contact.ContactView
+import com.berkeyilmaz.cardapp.presentation.main.home.HomeView
+import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.profile.ProfileView
-import com.berkeyilmaz.cardapp.presentation.main.scan.ScanView
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarIndicatorColor
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarUnSelectedColor
 
 @Composable
 fun MainView() {
     val bottomNavController = rememberNavController()
-    val bottomTabs = listOf(Screen.Scan, Screen.Contact, Screen.Profile)
-
+    val bottomTabs = listOf(Screen.Contact, Screen.Home, Screen.Profile)
+    val currentDestination = bottomNavController.currentBackStackEntryAsState().value?.destination
     Scaffold(
+
         bottomBar = {
-            val currentDestination =
-                bottomNavController.currentBackStackEntryAsState().value?.destination
             if (currentDestination?.route in bottomTabs.map { it.route }) {
                 BottomBar(bottomNavController, bottomTabs)
             }
-        }) { paddingValues ->
+        },
+        floatingActionButton = {
+            if (currentDestination?.route == Screen.Home.route) {
+                ScanFabButton(onClick = {})
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { paddingValues ->
 
         NavHost(
             navController = bottomNavController,
-            startDestination = Screen.Scan.route,
+            startDestination = Screen.Home.route,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(Screen.Scan.route) {
-                ScanView()
+            composable(Screen.Home.route) {
+                val viewModel = hiltViewModel<HomeViewModel>()
+                val uiState by viewModel.uiState.collectAsState()
+                HomeView(
+                    uiState, onNotificationAction = { viewModel.removeNotification(it) })
             }
-
             composable(Screen.Contact.route) {
                 ContactView()
             }
@@ -61,6 +78,7 @@ fun MainView() {
         }
     }
 }
+
 
 @Composable
 fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
@@ -81,10 +99,10 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
                 }, icon = {
                     Icon(
                         imageVector = when (screen) {
-                            Screen.Scan -> Icons.Default.CameraAlt
-                            Screen.Contact -> Icons.Default.Contacts
-                            Screen.Profile -> Icons.Default.Person
-                            else -> Icons.AutoMirrored.Filled.Help
+                            Screen.Home -> Icons.Outlined.Home
+                            Screen.Contact -> Icons.Outlined.Contacts
+                            Screen.Profile -> Icons.Outlined.Person
+                            else -> Icons.AutoMirrored.Outlined.Help
                         },
                         contentDescription = screen.route,
                     )
@@ -103,6 +121,19 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
                 )
             )
         }
+    }
+}
+
+
+@Composable
+fun ScanFabButton(onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.primary,
+    ) {
+        Icon(
+            Icons.Rounded.CameraAlt, stringResource(R.string.scan_button), tint = Color.White
+        )
     }
 }
 
