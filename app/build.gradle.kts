@@ -99,6 +99,17 @@ dependencies {
     //Splash
     implementation(libs.androidx.core.splashscreen)
 
+    //CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.mlkit.vision)
+    implementation(libs.androidx.camera.extensions)
+
+    //ML Kit Text Recognition
+    // To recognize Latin script
+    implementation(libs.text.recognition)
+
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.navigation.testing) // Testing Navigation

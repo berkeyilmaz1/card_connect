@@ -320,3 +320,16 @@ fun HomeViewPreview() {
             ), onNotificationAction = {})
     }
 }
+
+
+//val navBackStackEntry = remember { bottomNavController.currentBackStackEntry }
+//val savedStateHandle = navBackStackEntry?.savedStateHandle
+//
+//LaunchedEffect(Unit) {
+//    savedStateHandle?.getLiveData<String>("capturedPhotoUri")?.observe(lifecycleOwner) { uri ->
+//        uri?.let {
+//            Log.d("HomeView", "Captured photo URI: $it")
+//            // burada URI’yi görüntüleyebilir veya işleyebilirsin
+//        }
+//    }
+//}

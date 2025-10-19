@@ -80,5 +80,7 @@
     <string name="scan_a_business_card_subtitle">Tap the scan button to get started and add new contacts instantly.</string>
     <string name="scan_connect"><![CDATA[Scan & Connect]]></string>
     <string name="ready_to_scan_a_new_card">Ready to Scan a New Card?</string>
+    <string name="capture">Capture</string>
+    <string name="camera_permission_required">Camera permission required</string>
 
 </resources>

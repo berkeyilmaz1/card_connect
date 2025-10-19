@@ -25,6 +25,8 @@ sealed class Screen(val route: String, val title: String? = null) {
     object Contact : Screen("contact_view", "Contacts")
     object Profile : Screen("profile_view", "Profile")
 
+    object Scan : Screen("scan_view", "Scan")
+
     // Fullscreen Pages
     data class ContactDetail(val id: String) : Screen("contact_detail/$id") {
         companion object {
@@ -52,12 +54,12 @@ fun AppNavHost(
             composable(Screen.SignIn.route) {
                 SignInView(
                     onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo(Screen.AuthGraph.route) {
-                            inclusive = true
+                        navController.navigate(route) {
+                            popUpTo(Screen.AuthGraph.route) {
+                                inclusive = true
+                            }
                         }
-                    }
-                },
+                    },
                     onNavigateForgotPassword = { navController.navigate(Screen.ForgotPassword.route) })
             }
         }
