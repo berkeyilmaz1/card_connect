@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.berkeyilmaz.cardapp.domain.theme.model.AppTheme
 
 val DarkColorScheme = darkColorScheme(
     primary = BluePrimary,
@@ -44,11 +45,17 @@ val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun CardAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+fun AppTheme(
+    theme: AppTheme = AppTheme.SYSTEM,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (theme) {
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -60,8 +67,6 @@ fun CardAppTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = colorScheme, typography = Typography, content = content
     )
 }

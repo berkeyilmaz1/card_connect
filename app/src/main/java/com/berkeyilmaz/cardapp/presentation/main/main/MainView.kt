@@ -1,11 +1,13 @@
 package com.berkeyilmaz.cardapp.presentation.main.main
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.outlined.Contacts
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material3.FloatingActionButton
@@ -39,57 +41,68 @@ import com.berkeyilmaz.cardapp.presentation.main.contact.ContactView
 import com.berkeyilmaz.cardapp.presentation.main.home.HomeView
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.main.scan.ScanView
-import com.berkeyilmaz.cardapp.presentation.main.profile.ProfileView
+import com.berkeyilmaz.cardapp.presentation.main.more.MoreView
+import com.berkeyilmaz.cardapp.presentation.settings.SettingsView
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarIndicatorColor
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarUnSelectedColor
 import kotlinx.coroutines.launch
 
 @Composable
 fun MainView() {
-    val bottomNavController = rememberNavController()
-    val bottomTabs = listOf(Screen.Contact, Screen.Home, Screen.Profile)
-    val currentDestination = bottomNavController.currentBackStackEntryAsState().value?.destination
+    val navController = rememberNavController()
+    val bottomTabs = listOf(Screen.Contact, Screen.Home, Screen.More)
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(
 
+    Scaffold(
         bottomBar = {
             if (currentDestination?.route in bottomTabs.map { it.route }) {
-                BottomBar(bottomNavController, bottomTabs)
+                BottomBar(navController, bottomTabs)
             }
         },
         floatingActionButton = {
             if (currentDestination?.route == Screen.Home.route) {
                 ScanFabButton(onClick = {
-                    bottomNavController.navigate(Screen.Scan.route)
+                    navController.navigate(Screen.Scan.route)
                 })
             }
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
-
         NavHost(
-            navController = bottomNavController,
+            navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier  // padding'i buradan kaldır
         ) {
             composable(Screen.Home.route) {
                 val viewModel = hiltViewModel<HomeViewModel>()
                 val uiState by viewModel.uiState.collectAsState()
-                HomeView(
-                    uiState, onNotificationAction = { viewModel.removeNotification(it) })
-            }
-            composable(Screen.Contact.route) {
-                ContactView()
+                // Her ekrana kendi padding'ini ver
+                Box(modifier = Modifier.padding(paddingValues)) {
+                    HomeView(
+                        uiState, onNotificationAction = { viewModel.removeNotification(it) })
+                }
             }
 
-            composable(Screen.Profile.route) {
-                ProfileView()
+            composable(Screen.Contact.route) {
+                Box(modifier = Modifier.padding(paddingValues)) {
+                    ContactView()
+                }
+            }
+
+            composable(Screen.More.route) {
+                Box(modifier = Modifier.padding(paddingValues)) {
+                    MoreView(
+                        onNavigateProfile = { navController.navigate(Screen.Profile.route) },
+                        onNavigateSettings = { navController.navigate(Screen.Settings.route) },
+                    )
+                }
             }
 
             composable(Screen.Scan.route) {
+                // Scan full-screen olabilir, padding yok
                 ScanView(onPhotoCaptured = { uri ->
-                    // 1️⃣ burada uri artık elinde
                     Log.d("BerkeTag", "Photo saved at: $uri")
                     coroutineScope.launch {
                         val result =
@@ -97,16 +110,26 @@ fun MainView() {
                         val recognizedText = (result as ApiResult.Success).data
                         Log.d("BerkeTag", "Recognized Text: ${recognizedText?.text}")
                     }
-                    bottomNavController.popBackStack()
-                    bottomNavController.currentBackStackEntry?.savedStateHandle?.set(
+                    navController.popBackStack()
+                    navController.currentBackStackEntry?.savedStateHandle?.set(
                         "capturedPhotoUri", uri.toString()
                     )
                 })
             }
+
+            composable(Screen.Settings.route) {
+                // Settings full-screen, padding yok
+                SettingsView(
+                    onNavigateBack = { navController.navigateUp() })
+            }
+
+            composable(Screen.Profile.route) {
+                // Profile full-screen, padding yok
+                // ProfileView()
+            }
         }
     }
 }
-
 
 @Composable
 fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
@@ -129,7 +152,7 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
                     imageVector = when (screen) {
                         Screen.Home -> Icons.Outlined.Home
                         Screen.Contact -> Icons.Outlined.Contacts
-                        Screen.Profile -> Icons.Outlined.Person
+                        Screen.More -> Icons.Outlined.MoreHoriz
                         else -> Icons.AutoMirrored.Outlined.Help
                     },
                     contentDescription = screen.route,
@@ -151,7 +174,6 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
         }
     }
 }
-
 
 @Composable
 fun ScanFabButton(onClick: () -> Unit) {

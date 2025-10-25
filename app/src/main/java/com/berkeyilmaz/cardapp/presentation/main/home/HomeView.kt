@@ -48,7 +48,7 @@ import coil3.compose.AsyncImage
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeUiState
-import com.berkeyilmaz.cardapp.presentation.ui.theme.CardAppTheme
+import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
 
 @Composable
 fun HomeView(uiState: HomeUiState, onNotificationAction: (HomeNotification) -> Unit) {
@@ -313,7 +313,7 @@ fun ProfileSection(uiState: HomeUiState) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeViewPreview() {
-    CardAppTheme {
+    AppTheme {
         HomeView(
             uiState = HomeUiState(
                 userName = "Berke Yılmaz", userProfileImageUrl = "https://example.com/profile.jpg"

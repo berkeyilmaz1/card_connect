@@ -82,5 +82,14 @@
     <string name="ready_to_scan_a_new_card">Ready to Scan a New Card?</string>
     <string name="capture">Capture</string>
     <string name="camera_permission_required">Camera permission required</string>
+    <string name="right_arrow">Right Arrow</string>
+    <string name="profile">Profile</string>
+    <string name="dark_theme">Dark Theme</string>
+
+    <string name="appearance">Appearance</string>
+    <string name="select_theme">Select Theme</string>
+    <string name="theme_light">Light Theme</string>
+    <string name="theme_system">System Default Theme</string>
+    <string name="change_theme">Change Theme</string>
 
 </resources>
