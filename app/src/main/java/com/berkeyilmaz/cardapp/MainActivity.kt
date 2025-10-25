@@ -9,7 +9,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import com.berkeyilmaz.cardapp.core.navigation.AppNavHost
 import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
@@ -20,32 +19,30 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        var keepSplashScreen = true
         val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { keepSplashScreen }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            val navController = rememberNavController()
-            val firebaseUser = FirebaseAuth.getInstance().currentUser
-            LaunchedEffect(firebaseUser) {
-                if (firebaseUser != null) {
-                    navController.navigate(Screen.MainView.route) {
-                        popUpTo(Screen.AuthGraph.route) {
-                            inclusive = true
-                        }
-                    }
-                } else {
-                    navController.navigate(Screen.SignIn.route) {
-                        popUpTo(Screen.AuthGraph.route) {
-                            inclusive = true
-                        }
-                    }
-                }
-            }
             val viewModel: SettingsViewModel = hiltViewModel()
             val currentTheme by viewModel.currentTheme.collectAsState()
+            val firebaseUser = FirebaseAuth.getInstance().currentUser
+
+            LaunchedEffect(Unit) {
+                keepSplashScreen = false
+            }
+
+            val startDestination = if (firebaseUser != null) {
+                Screen.Main.Graph.route
+            } else {
+                Screen.Auth.Graph.route
+            }
 
             AppTheme(theme = currentTheme) {
-                AppNavHost(navController)
+                AppNavHost(startDestination = startDestination)
             }
         }
     }

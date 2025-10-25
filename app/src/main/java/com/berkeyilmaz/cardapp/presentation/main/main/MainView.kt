@@ -8,7 +8,6 @@ import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.outlined.Contacts
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -48,9 +47,9 @@ import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarUnSelectedColor
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainView() {
+fun MainView(onNavigateToAuth: () -> Unit = {}) {
     val navController = rememberNavController()
-    val bottomTabs = listOf(Screen.Contact, Screen.Home, Screen.More)
+    val bottomTabs = listOf(Screen.Main.Contact, Screen.Main.Home, Screen.Main.More)
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -62,9 +61,9 @@ fun MainView() {
             }
         },
         floatingActionButton = {
-            if (currentDestination?.route == Screen.Home.route) {
+            if (currentDestination?.route == Screen.Main.Home.route) {
                 ScanFabButton(onClick = {
-                    navController.navigate(Screen.Scan.route)
+                    navController.navigate(Screen.Main.Scan.route)
                 })
             }
         },
@@ -72,104 +71,141 @@ fun MainView() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier  // padding'i buradan kaldır
+            startDestination = Screen.Main.Home.route
         ) {
-            composable(Screen.Home.route) {
+            // ========== BOTTOM TAB SCREENS (with padding) ==========
+            composable(Screen.Main.Home.route) {
                 val viewModel = hiltViewModel<HomeViewModel>()
                 val uiState by viewModel.uiState.collectAsState()
-                // Her ekrana kendi padding'ini ver
+
                 Box(modifier = Modifier.padding(paddingValues)) {
                     HomeView(
-                        uiState, onNotificationAction = { viewModel.removeNotification(it) })
+                        uiState = uiState,
+                        onNotificationAction = { viewModel.removeNotification(it) }
+                    )
                 }
             }
 
-            composable(Screen.Contact.route) {
+            composable(Screen.Main.Contact.route) {
                 Box(modifier = Modifier.padding(paddingValues)) {
-                    ContactView()
+                    ContactView(
+                        onContactClick = { contactId ->
+                            val route = Screen.Main.ContactDetail.createRoute(contactId)
+                            navController.navigate(route)
+                        }
+                    )
                 }
             }
 
-            composable(Screen.More.route) {
+            composable(Screen.Main.More.route) {
                 Box(modifier = Modifier.padding(paddingValues)) {
                     MoreView(
-                        onNavigateProfile = { navController.navigate(Screen.Profile.route) },
-                        onNavigateSettings = { navController.navigate(Screen.Settings.route) },
+                        onNavigateProfile = {
+                            navController.navigate(Screen.Main.Profile.route)
+                        },
+                        onNavigateSettings = {
+                            navController.navigate(Screen.Main.Settings.route)
+                        },
+                        onSignOut = {
+                            onNavigateToAuth()
+                        }
                     )
                 }
             }
 
-            composable(Screen.Scan.route) {
-                // Scan full-screen olabilir, padding yok
-                ScanView(onPhotoCaptured = { uri ->
-                    Log.d("BerkeTag", "Photo saved at: $uri")
-                    coroutineScope.launch {
-                        val result =
-                            TextRecognizerManager.recognizeTextFromUri(context = context, uri = uri)
-                        val recognizedText = (result as ApiResult.Success).data
-                        Log.d("BerkeTag", "Recognized Text: ${recognizedText?.text}")
+            // ========== FULL-SCREEN PAGES (no padding) ==========
+            composable(Screen.Main.Scan.route) {
+                ScanView(
+                    onPhotoCaptured = { uri ->
+                        Log.d("BerkeTag", "Photo saved at: $uri")
+                        coroutineScope.launch {
+                            val result = TextRecognizerManager.recognizeTextFromUri(
+                                context = context,
+                                uri = uri
+                            )
+                            val recognizedText = (result as? ApiResult.Success)?.data
+                            Log.d("BerkeTag", "Recognized Text: ${recognizedText?.text}")
+                        }
+
+                        // Geri dön ve veriyi kaydet
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "capturedPhotoUri", uri.toString()
+                        )
+                        navController.popBackStack()
                     }
-                    navController.popBackStack()
-                    navController.currentBackStackEntry?.savedStateHandle?.set(
-                        "capturedPhotoUri", uri.toString()
-                    )
-                })
+                )
             }
 
-            composable(Screen.Settings.route) {
-                // Settings full-screen, padding yok
+            composable(Screen.Main.Settings.route) {
                 SettingsView(
-                    onNavigateBack = { navController.navigateUp() })
+                    onNavigateBack = { navController.navigateUp() }
+                )
             }
 
-            composable(Screen.Profile.route) {
-                // Profile full-screen, padding yok
-                // ProfileView()
+            composable(Screen.Main.Profile.route) {
+                // ProfileView(
+                //     onNavigateBack = { navController.navigateUp() }
+                // )
+            }
+
+            // ========== DETAIL SCREENS ==========
+            composable(Screen.Main.ContactDetail.ROUTE_PATTERN) { backStackEntry ->
+                val contactId = backStackEntry.arguments?.getString("id")
+                // ContactDetailView(
+                //     contactId = contactId,
+                //     onNavigateBack = { navController.navigateUp() }
+                // )
             }
         }
     }
 }
 
 @Composable
-fun BottomBar(navController: NavHostController, tabs: List<Screen>) {
+fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
         tonalElevation = 4.dp,
     ) {
-        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+        val currentRoute = navController
+            .currentBackStackEntryAsState()
+            .value?.destination?.route
+
         tabs.forEach { screen ->
             NavigationBarItem(
-                selected = currentRoute == screen.route, onClick = {
-                navController.navigate(screen.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                }
-            }, icon = {
-                Icon(
-                    imageVector = when (screen) {
-                        Screen.Home -> Icons.Outlined.Home
-                        Screen.Contact -> Icons.Outlined.Contacts
-                        Screen.More -> Icons.Outlined.MoreHoriz
-                        else -> Icons.AutoMirrored.Outlined.Help
-                    },
-                    contentDescription = screen.route,
-                )
-            }, label = {
-                screen.title?.let {
-                    Text(
-                        screen.title
+                selected = currentRoute == screen.route,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = when (screen) {
+                            Screen.Main.Home -> Icons.Outlined.Home
+                            Screen.Main.Contact -> Icons.Outlined.Contacts
+                            Screen.Main.More -> Icons.Outlined.MoreHoriz
+                            else -> Icons.AutoMirrored.Outlined.Help
+                        },
+                        contentDescription = screen.title,
                     )
-                }
-            }, colors = NavigationBarItemDefaults.colors(
-                indicatorColor = bottomNavBarIndicatorColor,
-                selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                unselectedTextColor = bottomNavBarUnSelectedColor,
-                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                unselectedIconColor = bottomNavBarUnSelectedColor
-            )
+                },
+                label = {
+                    screen.title?.let {
+                        Text(text = it)
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = bottomNavBarIndicatorColor,
+                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    unselectedTextColor = bottomNavBarUnSelectedColor,
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                    unselectedIconColor = bottomNavBarUnSelectedColor
+                )
             )
         }
     }
@@ -182,9 +218,9 @@ fun ScanFabButton(onClick: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.primary,
     ) {
         Icon(
-            Icons.Rounded.CameraAlt, stringResource(R.string.scan_button), tint = Color.White
+            imageVector = Icons.Rounded.CameraAlt,
+            contentDescription = stringResource(R.string.scan_button),
+            tint = Color.White
         )
     }
 }
-
-

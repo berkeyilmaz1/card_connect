@@ -91,5 +91,6 @@
     <string name="theme_light">Light Theme</string>
     <string name="theme_system">System Default Theme</string>
     <string name="change_theme">Change Theme</string>
+    <string name="sign_out">Sign Out</string>
 
 </resources>

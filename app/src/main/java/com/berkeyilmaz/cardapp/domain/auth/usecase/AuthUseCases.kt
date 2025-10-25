@@ -31,3 +31,11 @@ class SignInWithGoogleUseCase @Inject constructor(
         return repository.signInWithGoogle()
     }
 }
+
+class SignOutUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(): AuthResult<Unit> {
+        return authRepository.logout()
+    }
+}

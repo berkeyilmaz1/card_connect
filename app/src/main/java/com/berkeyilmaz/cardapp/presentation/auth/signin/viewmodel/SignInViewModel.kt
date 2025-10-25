@@ -1,3 +1,4 @@
+
 package com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel
 
 import android.content.Context
@@ -8,8 +9,6 @@ import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.domain.auth.AuthResult
 import com.berkeyilmaz.cardapp.domain.auth.usecase.LoginOrRegisterUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignInWithGoogleUseCase
-import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInUiEvent.Navigate
-import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInUiEvent.ShowError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -30,65 +29,68 @@ data class SignInState(
 
 sealed class SignInUiEvent {
     data class ShowError(val message: String) : SignInUiEvent()
-    data class Navigate(val route: String) : SignInUiEvent()
+    data object NavigateToMain : SignInUiEvent()
+    data object NavigateToForgotPassword : SignInUiEvent()
 }
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val loginOrRegisterUseCase: LoginOrRegisterUseCase,
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<SignInState>(SignInState())
+    private val _uiState = MutableStateFlow(SignInState())
     val uiState = _uiState.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<SignInUiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-
     fun signInOrRegister() {
-        setLoading(true)
+        // Early return için validation
         val email = uiState.value.email
         val password = uiState.value.password
+
         if (email.isBlank() || password.isBlank()) {
-            setLoading(false)
             viewModelScope.launch {
-                _eventFlow.emit(ShowError(context.getString(R.string.fill_all_fields)))
+                _eventFlow.emit(
+                    SignInUiEvent.ShowError(
+                        context.getString(R.string.fill_all_fields)
+                    )
+                )
             }
             return
         }
+
+        setLoading(true)
         viewModelScope.launch(Dispatchers.IO) {
             val response = loginOrRegisterUseCase(email, password)
+
             withContext(Dispatchers.Main) {
                 when (response) {
-                    is AuthResult.Success -> _eventFlow.emit(
-                        Navigate(
-                            Screen.MainView.route
-                        )
-                    )
-
-                    is AuthResult.Error -> _eventFlow.emit(
-                        ShowError(
-                            response.message
-                        )
-                    )
+                    is AuthResult.Success -> {
+                        // ✅ Main Graph'a yönlendir
+                        _eventFlow.emit(SignInUiEvent.NavigateToMain)
+                    }
+                    is AuthResult.Error -> {
+                        _eventFlow.emit(SignInUiEvent.ShowError(response.message))
+                    }
                 }
+                setLoading(false)
             }
-            setLoading(false)
         }
     }
 
     suspend fun signInWithGoogle() {
         setLoading(true)
         val result = signInWithGoogleUseCase()
-        when (result) {
-            is AuthResult.Error -> viewModelScope.launch {
-                _eventFlow.emit(ShowError(result.message))
-            }
 
-            is AuthResult.Success<*> -> viewModelScope.launch {
-                _eventFlow.emit(Navigate(Screen.MainView.route))
+        when (result) {
+            is AuthResult.Error -> {
+                _eventFlow.emit(SignInUiEvent.ShowError(result.message))
+            }
+            is AuthResult.Success<*> -> {
+                _eventFlow.emit(SignInUiEvent.NavigateToMain)
             }
         }
         setLoading(false)
@@ -96,7 +98,7 @@ class SignInViewModel @Inject constructor(
 
     fun navigateForgotPasswordView() {
         viewModelScope.launch {
-            _eventFlow.emit(Navigate(Screen.ForgotPassword.route))
+            _eventFlow.emit(SignInUiEvent.NavigateToForgotPassword)
         }
     }
 
@@ -108,7 +110,7 @@ class SignInViewModel @Inject constructor(
         _uiState.update { it.copy(password = value) }
     }
 
-    fun setLoading(isLoading: Boolean) {
+    private fun setLoading(isLoading: Boolean) {
         _uiState.update { it.copy(isLoading = isLoading) }
     }
 }

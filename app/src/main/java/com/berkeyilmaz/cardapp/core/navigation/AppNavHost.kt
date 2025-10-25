@@ -1,95 +1,137 @@
 package com.berkeyilmaz.cardapp.core.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.berkeyilmaz.cardapp.core.manager.TextRecognizerManager
-import com.berkeyilmaz.cardapp.data.model.ApiResult
+import com.berkeyilmaz.cardapp.presentation.auth.forgot_password.ForgotPasswordView
 import com.berkeyilmaz.cardapp.presentation.auth.signin.SignInView
 import com.berkeyilmaz.cardapp.presentation.main.main.MainView
-import com.berkeyilmaz.cardapp.presentation.main.main.scan.ScanView
-import com.berkeyilmaz.cardapp.presentation.settings.SettingsView
-import kotlinx.coroutines.launch
 
-sealed class Screen(val route: String, val title: String? = null) {
+sealed interface Screen {
+    val route: String
+    val title: String?
 
-    // Auth
-    object AuthGraph : Screen("auth_graph")
-    object SignIn : Screen("login")
-    object ForgotPassword : Screen("forgot_password")
+    // Auth Screens
+    sealed interface Auth : Screen {
+        data object Graph : Auth {
+            override val route = "auth_graph"
+            override val title = null
+        }
 
-    // Main
-    object MainGraph : Screen("main_graph")
-    object MainView : Screen("main_view")
+        data object SignIn : Auth {
+            override val route = "sign_in"
+            override val title = "Sign In"
+        }
 
-    // Bottom Nav Screens
-    object Home : Screen("home_view", "Home")
-    object Contact : Screen("contact_view", "Contacts")
-    object More : Screen("more_view", "More")
-    object Scan : Screen("scan_view", "Scan")
-    object Settings : Screen("settings_view")
-    object Profile : Screen("profile_view")
-
-
-    // Fullscreen Pages
-    data class ContactDetail(val id: String) : Screen("contact_detail/$id") {
-        companion object {
-            const val routeWithArgs = "contact_detail/{id}"
-            fun createRoute(id: String) = "contact_detail/$id"
+        data object ForgotPassword : Auth {
+            override val route = "forgot_password"
+            override val title = "Forgot Password"
         }
     }
-//
-//    data class ScanDetail(val id: String) : Screen("scan_detail/$id") {
-//        companion object {
-//            const val routeWithArgs = "scan_detail/{id}"
-//            fun createRoute(id: String) = "scan_detail/$id"
-//        }
-//    }
+
+    // Main Screens
+    sealed interface Main : Screen {
+        data object Graph : Main {
+            override val route = "main_graph"
+            override val title = null
+        }
+
+        // Bottom Navigation Screens
+        data object Home : Main {
+            override val route = "home"
+            override val title = "Home"
+        }
+
+        data object Contact : Main {
+            override val route = "contacts"
+            override val title = "Contacts"
+        }
+
+        data object More : Main {
+            override val route = "more"
+            override val title = "More"
+        }
+
+        // Full Screen Screens ()
+        data object Settings : Main {
+            override val route = "settings"
+            override val title = "Settings"
+        }
+
+        data object Profile : Main {
+            override val route = "profile"
+            override val title = "Profile"
+        }
+
+        data object Scan : Main {
+            override val route = "scan"
+            override val title = "Scan"
+        }
+
+        // Parameterized Routes
+        data class ContactDetail(val id: String) : Main {
+            override val route = "contact_detail/$id"
+            override val title = "Contact Detail"
+
+            companion object {
+                const val ROUTE_PATTERN = "contact_detail/{id}"
+                fun createRoute(id: String) = "contact_detail/$id"
+            }
+        }
+    }
 }
 
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = Screen.Auth.Graph.route
 ) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    NavHost(navController = navController, startDestination = Screen.AuthGraph.route) {
+    NavHost(
+        navController = navController, startDestination = startDestination
+    ) {
+        // ========== AUTH GRAPH ==========
         navigation(
-            route = Screen.AuthGraph.route, startDestination = Screen.SignIn.route
+            route = Screen.Auth.Graph.route, startDestination = Screen.Auth.SignIn.route
         ) {
-            composable(Screen.SignIn.route) {
-                SignInView(
-                    onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(Screen.AuthGraph.route) {
-                                inclusive = true
-                            }
+            composable(Screen.Auth.SignIn.route) {
+                SignInView(onNavigateToMain = {
+
+                    navController.navigate(Screen.Main.Graph.route) {
+                        popUpTo(Screen.Auth.Graph.route) {
+                            inclusive = true
                         }
-                    },
-                    onNavigateForgotPassword = { navController.navigate(Screen.ForgotPassword.route) })
+                        launchSingleTop = true
+                    }
+                }, onNavigateForgotPassword = {
+                    navController.navigate(Screen.Auth.ForgotPassword.route)
+                })
+            }
+
+            composable(Screen.Auth.ForgotPassword.route) {
+                ForgotPasswordView(
+                    onNavigateBack = { navController.navigateUp() })
             }
         }
 
+        // ========== MAIN GRAPH ==========
         navigation(
-            route = Screen.MainGraph.route, startDestination = Screen.MainView.route
+            route = Screen.Main.Graph.route, startDestination = Screen.Main.Home.route
         ) {
-            // This is used for bottom navigation
-            composable(Screen.MainView.route) {
-                MainView()
+            composable(Screen.Main.Home.route) {
+                MainView(
+                    onNavigateToAuth = {
+                        navController.navigate(Screen.Auth.Graph.route) {
+                            popUpTo(Screen.Main.Graph.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
-
-            //Fullscreen pages
-//            composable(Screen.ContactDetail.routeWithArgs) { backStackEntry ->
-//                val id = backStackEntry.arguments?.getString("id")
-//                ContactDetailView(id)
-//            }
         }
     }
 }

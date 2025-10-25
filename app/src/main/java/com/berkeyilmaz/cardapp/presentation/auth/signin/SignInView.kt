@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInView(
-    onNavigate: (route: String) -> Unit,
+    onNavigateToMain: () -> Unit,
     onNavigateForgotPassword: () -> Unit,
     viewModel: SignInViewModel = hiltViewModel<SignInViewModel>()
 ) {
@@ -68,16 +68,19 @@ fun SignInView(
                     }
                 }
 
-                is SignInUiEvent.Navigate -> {
-                    if (event.route == Screen.ForgotPassword.route) {
-                        onNavigateForgotPassword()
-                    } else {
-                        onNavigate(event.route)
-                    }
+                is SignInUiEvent.NavigateToMain -> {
+                    onNavigateToMain()
+
+                }
+
+                is SignInUiEvent.NavigateToForgotPassword -> {
+                    onNavigateForgotPassword()
+
                 }
             }
         }
     }
+
 
     Scaffold(
         snackbarHost = {
