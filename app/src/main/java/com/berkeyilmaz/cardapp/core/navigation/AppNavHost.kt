@@ -1,34 +1,37 @@
 package com.berkeyilmaz.cardapp.core.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.presentation.auth.forgot_password.ForgotPasswordView
 import com.berkeyilmaz.cardapp.presentation.auth.signin.SignInView
 import com.berkeyilmaz.cardapp.presentation.main.main.MainView
 
 sealed interface Screen {
     val route: String
-    val title: String?
+    @get:StringRes
+    val titleRes: Int?
 
     // Auth Screens
     sealed interface Auth : Screen {
         data object Graph : Auth {
             override val route = "auth_graph"
-            override val title = null
+            override val titleRes = null
         }
 
         data object SignIn : Auth {
             override val route = "sign_in"
-            override val title = "Sign In"
+            override val titleRes = R.string.sign_in
         }
 
         data object ForgotPassword : Auth {
             override val route = "forgot_password"
-            override val title = "Forgot Password"
+            override val titleRes = R.string.forgot_password
         }
     }
 
@@ -36,45 +39,45 @@ sealed interface Screen {
     sealed interface Main : Screen {
         data object Graph : Main {
             override val route = "main_graph"
-            override val title = null
+            override val titleRes = null
         }
 
         // Bottom Navigation Screens
         data object Home : Main {
             override val route = "home"
-            override val title = "Home"
+            override val titleRes = R.string.home
         }
 
         data object Contact : Main {
             override val route = "contacts"
-            override val title = "Contacts"
+            override val titleRes = R.string.contacts
         }
 
         data object More : Main {
             override val route = "more"
-            override val title = "More"
+            override val titleRes = R.string.more
         }
 
         // Full Screen Screens ()
         data object Settings : Main {
             override val route = "settings"
-            override val title = "Settings"
+            override val titleRes = R.string.settings
         }
 
         data object Profile : Main {
             override val route = "profile"
-            override val title = "Profile"
+            override val titleRes = R.string.profile
         }
 
         data object Scan : Main {
             override val route = "scan"
-            override val title = "Scan"
+            override val titleRes = R.string.scan
         }
 
         // Parameterized Routes
         data class ContactDetail(val id: String) : Main {
             override val route = "contact_detail/$id"
-            override val title = "Contact Detail"
+            override val titleRes = R.string.contact_detail
 
             companion object {
                 const val ROUTE_PATTERN = "contact_detail/{id}"

@@ -41,7 +41,7 @@ import com.berkeyilmaz.cardapp.presentation.main.home.HomeView
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.main.scan.ScanView
 import com.berkeyilmaz.cardapp.presentation.main.more.MoreView
-import com.berkeyilmaz.cardapp.presentation.settings.SettingsView
+import com.berkeyilmaz.cardapp.presentation.settings.ui.SettingsView
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarIndicatorColor
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarUnSelectedColor
 import kotlinx.coroutines.launch
@@ -191,12 +191,12 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
                             Screen.Main.More -> Icons.Outlined.MoreHoriz
                             else -> Icons.AutoMirrored.Outlined.Help
                         },
-                        contentDescription = screen.title,
+                        contentDescription = screen.titleRes?.let { stringResource(it) },
                     )
                 },
                 label = {
-                    screen.title?.let {
-                        Text(text = it)
+                    screen.titleRes?.let {
+                        Text(text = stringResource(it))
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(

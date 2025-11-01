@@ -1,40 +1,17 @@
-package com.berkeyilmaz.cardapp.presentation.settings
+package com.berkeyilmaz.cardapp.presentation.settings.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.domain.theme.model.AppTheme
+import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,19 +39,25 @@ fun SettingsView(
             title = stringResource(R.string.dark_theme),
             trailingContent = {
                 Switch(
-                    checked = isDarkTheme, onCheckedChange = { isChecked ->
+                    checked = isDarkTheme,
+                    onCheckedChange = { isChecked ->
                         viewModel.setTheme(
                             if (isChecked) AppTheme.DARK else AppTheme.LIGHT
                         )
-                    }, colors = SwitchDefaults.colors(
+                    },
+                    colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.primary,
-                        checkedTrackColor = MaterialTheme.colorScheme.secondary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                        checkedTrackColor = MaterialTheme.colorScheme.secondary
                     )
                 )
             },
             contentDescription = stringResource(R.string.dark_theme)
+        ),
+        SettingsItem(
+            leadingIcon = Icons.Rounded.Language,
+            title = stringResource(R.string.change_language),
+            trailingContent = { LanguageDropdown(viewModel = viewModel) },
+            contentDescription = stringResource(R.string.change_language)
         )
     )
 
@@ -88,9 +71,7 @@ fun SettingsView(
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onNavigateBack
-                    ) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -107,9 +88,9 @@ fun SettingsView(
                 .padding(dimensionResource(R.dimen.padding_normal)),
             contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small))
         ) {
-            items(settingsItems.size) {
+            items(settingsItems.size) { index ->
                 SettingsSection(stringResource(R.string.appearance)) {
-                    SettingsRowItem(item = settingsItems[it])
+                    SettingsRowItem(item = settingsItems[index])
                 }
             }
         }
@@ -123,7 +104,7 @@ data class SettingsItem(
     val trailingIcon: ImageVector? = null,
     val trailingContent: @Composable (() -> Unit)? = null,
     val onClick: (() -> Unit)? = null,
-    var contentDescription: String
+    val contentDescription: String
 )
 
 @Composable
@@ -145,24 +126,23 @@ fun SettingsSection(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-fun SettingsCard(
-    content: @Composable () -> Unit
-) {
+fun SettingsCard(content: @Composable () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        ), elevation = CardDefaults.cardElevation(
+        ),
+        elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
-        ), shape = RoundedCornerShape(dimensionResource(R.dimen.padding_lowNormal))
+        ),
+        shape = RoundedCornerShape(dimensionResource(R.dimen.padding_lowNormal))
     ) {
         content()
     }
 }
 
 @Composable
-fun SettingsRowItem(
-    item: SettingsItem
-) {
+fun SettingsRowItem(item: SettingsItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,10 +151,11 @@ fun SettingsRowItem(
                     Modifier.clickable { item.onClick() }
                 } else {
                     Modifier
-                })
+                }
+            )
             .padding(dimensionResource(R.dimen.padding_normal)),
-        verticalAlignment = Alignment.CenterVertically) {
-        // Leading Icon
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Icon(
             imageVector = item.leadingIcon,
             contentDescription = null,
@@ -184,10 +165,7 @@ fun SettingsRowItem(
 
         Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_normal)))
 
-        // Content
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.bodyLarge,
@@ -207,7 +185,6 @@ fun SettingsRowItem(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Trailing Content
         when {
             item.trailingContent != null -> {
                 item.trailingContent()
@@ -229,6 +206,57 @@ fun SettingsRowItem(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguageDropdown(
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val languages = listOf(
+        "en" to stringResource(R.string.english),
+        "tr" to stringResource(R.string.turkish),
+    )
+
+    val currentLanguage by viewModel.currentLanguage.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
+
+    // Mevcut dili bul
+    val selectedLanguage = languages.find { it.first == currentLanguage.code } ?: languages[0]
+
+    Column(modifier = modifier) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = selectedLanguage.second,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.language)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                languages.forEach { lang ->
+                    DropdownMenuItem(
+                        text = { Text(lang.second) },
+                        onClick = {
+                            expanded = false
+                            viewModel.setLanguage(lang.first)
+                        }
+                    )
+                }
             }
         }
     }

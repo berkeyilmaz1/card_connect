@@ -5,12 +5,14 @@ import androidx.credentials.CredentialManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.berkeyilmaz.cardapp.data.local.LanguageRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.ThemeRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.HomeRepositoryImpl
+import com.berkeyilmaz.cardapp.domain.LanguageRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
 import com.berkeyilmaz.cardapp.domain.home.HomeRepository
-import com.berkeyilmaz.cardapp.domain.theme.ThemeRepository
+import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Binds
 import dagger.Module
@@ -18,6 +20,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Module
@@ -66,4 +69,10 @@ abstract class RepositoryModule {
     abstract fun bindHomeRepository(
         homeRepositoryImpl: HomeRepositoryImpl
     ): HomeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLanguageRepository(
+        languageRepositoryImpl: LanguageRepositoryImpl
+    ): LanguageRepository
 }

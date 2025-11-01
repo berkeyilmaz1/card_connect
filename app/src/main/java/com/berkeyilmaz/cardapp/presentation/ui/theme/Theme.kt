@@ -10,7 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.berkeyilmaz.cardapp.domain.theme.model.AppTheme
+import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 
 val DarkColorScheme = darkColorScheme(
     primary = BluePrimary,

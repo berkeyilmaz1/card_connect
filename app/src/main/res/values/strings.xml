@@ -92,5 +92,24 @@
     <string name="theme_system">System Default Theme</string>
     <string name="change_theme">Change Theme</string>
     <string name="sign_out">Sign Out</string>
+    <string name="change_language">Change Language</string>
+    <string name="english">English</string>
+    <string name="turkish">Türkçe</string>
+    <string name="language">Language</string>
+
+    <!-- Navigation Titles -->
+    <string name="home">Home</string>
+    <string name="contacts">Contacts</string>
+    <string name="more">More</string>
+    <string name="scan">Scan</string>
+    <string name="contact_detail">Contact Detail</string>
+
+    <!-- Notifications -->
+    <string name="notification_email_verification_title">Please verify your email address</string>
+    <string name="notification_email_verification_subtitle">Tap the button below to resend the verification email.</string>
+    <string name="notification_email_verification_button">Resend Email</string>
+    <string name="notification_profile_incomplete_title">Complete Your Profile</string>
+    <string name="notification_profile_incomplete_subtitle">Your profile is incomplete. Please update your information.</string>
+    <string name="notification_profile_incomplete_button">Go to Profile</string>
 
 </resources>

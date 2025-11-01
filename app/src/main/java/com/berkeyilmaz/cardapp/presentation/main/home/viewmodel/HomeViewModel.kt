@@ -67,9 +67,9 @@ class HomeViewModel @Inject constructor(
             addNotification(
                 HomeNotification(
                     id = NotificationID.EMAIL_VERIFICATION,
-                    title = "Please verify your email address",
-                    subtitle = "Tap the button below to resend the verification email.",
-                    buttonText = "Resend Email",
+                    title = context.getString(R.string.notification_email_verification_title),
+                    subtitle = context.getString(R.string.notification_email_verification_subtitle),
+                    buttonText = context.getString(R.string.notification_email_verification_button),
                     onButtonClick = {})
             )
         }
@@ -89,9 +89,9 @@ class HomeViewModel @Inject constructor(
             addNotification(
                 HomeNotification(
                     id = NotificationID.PROFILE_INCOMPLETE,
-                    title = "Complete Your Profile",
-                    subtitle = "Your profile is incomplete. Please update your information.",
-                    buttonText = "Go to Profile",
+                    title = context.getString(R.string.notification_profile_incomplete_title),
+                    subtitle = context.getString(R.string.notification_profile_incomplete_subtitle),
+                    buttonText = context.getString(R.string.notification_profile_incomplete_button),
                     onButtonClick = {})
             )
         }

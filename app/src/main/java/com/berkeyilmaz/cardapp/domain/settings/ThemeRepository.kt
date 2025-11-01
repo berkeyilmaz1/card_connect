@@ -1,7 +1,6 @@
-package com.berkeyilmaz.cardapp.domain.theme
+package com.berkeyilmaz.cardapp.domain.settings
 
-
-import com.berkeyilmaz.cardapp.domain.theme.model.AppTheme
+import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 import kotlinx.coroutines.flow.Flow
 
 interface ThemeRepository {

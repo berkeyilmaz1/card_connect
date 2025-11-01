@@ -1,7 +1,7 @@
-package com.berkeyilmaz.cardapp.domain.theme.usecase
+package com.berkeyilmaz.cardapp.domain.settings.usecase
 
-import com.berkeyilmaz.cardapp.domain.theme.ThemeRepository
-import com.berkeyilmaz.cardapp.domain.theme.model.AppTheme
+import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
+import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Card Connect</string>
+    <string name="default_web_client_id">487834299827-t6v9lov8jqphvd341iev25ruqfjuho3o.apps.googleusercontent.com</string>
+    <string name="welcome">Hoş geldiniz!</string>
+    <string name="sign_in_subtext">Devam etmek için giriş yapın</string>
+    <string name="email">E-posta</string>
+    <string name="password">Şifre</string>
+    <string name="forgot_password">Şifremi Unuttum</string>
+    <string name="sign_in">Giriş Yap</string>
+    <string name="dont_you_have_acc">Hesabınız yok mu? </string>
+    <string name="sign_up">Kayıt Ol</string>
+    <string name="create_your_account">Hesabınızı Oluşturun</string>
+    <string name="full_name">Ad Soyad</string>
+    <string name="phone_number">Telefon Numarası</string>
+    <string name="already_have_an_account">Zaten bir hesabınız var mı? </string>
+    <string name="back">Geri</string>
+    <string name="sign_up_subtext1">Adınız ve soyadınız nedir?</string>
+    <string name="sign_up_error1">İsim en az 3 karakter olmalıdır</string>
+    <string name="what_s_your_email">E-posta adresiniz nedir?</string>
+    <string name="sign_up_subtext2">Bunu hesabınız için kullanacağız</string>
+    <string name="valid_email_error">Lütfen geçerli bir e-posta adresi girin</string>
+    <string name="create_a_password">Bir şifre oluşturun</string>
+    <string name="sign_up_subtext3">En az 6 karakter olmalıdır</string>
+    <string name="sign_up_error3">Şifre en az 6 karakter olmalıdır</string>
+    <string name="what_s_your_phone_number">Telefon numaranız nedir?</string>
+    <string name="sign_up_subtext4">Hesabınızı güvende tutacağız</string>
+    <string name="sign_up_error4">Telefon numarası en az 10 haneli olmalıdır</string>
+    <string name="next">İleri</string>
+    <string name="create_account">Hesap Oluştur</string>
+    <string name="no_user_logged_in">Şu anda giriş yapılmış bir kullanıcı yok.</string>
+    <string name="register_error">Kullanıcı oluşturulurken bilinmeyen bir hata oluştu</string>
+    <string name="wrong_password">Hatalı şifre</string>
+    <string name="auth_error">Giriş yapılırken bir hata oluştu</string>
+    <string name="logout_error">Çıkış yapılırken bir hata oluştu</string>
+    <string name="send_forgot_password_error">Şifre sıfırlama e-postası gönderilirken bir hata oluştu</string>
+    <string name="send_email_verif_error">Doğrulama e-postası gönderilirken bir hata oluştu</string>
+    <string name="account_deletion_error">Hesap silinirken bir hata oluştu</string>
+    <string name="re_authentication_failed">Yeniden kimlik doğrulama başarısız</string>
+    <string name="re_authentication_required">Hesabı silmek için yeniden kimlik doğrulama gerekli. Lütfen tekrar giriş yapın.</string>
+    <string name="login_successful">Giriş başarılı</string>
+    <string name="re_authentication_successful">Yeniden kimlik doğrulama başarılı.</string>
+    <string name="registration_successful_welcome">Kayıt başarılı! Hoş geldiniz!</string>
+    <string name="account_deleted_successfully">Hesap başarıyla silindi.</string>
+    <string name="logged_out_successfully">Başarıyla çıkış yapıldı.</string>
+    <string name="verification_email_sent_please_check_your_inbox">Doğrulama e-postası gönderildi. Lütfen gelen kutunuzu kontrol edin.</string>
+    <string name="password_reset_email_sent_please_check_your_inbox">Şifre sıfırlama e-postası gönderildi. Lütfen gelen kutunuzu kontrol edin.</string>
+    <string name="fill_all_fields">Lütfen tüm alanları doldurun</string>
+    <string name="or">Veya</string>
+    <string name="google_sign_in">Google ile Giriş</string>
+    <string name="sign_in_with_google">Google ile giriş yap</string>
+    <string name="forgot_password_title">Şifrenizi mi unuttunuz?</string>
+    <string name="forgot_password_subtitle">Aşağıya e-posta adresinizi girin, şifrenizi sıfırlamanız için size bir bağlantı göndereceğiz.</string>
+    <string name="send_email">E-posta Gönder</string>
+    <string name="invalid_email">Geçersiz e-posta</string>
+    <string name="email_sent_successfully">E-posta başarıyla gönderildi</string>
+
+    <!-- Google Giriş Hata Mesajları -->
+    <string name="googleSignInSuccessful">Google ile giriş başarılı</string>
+    <string name="googleInvalidCredentialType">Geçersiz kimlik bilgisi türü</string>
+    <string name="googleUnexpectedCredentialType">Beklenmeyen kimlik bilgisi türü</string>
+    <string name="googleIdTokenParsingError">Google ID Jetonu çözümleme hatası</string>
+    <string name="googleFirebaseUserNull">Google girişi sonrası Firebase kullanıcısı null döndü</string>
+    <string name="googleSignInCancelled">Kullanıcı giriş işlemini iptal etti</string>
+    <string name="googleCredentialError">Kimlik bilgisi hatası oluştu</string>
+    <string name="googleSignInUnknownError">Google girişi sırasında bilinmeyen bir hata oluştu</string>
+    <string name="unknown_error">Bilinmeyen hata</string>
+    <string name="failed_to_load_user_data">Kullanıcı verileri yüklenemedi.</string>
+    <string name="profile_image">Profil Resmi</string>
+    <string name="welcome_back">Tekrar Hoş Geldiniz</string>
+    <string name="close">Kapat</string>
+    <string name="email_icon">E-posta Simgesi</string>
+    <string name="quick_actions">Hızlı İşlemler</string>
+    <string name="add_new">Yeni Ekle</string>
+    <string name="history">Geçmiş</string>
+    <string name="favorites">Favoriler</string>
+    <string name="settings">Ayarlar</string>
+    <string name="scan_button">Tara Butonu</string>
+    <string name="scanner_icon">Tarayıcı Simgesi</string>
+    <string name="scan_a_business_card">Bir Kartvizit Tara</string>
+    <string name="scan_a_business_card_subtitle">Yeni kişileri eklemek için tara butonuna dokunun.</string>
+    <string name="scan_connect"><![CDATA[Tara & Bağlan]]></string>
+    <string name="ready_to_scan_a_new_card">Yeni bir kart taramaya hazır mısınız?</string>
+    <string name="capture">Fotoğraf Çek</string>
+    <string name="camera_permission_required">Kamera izni gerekli</string>
+    <string name="right_arrow">Sağ Ok</string>
+    <string name="profile">Profil</string>
+    <string name="dark_theme">Karanlık Tema</string>
+
+    <string name="appearance">Görünüm</string>
+    <string name="select_theme">Tema Seçin</string>
+    <string name="theme_light">Açık Tema</string>
+    <string name="theme_system">Sistem Varsayılanı</string>
+    <string name="change_theme">Temayı Değiştir</string>
+    <string name="sign_out">Çıkış Yap</string>
+    <string name="change_language">Dili Değiştir</string>
+    <string name="english">İngilizce</string>
+    <string name="turkish">Türkçe</string>
+    <string name="language">Dil</string>
+
+    <!-- Navigation Titles -->
+    <string name="home">Ana Sayfa</string>
+    <string name="contacts">Kişiler</string>
+    <string name="more">Daha Fazla</string>
+    <string name="scan">Tara</string>
+    <string name="contact_detail">Kişi Detayı</string>
+
+    <!-- Notifications -->
+    <string name="notification_email_verification_title">Lütfen e-posta adresinizi doğrulayın</string>
+    <string name="notification_email_verification_subtitle">Doğrulama e-postasını yeniden göndermek için aşağıdaki butona dokunun.</string>
+    <string name="notification_email_verification_button">E-postayı Tekrar Gönder</string>
+    <string name="notification_profile_incomplete_title">Profilinizi Tamamlayın</string>
+    <string name="notification_profile_incomplete_subtitle">Profiliniz eksik. Lütfen bilgilerinizi güncelleyin.</string>
+    <string name="notification_profile_incomplete_button">Profile Git</string>
+</resources>
+
