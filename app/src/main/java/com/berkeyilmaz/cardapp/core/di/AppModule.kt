@@ -1,16 +1,18 @@
-package com.berkeyilmaz.cardapp.di
+package com.berkeyilmaz.cardapp.core.di
 
 import android.content.Context
 import androidx.credentials.CredentialManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.berkeyilmaz.cardapp.data.local.ContactRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.LanguageRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.ThemeRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.HomeRepositoryImpl
 import com.berkeyilmaz.cardapp.domain.LanguageRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
+import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.home.HomeRepository
 import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -75,4 +77,10 @@ abstract class RepositoryModule {
     abstract fun bindLanguageRepository(
         languageRepositoryImpl: LanguageRepositoryImpl
     ): LanguageRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindContactRepository(
+        contactRepositoryImpl: ContactRepositoryImpl
+    ): ContactRepository
 }

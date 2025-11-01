@@ -112,5 +112,15 @@
     <string name="notification_profile_incomplete_title">Profilinizi Tamamlayın</string>
     <string name="notification_profile_incomplete_subtitle">Profiliniz eksik. Lütfen bilgilerinizi güncelleyin.</string>
     <string name="notification_profile_incomplete_button">Profile Git</string>
+
+    <!-- Contact Permissions and Errors -->
+    <string name="an_error_occurred_when_getting_contacts">Kişiler alınırken bir hata oluştu.</string>
+    <string name="contacts_permission_is_required_to_display_contacts">Kişileri görüntülemek için kişiler izni gereklidir.</string>
+    <string name="please_grant_the_permission_to_continue">Devam etmek için lütfen izin verin.</string>
+    <string name="open_settings">Ayarları Aç</string>
+    <string name="loading_contacts">Kişiler yükleniyor...</string>
+    <string name="no_contacts_found">Kişi bulunamadı</string>
+    <string name="unnamed">İsimsiz</string>
+
 </resources>
 
