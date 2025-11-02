@@ -16,7 +16,9 @@ interface AuthRepository {
 
     suspend fun reloadCurrentUser(): Boolean
 
-    suspend fun loginOrRegister(email: String, password: String): AuthResult<Unit>
+    suspend fun logInWithEmail(email: String, password: String): AuthResult<Unit>
+
+    suspend fun signUpWithEmail(email: String, password: String): AuthResult<Unit>
 
     suspend fun signInWithGoogle(): AuthResult<Unit>
 

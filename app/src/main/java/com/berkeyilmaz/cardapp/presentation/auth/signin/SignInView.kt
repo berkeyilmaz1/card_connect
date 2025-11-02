@@ -85,11 +85,9 @@ fun SignInView(
     Scaffold(
         snackbarHost = {
             SnackbarHost(
-                hostState = snackBarHostState,
-                modifier = Modifier.imePadding()
+                hostState = snackBarHostState, modifier = Modifier.imePadding()
             )
-        },
-        modifier = Modifier
+        }, modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) { paddingValues ->
@@ -143,16 +141,14 @@ fun SignInView(
                     maxLines = 1,
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done,
-                    onImeAction = { viewModel.signInOrRegister() },
                     isPassword = true,
                     modifier = Modifier.focusRequester(passwordFocusRequester)
                 )
 
-                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.spacer_4)))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
                 ) {
                     CustomAppButton(
                         text = stringResource(R.string.forgot_password),
@@ -162,11 +158,18 @@ fun SignInView(
                     )
                 }
 
-                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_normal)))
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.spacer_4)))
 
                 CustomAppButton(
                     text = stringResource(R.string.sign_in),
-                    onClick = { viewModel.signInOrRegister() },
+                    onClick = { viewModel.login() },
+                    loading = uiState.isLoading,
+                    fullWidth = true,
+                )
+                Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.spacer_4)))
+                CustomAppButton(
+                    text = stringResource(R.string.sign_up),
+                    onClick = { viewModel.signUp() },
                     loading = uiState.isLoading,
                     fullWidth = true,
                 )

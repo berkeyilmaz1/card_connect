@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.presentation.settings.ui
+package com.berkeyilmaz.cardapp.presentation.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,7 +19,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
@@ -28,7 +28,7 @@ import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
 @Composable
 fun SettingsView(
     onNavigateBack: () -> Unit = {},
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
 ) {
     val currentTheme by viewModel.currentTheme.collectAsState()
     val isDarkTheme = currentTheme == AppTheme.DARK

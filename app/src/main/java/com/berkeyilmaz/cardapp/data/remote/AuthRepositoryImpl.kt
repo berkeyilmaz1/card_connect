@@ -2,6 +2,7 @@ package com.berkeyilmaz.cardapp.data.remote
 
 
 import android.content.Context
+import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -50,34 +51,60 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun loginOrRegister(email: String, password: String): AuthResult<Unit> {
+    override suspend fun logInWithEmail(
+        email: String, password: String
+    ): AuthResult<Unit> {
         return try {
-            // Try to sign in
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
             AuthResult.Success(Unit, context.getString(R.string.login_successful))
         } catch (e: FirebaseAuthException) {
-            when (e.errorCode) {
+            return when (e.errorCode) {
                 "ERROR_USER_NOT_FOUND" -> {
-                    // If user not found, try to register
-                    return registerUser(email, password)
+                    AuthResult.Error.Generic(context.getString(R.string.auth_error))
                 }
 
                 "ERROR_WRONG_PASSWORD" -> {
-                    return AuthResult.Error.Generic(context.getString(R.string.wrong_password))
+                    AuthResult.Error.Generic(context.getString(R.string.wrong_password))
                 }
 
                 else -> {
-                    return AuthResult.Error.Generic(
+                    AuthResult.Error.Generic(
                         e.localizedMessage ?: context.getString(R.string.auth_error)
                     )
                 }
             }
+        } catch (e: Exception) {
+            AuthResult.Error.Generic(
+                e.localizedMessage ?: context.getString(R.string.auth_error)
+            )
+        }
+    }
+
+    override suspend fun signUpWithEmail(
+        email: String, password: String
+    ): AuthResult<Unit> {
+        return try {
+            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            sendEmailVerification()
+            AuthResult.Success(Unit, context.getString(R.string.registration_successful_welcome))
+        } catch (e: Exception) {
+            AuthResult.Error.Generic(
+                e.localizedMessage ?: context.getString(R.string.register_error)
+            )
         }
     }
 
     override suspend fun signInWithGoogle(): AuthResult<Unit> {
+        try {
+            credentialManager.clearCredentialState(
+                ClearCredentialStateRequest()
+            )
+        } catch (e: Exception) {
+            Log.w("BerkeTAG", "Credential state temizlenemedi, devam ediliyor", e)
+        }
         return try {
             val googleIdOption = GetGoogleIdOption.Builder().setFilterByAuthorizedAccounts(false)
+                .setAutoSelectEnabled(false)
                 .setServerClientId(context.getString(R.string.default_web_client_id)).build()
 
             val request = GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
@@ -112,6 +139,7 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: GetCredentialCancellationException) {
             AuthResult.Error.Generic(context.getString(R.string.googleSignInCancelled))
         } catch (e: GetCredentialException) {
+            Log.e("BerkeTAG", "Google GetCredentialException", e)
             AuthResult.Error.Generic(
                 "${context.getString(R.string.googleCredentialError)}: ${e.message}"
             )
@@ -182,17 +210,6 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    suspend fun registerUser(email: String, password: String): AuthResult<Unit> {
-        return try {
-            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            sendEmailVerification()
-            AuthResult.Success(Unit, context.getString(R.string.registration_successful_welcome))
-        } catch (e: Exception) {
-            AuthResult.Error.Generic(
-                e.localizedMessage ?: context.getString(R.string.register_error)
-            )
-        }
-    }
 
     suspend fun reAuthenticate(password: String): AuthResult<Unit> {
         val user = firebaseAuth.currentUser

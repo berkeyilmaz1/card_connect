@@ -16,10 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.presentation.main.more.widgets.MoreItem
@@ -30,7 +30,7 @@ fun MoreView(
     onNavigateProfile: () -> Unit,
     onNavigateSettings: () -> Unit,
     onSignOut: () -> Unit,
-    viewModel: MoreViewModel = hiltViewModel()
+    viewModel: MoreViewModel = hiltViewModel<MoreViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

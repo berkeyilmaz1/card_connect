@@ -3,13 +3,21 @@ package com.berkeyilmaz.cardapp.domain.auth.usecase
 import com.berkeyilmaz.cardapp.data.model.User
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthResult
+import com.google.firebase.auth.FirebaseUser
 import javax.inject.Inject
 
-class LoginOrRegisterUseCase @Inject constructor(
+class LoginUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
     suspend operator fun invoke(email: String, password: String) =
-        repository.loginOrRegister(email, password)
+        repository.logInWithEmail(email, password)
+}
+
+class SignUpUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
+    suspend operator fun invoke(email: String, password: String) =
+        repository.signUpWithEmail(email, password)
 }
 
 class SendForgotPasswordEmail @Inject constructor(
@@ -38,4 +46,11 @@ class SignOutUseCase @Inject constructor(
     suspend operator fun invoke(): AuthResult<Unit> {
         return authRepository.logout()
     }
+}
+
+class GetCurrentUserUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
+    suspend operator fun invoke(): AuthResult<FirebaseUser?> =
+        repository.getCurrentUser()
 }

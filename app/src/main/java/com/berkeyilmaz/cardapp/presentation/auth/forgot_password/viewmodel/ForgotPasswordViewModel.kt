@@ -31,7 +31,7 @@ sealed class ForgotPasswordUiEvent {
 @HiltViewModel
 class ForgotPasswordViewModel @Inject constructor(
     private val forgotPasswordUseCase: SendForgotPasswordEmail,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ForgotPasswordState>(ForgotPasswordState())

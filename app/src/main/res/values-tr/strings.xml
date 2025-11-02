@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Card Connect</string>
-    <string name="default_web_client_id">487834299827-t6v9lov8jqphvd341iev25ruqfjuho3o.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">487834299827-enda00cppuu08qnq5fl065bdenujtv2h.apps.googleusercontent.com</string>
     <string name="welcome">Hoş geldiniz!</string>
     <string name="sign_in_subtext">Devam etmek için giriş yapın</string>
     <string name="email">E-posta</string>
