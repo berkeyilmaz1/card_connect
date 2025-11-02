@@ -122,5 +122,9 @@
     <string name="no_contacts_found">Kişi bulunamadı</string>
     <string name="unnamed">İsimsiz</string>
 
+    <string name="please_verify_your_email_address_before_signing_in">Giriş yapmadan önce e-posta adresinizi onaylayınız.</string>
+    <string name="please_verify">E-posta adresinize doğrulama e-postası gönderdik. Lütfen giriş yapmadan önce e-posta adresinizi doğrulayın.</string>
+    <string name="user_not_found">Kullanıcı bulunamadı.</string>
+
 </resources>
 

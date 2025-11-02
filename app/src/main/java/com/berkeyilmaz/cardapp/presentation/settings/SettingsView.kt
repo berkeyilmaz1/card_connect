@@ -31,7 +31,12 @@ fun SettingsView(
     viewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
 ) {
     val currentTheme by viewModel.currentTheme.collectAsState()
-    val isDarkTheme = currentTheme == AppTheme.DARK
+    // SYSTEM modunda ise sistem temasını kontrol et, değilse direkt tema değerini kullan
+    val isDarkTheme = when (currentTheme) {
+        AppTheme.DARK -> true
+        AppTheme.LIGHT -> false
+        AppTheme.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+    }
 
     val settingsItems: List<SettingsItem> = listOf(
         SettingsItem(
@@ -225,24 +230,29 @@ fun LanguageDropdown(
     val currentLanguage by viewModel.currentLanguage.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
-    // Mevcut dili bul
     val selectedLanguage = languages.find { it.first == currentLanguage.code } ?: languages[0]
 
-    Column(modifier = modifier) {
+    Box(modifier = modifier) {
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
-            OutlinedTextField(
-                value = selectedLanguage.second,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.language)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-            )
+            TextButton(
+                onClick = { expanded = true },
+            ) {
+                Text(
+                    text = selectedLanguage.second,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
 
             ExposedDropdownMenu(
                 expanded = expanded,

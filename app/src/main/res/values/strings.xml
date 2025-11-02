@@ -122,5 +122,6 @@
     <string name="unnamed">Unnamed</string>
     <string name="please_verify_your_email_address_before_signing_in">Please verify your email address before signing in.</string>
     <string name="please_verify">We have sent a verification email to your email address. Please verify your email before signing in.</string>
+    <string name="user_not_found">User not found.</string>
 
 </resources>

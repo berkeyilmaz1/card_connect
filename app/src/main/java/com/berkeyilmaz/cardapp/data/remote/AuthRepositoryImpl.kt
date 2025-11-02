@@ -60,7 +60,7 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: FirebaseAuthException) {
             return when (e.errorCode) {
                 "ERROR_USER_NOT_FOUND" -> {
-                    AuthResult.Error.Generic(context.getString(R.string.auth_error))
+                    AuthResult.Error.Generic(context.getString(R.string.user_not_found))
                 }
 
                 "ERROR_WRONG_PASSWORD" -> {
