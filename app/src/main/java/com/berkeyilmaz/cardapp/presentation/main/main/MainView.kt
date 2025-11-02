@@ -70,8 +70,7 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
         NavHost(
-            navController = navController,
-            startDestination = Screen.Main.Home.route
+            navController = navController, startDestination = Screen.Main.Home.route
         ) {
             // ========== BOTTOM TAB SCREENS (with padding) ==========
             composable(Screen.Main.Home.route) {
@@ -81,8 +80,12 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
                 Box(modifier = Modifier.padding(paddingValues)) {
                     HomeView(
                         uiState = uiState,
-                        onNotificationAction = { viewModel.removeNotification(it) }
-                    )
+                        onNotificationAction = { viewModel.removeNotification(it) },
+                        onQuickOptionClick = { route ->
+                            if (route.isNotEmpty()) {
+                                navController.navigate(route)
+                            }
+                        })
                 }
             }
 
@@ -92,24 +95,19 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
                         onContactClick = { contactId ->
                             val route = Screen.Main.ContactDetail.createRoute(contactId)
                             navController.navigate(route)
-                        }
-                    )
+                        })
                 }
             }
 
             composable(Screen.Main.More.route) {
                 Box(modifier = Modifier.padding(paddingValues)) {
-                    MoreView(
-                        onNavigateProfile = {
-                            navController.navigate(Screen.Main.Profile.route)
-                        },
-                        onNavigateSettings = {
-                            navController.navigate(Screen.Main.Settings.route)
-                        },
-                        onSignOut = {
-                            onNavigateToAuth()
-                        }
-                    )
+                    MoreView(onNavigateProfile = {
+                        navController.navigate(Screen.Main.Profile.route)
+                    }, onNavigateSettings = {
+                        navController.navigate(Screen.Main.Settings.route)
+                    }, onSignOut = {
+                        onNavigateToAuth()
+                    })
                 }
             }
 
@@ -120,8 +118,7 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
                         Log.d("BerkeTag", "Photo saved at: $uri")
                         coroutineScope.launch {
                             val result = TextRecognizerManager.recognizeTextFromUri(
-                                context = context,
-                                uri = uri
+                                context = context, uri = uri
                             )
                             val recognizedText = (result as? ApiResult.Success)?.data
                             Log.d("BerkeTag", "Recognized Text: ${recognizedText?.text}")
@@ -132,14 +129,12 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
                             "capturedPhotoUri", uri.toString()
                         )
                         navController.popBackStack()
-                    }
-                )
+                    })
             }
 
             composable(Screen.Main.Settings.route) {
                 SettingsView(
-                    onNavigateBack = { navController.navigateUp() }
-                )
+                    onNavigateBack = { navController.navigateUp() })
             }
 
             composable(Screen.Main.Profile.route) {
@@ -167,14 +162,11 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
         contentColor = MaterialTheme.colorScheme.onPrimary,
         tonalElevation = 4.dp,
     ) {
-        val currentRoute = navController
-            .currentBackStackEntryAsState()
-            .value?.destination?.route
+        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
         tabs.forEach { screen ->
             NavigationBarItem(
-                selected = currentRoute == screen.route,
-                onClick = {
+                selected = currentRoute == screen.route, onClick = {
                     navController.navigate(screen.route) {
                         launchSingleTop = true
                         restoreState = true
@@ -182,8 +174,7 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
                             saveState = true
                         }
                     }
-                },
-                icon = {
+                }, icon = {
                     Icon(
                         imageVector = when (screen) {
                             Screen.Main.Home -> Icons.Outlined.Home
@@ -193,13 +184,11 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
                         },
                         contentDescription = screen.titleRes?.let { stringResource(it) },
                     )
-                },
-                label = {
+                }, label = {
                     screen.titleRes?.let {
                         Text(text = stringResource(it))
                     }
-                },
-                colors = NavigationBarItemDefaults.colors(
+                }, colors = NavigationBarItemDefaults.colors(
                     indicatorColor = bottomNavBarIndicatorColor,
                     selectedTextColor = MaterialTheme.colorScheme.onPrimary,
                     unselectedTextColor = bottomNavBarUnSelectedColor,

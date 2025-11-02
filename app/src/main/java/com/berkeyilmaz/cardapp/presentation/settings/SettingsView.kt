@@ -44,21 +44,18 @@ fun SettingsView(
             title = stringResource(R.string.dark_theme),
             trailingContent = {
                 Switch(
-                    checked = isDarkTheme,
-                    onCheckedChange = { isChecked ->
+                    checked = isDarkTheme, onCheckedChange = { isChecked ->
                         viewModel.setTheme(
                             if (isChecked) AppTheme.DARK else AppTheme.LIGHT
                         )
-                    },
-                    colors = SwitchDefaults.colors(
+                    }, colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.primary,
                         checkedTrackColor = MaterialTheme.colorScheme.secondary
                     )
                 )
             },
             contentDescription = stringResource(R.string.dark_theme)
-        ),
-        SettingsItem(
+        ), SettingsItem(
             leadingIcon = Icons.Rounded.Language,
             title = stringResource(R.string.change_language),
             trailingContent = { LanguageDropdown(viewModel = viewModel) },
@@ -68,22 +65,19 @@ fun SettingsView(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.settings),
-                        style = MaterialTheme.typography.headlineSmall
+            CenterAlignedTopAppBar(title = {
+                Text(
+                    text = stringResource(R.string.settings),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }, navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
                 }
-            )
+            })
         },
     ) { paddingValues ->
         LazyColumn(
@@ -94,9 +88,7 @@ fun SettingsView(
             contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small))
         ) {
             items(settingsItems.size) { index ->
-                SettingsSection(stringResource(R.string.appearance)) {
-                    SettingsRowItem(item = settingsItems[index])
-                }
+                SettingsCard({ SettingsRowItem(item = settingsItems[index]) })
             }
         }
     }
@@ -113,27 +105,11 @@ data class SettingsItem(
 )
 
 @Composable
-fun SettingsSection(title: String, content: @Composable () -> Unit) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(R.dimen.padding_normal),
-                vertical = dimensionResource(R.dimen.padding_small)
-            )
-        )
-        SettingsCard {
-            content()
-        }
-    }
-}
-
-@Composable
 fun SettingsCard(content: @Composable () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = dimensionResource(R.dimen.spacer_8)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -156,11 +132,9 @@ fun SettingsRowItem(item: SettingsItem) {
                     Modifier.clickable { item.onClick() }
                 } else {
                     Modifier
-                }
-            )
+                })
             .padding(dimensionResource(R.dimen.padding_normal)),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+        verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = item.leadingIcon,
             contentDescription = null,
@@ -219,8 +193,7 @@ fun SettingsRowItem(item: SettingsItem) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageDropdown(
-    modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = hiltViewModel()
+    modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val languages = listOf(
         "en" to stringResource(R.string.english),
@@ -234,9 +207,7 @@ fun LanguageDropdown(
 
     Box(modifier = modifier) {
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
-        ) {
+            expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             TextButton(
                 onClick = { expanded = true },
             ) {
@@ -255,17 +226,12 @@ fun LanguageDropdown(
             }
 
             ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
+                expanded = expanded, onDismissRequest = { expanded = false }) {
                 languages.forEach { lang ->
-                    DropdownMenuItem(
-                        text = { Text(lang.second) },
-                        onClick = {
-                            expanded = false
-                            viewModel.setLanguage(lang.first)
-                        }
-                    )
+                    DropdownMenuItem(text = { Text(lang.second) }, onClick = {
+                        expanded = false
+                        viewModel.setLanguage(lang.first)
+                    })
                 }
             }
         }

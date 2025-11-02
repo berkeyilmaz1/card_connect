@@ -99,6 +99,13 @@
 
     <!-- Navigation Titles -->
     <string name="home">Home</string>
+
+    <!-- Scan Result Fields -->
+    <string name="job_title">Job Title</string>
+    <string name="company">Company</string>
+    <string name="address">Address</string>
+    <string name="notes">Notes</string>
+    <string name="scanned_card">Scanned Card</string>
     <string name="contacts">Contacts</string>
     <string name="more">More</string>
     <string name="scan">Scan</string>

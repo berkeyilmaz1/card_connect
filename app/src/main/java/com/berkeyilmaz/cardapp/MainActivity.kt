@@ -78,7 +78,10 @@ class MainActivity : ComponentActivity() {
                     Log.d("BerkeTAG", "First language setup: ${currentLanguage.code}")
                     currentLanguageCode = currentLanguage.code
                 } else if (currentLanguageCode != currentLanguage.code) {
-                    Log.d("BerkeTAG", "Language changed from $currentLanguageCode to ${currentLanguage.code}, recreating activity...")
+                    Log.d(
+                        "BerkeTAG",
+                        "Language changed from $currentLanguageCode to ${currentLanguage.code}, recreating activity..."
+                    )
                     recreate()
                 }
             }

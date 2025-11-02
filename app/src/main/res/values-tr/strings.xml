@@ -105,6 +105,13 @@
     <string name="scan">Tara</string>
     <string name="contact_detail">Kişi Detayı</string>
 
+    <!-- Scan Result Fields -->
+    <string name="job_title">Ünvanı</string>
+    <string name="company">Şirket</string>
+    <string name="address">Adres</string>
+    <string name="notes">Notlar</string>
+    <string name="scanned_card">Taranan Kart</string>
+
     <!-- Notifications -->
     <string name="notification_email_verification_title">Lütfen e-posta adresinizi doğrulayın</string>
     <string name="notification_email_verification_subtitle">Doğrulama e-postasını yeniden göndermek için aşağıdaki butona dokunun.</string>

@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 
 @Composable
 fun CustomTextField(
@@ -44,6 +45,7 @@ fun CustomTextField(
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     maxLines: Int = 1,
+    minLines: Int = 1,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Done,
     onImeAction: (() -> Unit)? = null,
@@ -96,6 +98,7 @@ fun CustomTextField(
             readOnly = readOnly,
             singleLine = singleLine,
             maxLines = maxLines,
+            minLines = minLines,
             visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation()
             else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(
@@ -118,7 +121,8 @@ fun CustomTextField(
                 errorTextColor = MaterialTheme.colorScheme.error,
                 focusedLabelColor = MaterialTheme.colorScheme.primary,
                 unfocusedLabelColor = MaterialTheme.colorScheme.outline,
-            ))
+            )
+        )
 
         if (isError && errorMessage != null) {
             Text(

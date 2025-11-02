@@ -43,21 +43,27 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeUiState
+import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
 
+data class QuickActionOption(
+    val title: String, val icon: ImageVector, val route: String
+)
+
 @Composable
-fun HomeView(uiState: HomeUiState, onNotificationAction: (HomeNotification) -> Unit) {
+fun HomeView(
+    uiState: HomeUiState,
+    onNotificationAction: (HomeNotification) -> Unit,
+    onQuickOptionClick: (String) -> Unit = {}
+) {
     val notification = uiState.notificationList.firstOrNull()
-    val quickActionOptions = mapOf(
-        stringResource(R.string.add_new) to Icons.Outlined.Add,
-        stringResource(R.string.history) to Icons.Outlined.History,
-        stringResource(R.string.favorites) to Icons.Outlined.StarOutline,
-        stringResource(R.string.settings) to Icons.Outlined.Settings,
-    )
+    val viewModel = hiltViewModel<HomeViewModel>()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -83,7 +89,7 @@ fun HomeView(uiState: HomeUiState, onNotificationAction: (HomeNotification) -> U
         }
         ProfileSection(uiState = uiState)
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
-        QuickActions(quickActionOptions)
+        QuickActions(viewModel.quickActionOptions, onClick = { onQuickOptionClick(it) })
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
 
         if (uiState.recentlyScannedCards.isEmpty()) {
@@ -136,14 +142,14 @@ fun ScanPromptSection() {
 }
 
 @Composable
-fun QuickActions(options: Map<String, ImageVector>) {
+fun QuickActions(options: List<QuickActionOption>, onClick: (String) -> Unit = {}) {
     HomeSection(title = stringResource(R.string.quick_actions)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_lowNormal))
         ) {
-            options.forEach { (title, icon) ->
+            options.forEach {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall)),
@@ -152,15 +158,17 @@ fun QuickActions(options: Map<String, ImageVector>) {
                         .clip(RoundedCornerShape(dimensionResource(R.dimen.padding_lowNormal)))
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(dimensionResource(R.dimen.padding_small))
+                        .clickable(
+                            enabled = true, onClick = { onClick(it.route) })
                 ) {
                     Icon(
-                        imageVector = icon,
-                        contentDescription = title,
+                        imageVector = it.icon,
+                        contentDescription = it.title,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(dimensionResource(R.dimen.spacer_32))
                     )
                     Text(
-                        text = title,
+                        text = it.title,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
