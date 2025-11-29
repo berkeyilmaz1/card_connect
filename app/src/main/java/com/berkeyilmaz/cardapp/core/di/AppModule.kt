@@ -10,10 +10,13 @@ import com.berkeyilmaz.cardapp.data.local.LanguageRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.ThemeRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.HomeRepositoryImpl
+import com.berkeyilmaz.cardapp.data.remote.ScanRepositoryImpl
+import com.berkeyilmaz.cardapp.data.remote.service.ScanService
 import com.berkeyilmaz.cardapp.domain.LanguageRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.home.HomeRepository
+import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
 import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Binds
@@ -22,7 +25,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Inject
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -32,6 +38,43 @@ object AppModule {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = "app_preferences"
     )
+    private const val BASE_URL = "http://192.168.1.102:8080/api/"
+
+    @Provides
+    @Singleton
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder().baseUrl(BASE_URL).client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create()).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiService(retrofit: Retrofit): ScanService {
+        return retrofit.create(ScanService::class.java)
+    }
 
     @Provides
     @Singleton
@@ -83,4 +126,10 @@ abstract class RepositoryModule {
     abstract fun bindContactRepository(
         contactRepositoryImpl: ContactRepositoryImpl
     ): ContactRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindScanRepository(
+        scanRepositoryImpl: ScanRepositoryImpl
+    ): ScanRepository
 }

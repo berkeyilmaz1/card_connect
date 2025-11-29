@@ -14,6 +14,7 @@ import com.berkeyilmaz.cardapp.presentation.main.main.MainView
 
 sealed interface Screen {
     val route: String
+
     @get:StringRes
     val titleRes: Int?
 
@@ -74,6 +75,11 @@ sealed interface Screen {
             override val titleRes = R.string.scan
         }
 
+        data object ScanResult : Main {
+            override val route = "scan_result"
+            override val titleRes = R.string.scan_result
+        }
+
         // Parameterized Routes
         data class ContactDetail(val id: String) : Main {
             override val route = "contact_detail/$id"
@@ -132,8 +138,7 @@ fun AppNavHost(
                             }
                             launchSingleTop = true
                         }
-                    }
-                )
+                    })
             }
         }
     }

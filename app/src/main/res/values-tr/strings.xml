@@ -125,13 +125,18 @@
     <string name="contacts_permission_is_required_to_display_contacts">Kişileri görüntülemek için kişiler izni gereklidir.</string>
     <string name="please_grant_the_permission_to_continue">Devam etmek için lütfen izin verin.</string>
     <string name="open_settings">Ayarları Aç</string>
-    <string name="loading_contacts">Kişiler yükleniyor...</string>
+    <string name="loading_contacts">Kişiler yükleniyor…</string>
     <string name="no_contacts_found">Kişi bulunamadı</string>
     <string name="unnamed">İsimsiz</string>
 
     <string name="please_verify_your_email_address_before_signing_in">Giriş yapmadan önce e-posta adresinizi onaylayınız.</string>
     <string name="please_verify">E-posta adresinize doğrulama e-postası gönderdik. Lütfen giriş yapmadan önce e-posta adresinizi doğrulayın.</string>
     <string name="user_not_found">Kullanıcı bulunamadı.</string>
+    <string name="contact_saved_successfully">Kişi başarıyla telefon rehberine kaydedildi!</string>
+    <string name="scan_result">Tarama Sonucu</string>
+    <string name="save">Kaydet</string>
+    <string name="scan_result_feedback_error">Lütfen bir isim ve en az bir iletişim yöntemi girin.</string>
+    <string name="tags">Etiketler</string>
 
 </resources>
 

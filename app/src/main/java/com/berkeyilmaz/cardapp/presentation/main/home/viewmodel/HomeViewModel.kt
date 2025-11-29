@@ -7,7 +7,6 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
@@ -32,7 +31,8 @@ data class HomeUiState(
     val userName: String? = null,
     val userProfileImageUrl: String? = null,
     val notificationList: List<HomeNotification> = emptyList(),
-    val recentlyScannedCards: List<Any> = emptyList() // Replace with actual data model
+    val recentlyScannedCards: List<Any> = emptyList(), // Replace with actual data model
+    val snackbarMessage: String? = null
 )
 
 sealed class HomeInUiEvent {
@@ -158,6 +158,14 @@ class HomeViewModel @Inject constructor(
         _uiState.update {
             it.copy(notificationList = it.notificationList.filter { n -> n.id != notification.id })
         }
+    }
+
+    fun showSnackbar(message: String) {
+        _uiState.update { it.copy(snackbarMessage = message) }
+    }
+
+    fun clearSnackbar() {
+        _uiState.update { it.copy(snackbarMessage = null) }
     }
 
     private fun updateUserState(name: String, profileImageUrl: String) {

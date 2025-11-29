@@ -124,11 +124,16 @@
     <string name="contacts_permission_is_required_to_display_contacts">Contacts permission is required to display contacts.</string>
     <string name="please_grant_the_permission_to_continue">Please grant the permission to continue.</string>
     <string name="open_settings">Open Settings</string>
-    <string name="loading_contacts">Loading contacts...</string>
+    <string name="loading_contacts">Loading contacts…</string>
     <string name="no_contacts_found">No contacts found</string>
     <string name="unnamed">Unnamed</string>
     <string name="please_verify_your_email_address_before_signing_in">Please verify your email address before signing in.</string>
     <string name="please_verify">We have sent a verification email to your email address. Please verify your email before signing in.</string>
     <string name="user_not_found">User not found.</string>
+    <string name="scan_result">Scan Result</string>
+    <string name="save">Save</string>
+    <string name="scan_result_feedback_error">Please enter a name and at least one contact method.</string>
+    <string name="tags">Tags</string>
+    <string name="contact_saved_successfully">Contact saved successfully to phone contacts!</string>
 
 </resources>

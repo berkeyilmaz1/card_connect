@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.presentation.main.main
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,18 +35,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.core.manager.TextRecognizerManager
 import com.berkeyilmaz.cardapp.core.navigation.Screen
-import com.berkeyilmaz.cardapp.data.model.ApiResult
+import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.presentation.main.contact.ContactView
 import com.berkeyilmaz.cardapp.presentation.main.home.HomeView
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.main.scan.ScanView
 import com.berkeyilmaz.cardapp.presentation.main.more.MoreView
+import com.berkeyilmaz.cardapp.presentation.scan_result.ScanResultView
 import com.berkeyilmaz.cardapp.presentation.settings.SettingsView
 import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarIndicatorColor
-import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarUnSelectedColor
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainView(onNavigateToAuth: () -> Unit = {}) {
@@ -52,7 +52,6 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
     val bottomTabs = listOf(Screen.Main.Contact, Screen.Main.Home, Screen.Main.More)
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
@@ -76,6 +75,17 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
             composable(Screen.Main.Home.route) {
                 val viewModel = hiltViewModel<HomeViewModel>()
                 val uiState by viewModel.uiState.collectAsState()
+
+                // ScanResult'tan gelen başarı mesajını kontrol et
+                val savedStateHandle = it.savedStateHandle
+                LaunchedEffect(Unit) {
+                    savedStateHandle.get<Boolean>("contactSaved")?.let { saved ->
+                        if (saved) {
+                            viewModel.showSnackbar(context.getString(R.string.contact_saved_successfully))
+                            savedStateHandle.remove<Boolean>("contactSaved")
+                        }
+                    }
+                }
 
                 Box(modifier = Modifier.padding(paddingValues)) {
                     HomeView(
@@ -114,21 +124,34 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
             // ========== FULL-SCREEN PAGES (no padding) ==========
             composable(Screen.Main.Scan.route) {
                 ScanView(
-                    onPhotoCaptured = { uri ->
-                        Log.d("BerkeTag", "Photo saved at: $uri")
-                        coroutineScope.launch {
-                            val result = TextRecognizerManager.recognizeTextFromUri(
-                                context = context, uri = uri
-                            )
-                            val recognizedText = (result as? ApiResult.Success)?.data
-                            Log.d("BerkeTag", "Recognized Text: ${recognizedText?.text}")
-                        }
-
-                        // Geri dön ve veriyi kaydet
-                        navController.previousBackStackEntry?.savedStateHandle?.set(
-                            "capturedPhotoUri", uri.toString()
-                        )
+                    onScanCompleted = { scanResponse ->
                         navController.popBackStack()
+                        // Fotoğraf tarandıktan sonra veriyi Edit sayfasına gönder
+                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                            "scanResponse", scanResponse
+                        )
+                        Log.d("BerkeTag", "Navigating to ScanResult with response: $scanResponse")
+                        navController.navigate(Screen.Main.ScanResult.route)
+                    })
+            }
+
+            composable(Screen.Main.ScanResult.route) {
+                val scanResponseJson =
+                    navController.previousBackStackEntry?.savedStateHandle?.get<String>("scanResponse")
+
+                val scanResponse = scanResponseJson?.let {
+                    try {
+                        com.google.gson.Gson().fromJson(Uri.decode(it), ScanResponse::class.java)
+                    } catch (e: Exception) {
+                        Log.e("BerkeTag", "Error deserializing ScanResponse", e)
+                        null
+                    }
+                }
+
+                ScanResultView(
+                    scanResponse = scanResponse, onNavigateAfterSave = {
+                        navController.previousBackStackEntry?.savedStateHandle?.set("contactSaved", true)
+                        navController.popBackStack(Screen.Main.Home.route, false)
                     })
             }
 
@@ -136,6 +159,7 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
                 SettingsView(
                     onNavigateBack = { navController.navigateUp() })
             }
+
 
             composable(Screen.Main.Profile.route) {
                 // ProfileView(
@@ -167,34 +191,34 @@ fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
         tabs.forEach { screen ->
             NavigationBarItem(
                 selected = currentRoute == screen.route, onClick = {
-                    navController.navigate(screen.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
+                navController.navigate(screen.route) {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
                     }
-                }, icon = {
-                    Icon(
-                        imageVector = when (screen) {
-                            Screen.Main.Home -> Icons.Outlined.Home
-                            Screen.Main.Contact -> Icons.Outlined.Contacts
-                            Screen.Main.More -> Icons.Outlined.MoreHoriz
-                            else -> Icons.AutoMirrored.Outlined.Help
-                        },
-                        contentDescription = screen.titleRes?.let { stringResource(it) },
-                    )
-                }, label = {
-                    screen.titleRes?.let {
-                        Text(text = stringResource(it))
-                    }
-                }, colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = bottomNavBarIndicatorColor,
-                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    unselectedTextColor = bottomNavBarUnSelectedColor,
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                    unselectedIconColor = bottomNavBarUnSelectedColor
+                }
+            }, icon = {
+                Icon(
+                    imageVector = when (screen) {
+                        Screen.Main.Home -> Icons.Outlined.Home
+                        Screen.Main.Contact -> Icons.Outlined.Contacts
+                        Screen.Main.More -> Icons.Outlined.MoreHoriz
+                        else -> Icons.AutoMirrored.Outlined.Help
+                    },
+                    contentDescription = screen.titleRes?.let { stringResource(it) },
                 )
+            }, label = {
+                screen.titleRes?.let {
+                    Text(text = stringResource(it))
+                }
+            }, colors = NavigationBarItemDefaults.colors(
+                indicatorColor = bottomNavBarIndicatorColor,
+                selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                unselectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
+            )
             )
         }
     }

@@ -2,8 +2,10 @@ package com.berkeyilmaz.cardapp.presentation.main.more
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,15 +14,18 @@ import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.presentation.main.more.widgets.MoreItem
 import com.berkeyilmaz.cardapp.presentation.main.more.widgets.MoreListItem
@@ -50,6 +55,7 @@ fun MoreView(
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_normal))
     ) {
+        AppTitle(stringResource(R.string.more))
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -68,7 +74,7 @@ fun MoreView(
             leadingIcon = Icons.AutoMirrored.Outlined.ExitToApp,
             onClick = { viewModel.signOut() },
             loading = uiState.isLoading,
-            containerColor = MaterialTheme.colorScheme.error,
+            containerColor = Color.Red,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = dimensionResource(R.dimen.padding_normal)),

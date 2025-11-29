@@ -17,12 +17,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.outlined.ContactPage
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,12 +31,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import kotlinx.coroutines.launch
 
@@ -257,22 +260,32 @@ fun EmptyContactsSection() {
 
 @Composable
 fun ContactList(contacts: List<Contact>) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
-    ) {
-        items(contacts) { contact ->
-            ContactCard(contact = contact)
+    Column(modifier = Modifier.fillMaxSize()) {
+        AppTitle(stringResource(R.string.contacts))
+        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_xSmall)))
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
+        ) {
+            items(contacts) { contact ->
+                ContactCard(contact = contact)
+            }
         }
     }
 }
 
 @Composable
 fun ContactCard(contact: Contact) {
-    Surface(
+    Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = { /* TODO: Handle click */ },
-        tonalElevation = dimensionResource(R.dimen.elevation_xSmall)
+        shape = RoundedCornerShape(dimensionResource(R.dimen.padding_normal)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = dimensionResource(R.dimen.elevation_xSmall)
+        )
     ) {
         Row(
             modifier = Modifier
@@ -281,18 +294,24 @@ fun ContactCard(contact: Contact) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_normal))
         ) {
-            // Avatar with first letter
+            // Avatar with gradient background
             Box(
                 modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_large))
+                    .size(dimensionResource(R.dimen.spacer_48))
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.tertiary
+                            )
+                        )
+                    ), contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = contact.name?.firstOrNull()?.uppercase() ?: "?",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -303,18 +322,27 @@ fun ContactCard(contact: Contact) {
             ) {
                 Text(
                     text = contact.name ?: stringResource(R.string.unnamed),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 if (contact.phoneNumbers.isNotEmpty()) {
-                    Text(
-                        text = contact.phoneNumbers.first(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xxSmall))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Phone,
+                            contentDescription = null,
+                            modifier = Modifier.size(dimensionResource(R.dimen.spacer_16)),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = contact.phoneNumbers.first(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }

@@ -23,16 +23,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.QrCodeScanner
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,41 +64,60 @@ fun HomeView(
 ) {
     val notification = uiState.notificationList.firstOrNull()
     val viewModel = hiltViewModel<HomeViewModel>()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(dimensionResource(R.dimen.padding_normal)),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
+    // Snackbar mesajını göster
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearSnackbar()
+        }
+    }
 
-        ) {
-        AnimatedVisibility(
-            visible = notification != null,
-            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()
-        ) {
-            notification?.let {
-                NotificationSection(
-                    title = it.title,
-                    subtitle = it.subtitle,
-                    onCloseClick = { onNotificationAction(it) },
-                    onButtonClick = { onNotificationAction(it) },
-                    buttonText = it.buttonText
-                )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(dimensionResource(R.dimen.padding_normal)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+
+            ) {
+            AnimatedVisibility(
+                visible = notification != null,
+                enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()
+            ) {
+                notification?.let {
+                    NotificationSection(
+                        title = it.title,
+                        subtitle = it.subtitle,
+                        onCloseClick = { onNotificationAction(it) },
+                        onButtonClick = { onNotificationAction(it) },
+                        buttonText = it.buttonText
+                    )
+                }
             }
-        }
-        ProfileSection(uiState = uiState)
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
-        QuickActions(viewModel.quickActionOptions, onClick = { onQuickOptionClick(it) })
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
+            ProfileSection(uiState = uiState)
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
+            QuickActions(viewModel.quickActionOptions, onClick = { onQuickOptionClick(it) })
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
 
-        if (uiState.recentlyScannedCards.isEmpty()) {
-            ScanPromptSection()
-        } else {
-            //recently scanned cards list
+            if (uiState.recentlyScannedCards.isEmpty()) {
+                ScanPromptSection()
+            } else {
+                //recently scanned cards list
+            }
+
         }
 
+        // Snackbar Host
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(dimensionResource(R.dimen.padding_normal))
+        )
     }
 }
 

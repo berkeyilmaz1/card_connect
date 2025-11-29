@@ -1,5 +1,9 @@
 package com.berkeyilmaz.cardapp.presentation.scan_result
 
+import android.Manifest
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +23,8 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.Web
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -26,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,21 +44,39 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil3.compose.SubcomposeAsyncImage
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.extensions.toFirebaseStorageUrl
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
-import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultItem
+import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
+import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
 
-
 @Composable
-fun ScanResultView() {
+fun ScanResultView(
+    scanResponse: ScanResponse?, onNavigateAfterSave: () -> Unit = {}
+) {
 
     val viewModel = hiltViewModel<ScanResultViewModel>()
     val uiState by viewModel.uiState.collectAsState()
 
+    // İzin kontrolü için launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // İzin verildi, kişiyi kaydet
+            viewModel.createContact()
+        } else {
+            // İzin reddedildi, sadece Firebase'e kaydet
+            Log.w("ScanResultView", "WRITE_CONTACTS izni reddedildi")
+            viewModel.createContact()
+        }
+    }
+
     val resultItems = listOf(
-        ScanResultItem(
+        ScanResultRowItem(
             title = stringResource(R.string.full_name), content = {
                 CustomTextField(
                     value = uiState.fullName.orEmpty(),
@@ -63,7 +88,7 @@ fun ScanResultView() {
                     imeAction = ImeAction.Next,
                 )
             }),
-        ScanResultItem(
+        ScanResultRowItem(
             title = stringResource(R.string.job_title), content = {
                 CustomTextField(
                     value = uiState.jobTitle.orEmpty(),
@@ -75,7 +100,7 @@ fun ScanResultView() {
                     imeAction = ImeAction.Next,
                 )
             }),
-        ScanResultItem(
+        ScanResultRowItem(
             title = stringResource(R.string.company), content = {
                 CustomTextField(
                     value = uiState.company.orEmpty(),
@@ -87,7 +112,7 @@ fun ScanResultView() {
                     imeAction = ImeAction.Next,
                 )
             }),
-        ScanResultItem(
+        ScanResultRowItem(
             title = stringResource(R.string.phone_number), content = {
                 CustomTextField(
                     value = uiState.phoneNumber.orEmpty(),
@@ -99,7 +124,7 @@ fun ScanResultView() {
                     imeAction = ImeAction.Next,
                 )
             }),
-        ScanResultItem(
+        ScanResultRowItem(
             title = stringResource(R.string.email), content = {
                 CustomTextField(
                     value = uiState.email.orEmpty(),
@@ -111,7 +136,7 @@ fun ScanResultView() {
                     imeAction = ImeAction.Next,
                 )
             }),
-        ScanResultItem(
+        ScanResultRowItem(
             title = stringResource(R.string.address), content = {
                 CustomTextField(
                     value = uiState.address.orEmpty(),
@@ -123,7 +148,49 @@ fun ScanResultView() {
                     imeAction = ImeAction.Next,
                 )
             }),
-        ScanResultItem(
+        ScanResultRowItem(
+            title = stringResource(R.string.tags), content = {
+                CustomTextField(
+                    value = uiState.tags.orEmpty().joinToString(", "),
+                    onValueChange = {
+                        viewModel.updateTags(
+                            it.split(",").map { tag -> tag.trim() }.filter { tag -> tag.isNotEmpty() }
+                        )
+                    },
+                    leadingIcon = Icons.Default.Tag,
+                    singleLine = false,
+                    maxLines = 3,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                )
+            }),
+        ScanResultRowItem(
+            title = "Websites", content = {
+                CustomTextField(
+                    value = uiState.websites.orEmpty(),
+                    onValueChange = { viewModel.updateWebsites(it) },
+                    leadingIcon = Icons.Default.Web,
+                    singleLine = false,
+                    maxLines = 3,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                )
+            }),
+        ScanResultRowItem(
+            title = "Social Media Accounts", content = {
+                CustomTextField(
+                    value = uiState.socialMedia.orEmpty().joinToString(", ") { "${it.platform?.platformName ?: "Unknown"}: ${it.url}" },
+                    onValueChange = {
+                        viewModel.updateSocialMedia(uiState.socialMedia ?: emptyList())
+                    },
+                    leadingIcon = Icons.Default.Business,
+                    singleLine = false,
+                    maxLines = 3,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                )
+            }),
+        ScanResultRowItem(
             title = stringResource(R.string.notes), content = {
                 CustomTextField(
                     value = uiState.notes.orEmpty(),
@@ -136,11 +203,40 @@ fun ScanResultView() {
                 )
             }),
     )
+
+    LaunchedEffect(scanResponse) {
+        Log.i("BerkeTAG", "Populating ViewModel with scan response: $scanResponse")
+        scanResponse?.let {
+            viewModel.updateFullName(it.extractedData?.fullName.orEmpty())
+            viewModel.updateJobTitle(it.extractedData?.jobTitle.orEmpty())
+            viewModel.updateCompany(it.extractedData?.organization.orEmpty())
+            viewModel.updatePhoneNumber(it.extractedData?.phones?.firstOrNull().orEmpty())
+            viewModel.updateEmail(it.extractedData?.emails?.firstOrNull().orEmpty())
+            viewModel.updateAddress(it.extractedData?.addresses?.firstOrNull().orEmpty())
+            viewModel.updateNotes(it.extractedData?.note.orEmpty())
+            viewModel.updateWebsites(it.extractedData?.websites?.firstOrNull().orEmpty())
+            viewModel.updateTags(it.extractedData?.tags.orEmpty())
+            viewModel.updateImage(it.imageUrl.orEmpty())
+            viewModel.updateRawText(it.rawText.orEmpty())
+            viewModel.updateSocialMedia(it.extractedData?.socialMedia ?: emptyList())
+        }
+    }
+
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            onNavigateAfterSave()
+            viewModel.resetSavedState()
+        }
+    }
+
     Scaffold(
         bottomBar = {
             CustomAppButton(
-                text = "Save",
-                onClick = { /* Kaydetme işlemi burada gerçekleştirilecek */ },
+                text = stringResource(R.string.save),
+                onClick = {
+                    // İzin kontrolü yap
+                    permissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -171,12 +267,12 @@ fun ScanResultView() {
                             imageVector = Icons.Rounded.Close, contentDescription = stringResource(
                                 R.string.close
                             ), modifier = Modifier.clickable(enabled = true, onClick = {
-                                    // Kapatma işlemi burada gerçekleştirilecek
-                                })
+                                // Kapatma işlemi burada gerçekleştirilecek
+                            })
                         )
                     }
                 }
-                item { ScannedCard() }
+                item { ScannedCard(imagePath = uiState.image.orEmpty()) }
 
                 items(resultItems) { item ->
                     ResultSection(title = item.title, content = item.content)
@@ -200,18 +296,45 @@ fun ResultSection(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-fun ScannedCard() {
-    val cardImage = ScanResultItem(
+fun ScannedCard(imagePath: String = "") {
+    val cardImage = ScanResultRowItem(
         content = {
-            // Placeholder image - gerçek scan edilen kartın görseli burada gösterilecek
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
-                contentDescription = stringResource(R.string.scanned_card),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Fit
-            )
+            if (imagePath.isNotEmpty()) {
+                SubcomposeAsyncImage(
+                    model = imagePath.toFirebaseStorageUrl(),
+                    contentDescription = stringResource(R.string.scanned_card),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Fit,
+                    loading = {
+                        androidx.compose.foundation.layout.Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator()
+                        }
+                    },
+                    error = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_background),
+                            contentDescription = stringResource(R.string.scanned_card),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    })
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_background),
+                    contentDescription = stringResource(R.string.scanned_card),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
         })
 
     Column {
