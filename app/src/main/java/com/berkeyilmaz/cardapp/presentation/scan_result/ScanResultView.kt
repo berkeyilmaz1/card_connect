@@ -54,6 +54,7 @@ import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun ScanResultView(
@@ -329,7 +330,7 @@ fun ScannedCard(imagePath: String = "") {
         content = {
             if (imagePath.isNotEmpty()) {
                 SubcomposeAsyncImage(
-                    model = java.io.File(imagePath),
+                    model = File(imagePath),
                     contentDescription = stringResource(R.string.scanned_card),
                     modifier = Modifier
                         .fillMaxWidth()

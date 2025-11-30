@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.domain.scan.usecase.ScanUseCase
+import com.berkeyilmaz.cardapp.domain.scan.usecase.ScanImageOnDeviceUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,11 +30,13 @@ sealed class ScanUiState {
 
 @HiltViewModel
 class ScanViewModel @Inject constructor(
-    private val scanUseCase: ScanUseCase
+    private val scanUseCase: ScanUseCase,
+    private val scanImageOnDeviceUseCase: ScanImageOnDeviceUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ScanUiState>(ScanUiState.Idle)
     val uiState = _uiState.asStateFlow()
+
 
     fun takePhoto(
         controller: LifecycleCameraController, context: Context, onResult: (Uri?) -> Unit
@@ -74,6 +77,21 @@ class ScanViewModel @Inject constructor(
 
                 val updatedData = data.copy(imageUrl = file.absolutePath)
                 setSuccess(updatedData)
+            }, onFailure = { error ->
+                withContext(Dispatchers.Main) {
+                    _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")
+                }
+            })
+        }
+    }
+
+    fun scanImageOnDevice(file: File) {
+        viewModelScope.launch {
+            setLoading()
+            val result = scanImageOnDeviceUseCase(file)
+            Log.i("BerkeTAG", "On-device scan result: $result")
+            result.fold(onSuccess = { data ->
+                setSuccess(data)
             }, onFailure = { error ->
                 withContext(Dispatchers.Main) {
                     _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")

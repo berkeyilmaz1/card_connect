@@ -36,8 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -84,6 +82,15 @@ fun ScanView(
         }
     }
 
+    LaunchedEffect(uiState) {
+        if (uiState is ScanUiState.Success) {
+            val scanResponse = (uiState as ScanUiState.Success).data
+            val json = Uri.encode(Gson().toJson(scanResponse))
+            Log.i("BerkeTag", "Scan successful: $json")
+            onScanCompleted(json)
+        }
+    }
+
     DisposableEffect(lifecycleOwner) {
         cameraController.bindToLifecycle(lifecycleOwner)
 
@@ -114,7 +121,8 @@ fun ScanView(
                     viewModel.takePhoto(cameraController, context) { uri ->
                         uri?.let {
                             val file = File(it.path!!)
-                            viewModel.scanImage(file)
+//                            viewModel.scanImage(file)
+                            viewModel.scanImageOnDevice(file)
                         }
                     }
                 },
@@ -152,8 +160,7 @@ fun ScanView(
                         .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f))
                         .clickable(
                             indication = null,
-                            interactionSource = remember { MutableInteractionSource() }
-                        ) { /* Tıklamaları engelle */ },
+                            interactionSource = remember { MutableInteractionSource() }) { /* Tıklamaları engelle */ },
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
@@ -170,12 +177,4 @@ fun ScanView(
         )
     }
 
-    LaunchedEffect(uiState) {
-        if (uiState is ScanUiState.Success) {
-            val scanResponse = (uiState as ScanUiState.Success).data
-            val json = Uri.encode(Gson().toJson(scanResponse))
-            Log.i("BerkeTag", "Scan successful: $json")
-            onScanCompleted(json)
-        }
-    }
 }
