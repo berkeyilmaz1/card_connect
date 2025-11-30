@@ -309,7 +309,7 @@ fun ContactCard(contact: Contact) {
                     ), contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = contact.name?.firstOrNull()?.uppercase() ?: "?",
+                    text = contact.fullName?.firstOrNull()?.uppercase() ?: "?",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -321,12 +321,13 @@ fun ContactCard(contact: Contact) {
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xxSmall))
             ) {
                 Text(
-                    text = contact.name ?: stringResource(R.string.unnamed),
+                    text = contact.fullName ?: stringResource(R.string.unnamed),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                if (contact.phoneNumbers.isNotEmpty()) {
+                contact.phoneNumbers?.let {
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xxSmall))
@@ -344,6 +345,7 @@ fun ContactCard(contact: Contact) {
                         )
                     }
                 }
+
             }
         }
     }

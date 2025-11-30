@@ -54,6 +54,11 @@ sealed interface Screen {
             override val titleRes = R.string.contacts
         }
 
+        data object Groups : Main {
+            override val route = "groups"
+            override val titleRes = R.string.groups
+        }
+
         data object More : Main {
             override val route = "more"
             override val titleRes = R.string.more

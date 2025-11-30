@@ -80,7 +80,7 @@
     <string name="scan_a_business_card">Bir Kartvizit Tara</string>
     <string name="scan_a_business_card_subtitle">Yeni kişileri eklemek için tara butonuna dokunun.</string>
     <string name="scan_connect"><![CDATA[Tara & Bağlan]]></string>
-    <string name="ready_to_scan_a_new_card">Yeni bir kart taramaya hazır mısınız?</string>
+    <string name="ready_to_scan_a_new_card">Yeni bir kartvizit taramaya hazır mısınız?</string>
     <string name="capture">Fotoğraf Çek</string>
     <string name="camera_permission_required">Kamera izni gerekli</string>
     <string name="right_arrow">Sağ Ok</string>

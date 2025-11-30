@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.outlined.Contacts
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.rounded.CameraAlt
@@ -22,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,18 +38,19 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.presentation.main.contact.ContactView
+import com.berkeyilmaz.cardapp.presentation.main.groups.GroupsView
 import com.berkeyilmaz.cardapp.presentation.main.home.HomeView
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.main.scan.ScanView
 import com.berkeyilmaz.cardapp.presentation.main.more.MoreView
 import com.berkeyilmaz.cardapp.presentation.scan_result.ScanResultView
 import com.berkeyilmaz.cardapp.presentation.settings.SettingsView
-import com.berkeyilmaz.cardapp.presentation.ui.theme.bottomNavBarIndicatorColor
 
 @Composable
 fun MainView(onNavigateToAuth: () -> Unit = {}) {
     val navController = rememberNavController()
-    val bottomTabs = listOf(Screen.Main.Contact, Screen.Main.Home, Screen.Main.More)
+    val bottomTabs =
+        listOf(Screen.Main.Home, Screen.Main.Contact, Screen.Main.Groups, Screen.Main.More)
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val context = LocalContext.current
 
@@ -108,6 +109,11 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
                         })
                 }
             }
+            composable(Screen.Main.Groups.route) {
+                Box(modifier = Modifier.padding(paddingValues)) {
+                    GroupsView()
+                }
+            }
 
             composable(Screen.Main.More.route) {
                 Box(modifier = Modifier.padding(paddingValues)) {
@@ -150,7 +156,9 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
 
                 ScanResultView(
                     scanResponse = scanResponse, onNavigateAfterSave = {
-                        navController.previousBackStackEntry?.savedStateHandle?.set("contactSaved", true)
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "contactSaved", true
+                        )
                         navController.popBackStack(Screen.Main.Home.route, false)
                     })
             }
@@ -182,43 +190,44 @@ fun MainView(onNavigateToAuth: () -> Unit = {}) {
 @Composable
 fun BottomBar(navController: NavHostController, tabs: List<Screen.Main>) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        tonalElevation = 4.dp,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 8.dp,
     ) {
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
         tabs.forEach { screen ->
             NavigationBarItem(
                 selected = currentRoute == screen.route, onClick = {
-                navController.navigate(screen.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
+                    navController.navigate(screen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
                     }
-                }
-            }, icon = {
-                Icon(
-                    imageVector = when (screen) {
-                        Screen.Main.Home -> Icons.Outlined.Home
-                        Screen.Main.Contact -> Icons.Outlined.Contacts
-                        Screen.Main.More -> Icons.Outlined.MoreHoriz
-                        else -> Icons.AutoMirrored.Outlined.Help
-                    },
-                    contentDescription = screen.titleRes?.let { stringResource(it) },
+                }, icon = {
+                    Icon(
+                        imageVector = when (screen) {
+                            Screen.Main.Home -> Icons.Outlined.Home
+                            Screen.Main.Contact -> Icons.Outlined.Contacts
+                            Screen.Main.More -> Icons.Outlined.MoreHoriz
+                            Screen.Main.Groups -> Icons.Outlined.Groups
+                            else -> Icons.AutoMirrored.Outlined.Help
+                        },
+                        contentDescription = screen.titleRes?.let { stringResource(it) },
+                    )
+                }, label = {
+                    screen.titleRes?.let {
+                        Text(text = stringResource(it))
+                    }
+                }, colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }, label = {
-                screen.titleRes?.let {
-                    Text(text = stringResource(it))
-                }
-            }, colors = NavigationBarItemDefaults.colors(
-                indicatorColor = bottomNavBarIndicatorColor,
-                selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                unselectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
-            )
             )
         }
     }

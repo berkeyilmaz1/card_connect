@@ -135,5 +135,8 @@
     <string name="scan_result_feedback_error">Please enter a name and at least one contact method.</string>
     <string name="tags">Tags</string>
     <string name="contact_saved_successfully">Contact saved successfully to phone contacts!</string>
+    <string name="groups">Groups</string>
+    <string name="loading_groups">Loading groups...</string>
+    <string name="retry">Retry</string>
 
 </resources>

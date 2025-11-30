@@ -59,8 +59,20 @@ class ContactRepositoryImpl @Inject constructor() : ContactRepository {
                         }
                     }
                 }
-
-                contacts.add(Contact(id, name, phoneNumbers))
+                contacts.add(
+                    Contact(
+                        userId = id,
+                        companyId = null,
+                        scanId = null,
+                        fullName = name,
+                        title = null,
+                        internalId = id,
+                        createdAt = null,
+                        updatedAt = null,
+                        tags = null,
+                        phoneNumbers = phoneNumbers
+                    )
+                )
             }
         }
         contacts
