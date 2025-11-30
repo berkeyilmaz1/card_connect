@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.LifecycleCameraController
-import androidx.compose.runtime.collectAsState
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +38,12 @@ class ScanViewModel @Inject constructor(
     fun takePhoto(
         controller: LifecycleCameraController, context: Context, onResult: (Uri?) -> Unit
     ) {
-        val outputFile = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
+        val scanImagesDir = File(context.filesDir, "scan_images")
+        if (!scanImagesDir.exists()) {
+            scanImagesDir.mkdirs()
+        }
+
+        val outputFile = File(scanImagesDir, "scan_${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
 
         controller.takePicture(
@@ -52,7 +56,7 @@ class ScanViewModel @Inject constructor(
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Log.i("BerkeTAG", "Photo capture succeeded: ${output.savedUri}")
+                    Log.i("BerkeTAG", "Photo capture succeeded: ${outputFile.absolutePath}")
                     onResult(Uri.fromFile(outputFile))
                 }
             })
@@ -67,7 +71,9 @@ class ScanViewModel @Inject constructor(
             val result = scanUseCase(file)
             Log.i("BerkeTAG", "Scan result: $result")
             result.fold(onSuccess = { data ->
-                setSuccess(data)
+
+                val updatedData = data.copy(imageUrl = file.absolutePath)
+                setSuccess(updatedData)
             }, onFailure = { error ->
                 withContext(Dispatchers.Main) {
                     _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")

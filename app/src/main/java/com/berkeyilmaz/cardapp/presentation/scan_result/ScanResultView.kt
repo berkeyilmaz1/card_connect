@@ -30,11 +30,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
@@ -46,12 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.SubcomposeAsyncImage
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.core.extensions.toFirebaseStorageUrl
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ScanResultView(
@@ -60,16 +62,38 @@ fun ScanResultView(
 
     val viewModel = hiltViewModel<ScanResultViewModel>()
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
-    // İzin kontrolü için launcher
+    LaunchedEffect(uiState.successMessage) {
+        uiState.successMessage?.let { message ->
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = message,
+                    duration =
+                        SnackbarDuration.Short
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = message,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // İzin verildi, kişiyi kaydet
             viewModel.createContact()
         } else {
-            // İzin reddedildi, sadece Firebase'e kaydet
             Log.w("ScanResultView", "WRITE_CONTACTS izni reddedildi")
             viewModel.createContact()
         }
@@ -230,13 +254,17 @@ fun ScanResultView(
     }
 
     Scaffold(
+        snackbarHost = {
+            androidx.compose.material3.SnackbarHost(hostState = snackbarHostState)
+        },
         bottomBar = {
             CustomAppButton(
                 text = stringResource(R.string.save),
                 onClick = {
-                    // İzin kontrolü yap
                     permissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
                 },
+                loading = uiState.isLoading,
+                enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -301,7 +329,7 @@ fun ScannedCard(imagePath: String = "") {
         content = {
             if (imagePath.isNotEmpty()) {
                 SubcomposeAsyncImage(
-                    model = imagePath.toFirebaseStorageUrl(),
+                    model = java.io.File(imagePath),
                     contentDescription = stringResource(R.string.scanned_card),
                     modifier = Modifier
                         .fillMaxWidth()

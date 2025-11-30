@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
@@ -23,6 +24,7 @@ data class ScanResultState(
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
     val errorMessage: String? = null,
+    val successMessage: String? = null,
     val fullName: String? = null,
     val jobTitle: String? = null,
     val company: String? = null,
@@ -93,10 +95,36 @@ class ScanResultViewModel @Inject constructor(
                         notes = currentState.notes
                     )
                 }
-                _uiState.update { it.copy(isLoading = false, isSaved = true) }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isSaved = true,
+                        successMessage = context.getString(R.string.contact_saved_successfully)
+                    )
+                }
+
+                deleteLocalImage(currentState.image)
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
+        }
+    }
+
+    private fun deleteLocalImage(imagePath: String?) {
+        if (imagePath.isNullOrEmpty()) return
+
+        try {
+            val imageFile = java.io.File(imagePath)
+            if (imageFile.exists()) {
+                val deleted = imageFile.delete()
+                if (deleted) {
+                    Log.i("ScanResultViewModel", "Local image deleted: $imagePath")
+                } else {
+                   Log.w("ScanResultViewModel", "Failed to delete local image: $imagePath")
+                }
+            }
+        } catch (e: Exception) {
+           Log.e("ScanResultViewModel", "Error deleting local image: ${e.message}", e)
         }
     }
 

@@ -35,9 +35,9 @@ fun GoogleSignInButton(
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(5.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = dimensionResource(R.dimen.elevation_small),
-        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(modifier = Modifier
             .clickable { onClick() }
@@ -57,7 +57,7 @@ fun GoogleSignInButton(
             // Text
             Text(
                 text = stringResource(R.string.sign_in_with_google),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
