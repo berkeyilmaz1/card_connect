@@ -12,6 +12,6 @@ data class ExtractedData(
     @SerializedName("websites") var websites: List<String> = listOf(),
     @SerializedName("addresses") var addresses: List<String> = listOf(),
     @SerializedName("socialMedia") var socialMedia: List<SocialMedia> = listOf(),
-    @SerializedName("tags") var tags: List<String> = listOf(),
+    @SerializedName("groups") var groups: Map<String, List<String>> = mapOf(),
     @SerializedName("note") var note: String? = null
 ) : Serializable
