@@ -23,79 +23,103 @@ object GeminiExtractor {
         withContext(Dispatchers.IO) {
 
             val prompt = """
-    You are an expert business card information extraction and classification agent.
-    Your task is to extract information from the OCR text and categorize the contact into hierarchical groups.
+You are an expert business card information extraction and classification agent.
+Your task is to extract information from the OCR text and return structured JSON.
 
-    Input Text: 
-    $recognizedText
+Input Text:
+$recognizedText
 
-    STRICT OUTPUT FORMAT (JSON ONLY):
-    {
-      "extractedData": {
-        "fullName": "Name Surname",
-        "title": "Job Title or Profession",
-        "organization": "Company or School Name",
-        "phones": ["+90..."],
-        "emails": ["example@domain.com"],
-        "websites": ["www.example.com"],
-        "addresses": ["Full Address"],
-        "socialMedia": ["@username", "linkedin.com/in/..."],
-        
-        "groups": {
-          "Work": ["SubTag1", "SubTag2"],
-          "School": ["SubTag1"],
-          "Health": ["SubTag1"],
-          "Services": ["SubTag1"],
-          "Events": ["SubTag1"],
-          "Personal": ["SubTag1"]
-        },
-      },
-      "rawText": "$recognizedText"
-    }
+STRICT OUTPUT FORMAT (JSON ONLY):
+{
+  "extractedData": {
+    "fullName": "Name Surname",
+    "title": "Job Title or Profession",
+    "organization": "Company or School Name",
+    "phones": ["+90..."],
+    "emails": ["example@domain.com"],
+    "websites": ["www.example.com"],
+    "addresses": ["Full Address"],
+    "socialMedia": ["@username", "linkedin.com/in/..."],
 
-    --- EXTRACTION & CLASSIFICATION RULES ---
-    
-    1. GENERAL EXTRACTION:
-       - Detect phone numbers in any format.
-       - Detect emails, websites, and addresses.
-       - Extract 'organization' (Company name, University name, or Hospital name).
-    
-    2. HIERARCHICAL GROUPING LOGIC (Populate 'groups' object):
-       - Analyze the text, title, and email domain to decide the Main Category.
-       - MAIN CATEGORIES allowed: "Work", "School", "Health", "Services", "Events", "Personal".
-       
-       - LOGIC FOR 'Work': 
-         If the text contains corporate titles (Manager, CEO, Engineer) or a corporate email (not gmail/hotmail), add "Work".
-         > Sub-tag: The Organization Name (e.g., "Trendyol", "Google", "Hepsiburada","Hubx","Yemeksepeti","Facebook","Uber").
-         
-       - LOGIC FOR 'School':
-         If the text contains "University", "Student", "Professor", or ".edu" email, add "School".
-         > Sub-tag: The School Name (e.g., "Düzce University").
-         
-       - LOGIC FOR 'Health':
-         If the title is "Dr.", "Dt.", or text contains "Hospital", "Clinic", add "Health".
-         > Sub-tag: The Branch or Hospital Name (e.g., "Dentist", "Acibadem Hospital").
-         
-       - LOGIC FOR 'Services':
-         If the profession is service-based (Lawyer, Realtor, Barber, Plumber), add "Services".
-         > Sub-tag: The Profession (e.g., "Lawyer", "Real Estate").
+    "tags": [
+      {
+        "name": "TagName",
+        "category": "WORK | SCHOOL | HEALTH | SERVICES | EVENTS | PERSONAL"
+      }
+    ]
+  },
+  "rawText": "$recognizedText"
+}
 
-    3. CRITICAL RULES:
-       - Only include categories in 'groups' if relevant data is found.
-       - Remove duplicates.
-       - If a specific sub-tag cannot be found (e.g. company name is missing), use the Title as sub-tag.
-       - Do NOT include any markdown formatting (like ```json). Just the raw JSON string.
+--- EXTRACTION & TAGGING RULES ---
+
+1. GENERAL EXTRACTION:
+   - Detect phone numbers in any format.
+   - Detect emails, websites, and addresses.
+   - Extract 'organization' (company name, university, hospital, etc.)
+
+2. TAGGING FORMAT:
+   - Analyze the text, title, and email domain to decide the Main Category. 
+   - MAIN CATEGORIES allowed: "WORK", "SCHOOL", "HEALTH", "SERVICES", "EVENTS", "PERSONAL".
+   - Use UPPERCASE for category values.
+   {
+     "name": "...",
+     "category": "..."
+   }
+
+3. TAG CATEGORIES DEFINITIONS (use UPPERCASE for category field):
+
+   A) WORK
+      - Corporate roles: Manager, CEO, Engineer, Developer, Director.
+      - Corporate emails (not Gmail/Hotmail).
+      - Tag name: Organization or Department.
+      - Category: "WORK"
+
+   B) SCHOOL
+      - University, Student, Professor, ".edu" emails.
+      - Tag name: School Name or Department.
+      - Category: "SCHOOL"
+
+   C) HEALTH
+      - Titles like Dr., Dt., Uzm., Prof. Dr.
+      - Mentions of Hospital, Clinic, Polyclinic.
+      - Tag name: Medical Branch or Institution.
+      - Category: "HEALTH"
+
+   D) SERVICES
+      - Service-based professions: Lawyer, Realtor, Barber, Plumber, Repair services.
+      - Tag name: The Profession.
+      - Category: "SERVICES"
+
+   E) EVENTS
+   - This category represents the event or place where the contact was met.
+   - If the OCR contains names of expos, festivals, competitions, fairs, meetups, conferences, or summits, include this tag.
+   - Tag name: The event name (e.g., "Teknofest 2025").
+   - Category: "EVENTS"
+
+   F) PERSONAL
+      - Personal-use contacts: family, friends, individual phone numbers without job info.
+      - Tag name: Relation.
+      - Category: "PERSONAL"
+
+5. CRITICAL RULES:
+   - Only include tags if they make sense.
+   - No duplicates.
+   - NO MARKDOWN, ONLY CLEAN JSON.
 """.trimIndent()
+
 
             // Gemini çağrısı
             val resultRaw = model.generateContent(prompt).text
-            Log.d("BerkeTAG", resultRaw ?: "null result")
+            Log.d("BerkeTAG", "Gemini Raw Response: $resultRaw")
 
             val cleanedJson = cleanToJson(resultRaw ?: "")
             Log.d("BerkeTAG", "Cleaned JSON: $cleanedJson")
 
             // JSON → ScanResponse
-            Gson().fromJson(cleanedJson, ScanResponse::class.java)
+            val scanResponse = Gson().fromJson(cleanedJson, ScanResponse::class.java)
+            Log.d("BerkeTAG", "Parsed Tags: ${scanResponse.extractedData?.tags}")
+            scanResponse
         }
 
     /**

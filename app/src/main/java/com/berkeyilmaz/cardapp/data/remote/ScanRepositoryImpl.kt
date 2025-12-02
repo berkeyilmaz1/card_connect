@@ -75,44 +75,10 @@ class ScanRepositoryImpl @Inject constructor(
     }
 
 
-    private suspend fun sendTextToGemini(text: String): ScanResponse {
-        val model =
-            Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-2.5-flash")
-
-        val prompt = """
-        You are an information extraction model.
-        Extract the following text into a strict JSON format.
-        
-        Text:
-        "$text"
-        
-        Return ONLY JSON in this format:
-        {
-          "extractedData": {
-            "fullName": "",
-            "title": "",
-            "organization": "",
-            "phones": [],
-            "emails": [],
-            "websites": [],
-            "addresses": [],
-            "socialMedia": [],
-            "tags": [],
-            "note": ""
-          },
-          "rawText": "$text"
-        }
-    """.trimIndent()
-
-        val response = model.generateContent(prompt).text
-
-        return Gson().fromJson(response, ScanResponse::class.java)
-    }
-
-
     override suspend fun createContact(contactRequest: ContactRequest): Result<Unit> {
         return try {
             val authToken = getAuthToken()
+            Log.i("BerkeTAG", "Creating contact with request: ${Gson().toJson(contactRequest)}")
             val response = scanService.createContact(contactRequest, authToken)
             if (response.isSuccessful) {
                 Result.success(Unit)

@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Web
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AssistChip
@@ -40,9 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
@@ -58,6 +55,7 @@ import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
+import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -188,7 +186,8 @@ fun ScanResultView(
                         viewModel.updateTags(uiState.tags.orEmpty().filter { it != tagToRemove })
                     },
                     onTagAdd = { newTag ->
-                        if (newTag.isNotBlank() && !uiState.tags.orEmpty().contains(newTag)) {
+                        val existingTag = uiState.tags.orEmpty().find { it.name == newTag.name }
+                        if (existingTag == null) {
                             viewModel.updateTags(uiState.tags.orEmpty() + newTag)
                         }
                     }
@@ -209,7 +208,8 @@ fun ScanResultView(
         ScanResultRowItem(
             title = "Social Media Accounts", content = {
                 CustomTextField(
-                    value = uiState.socialMedia.orEmpty().joinToString(", ") { "${it.platform?.platformName ?: "Unknown"}: ${it.url}" },
+                    value = uiState.socialMedia.orEmpty()
+                        .joinToString(", ") { "${it.platform?.platformName ?: "Unknown"}: ${it.url}" },
                     onValueChange = {
                         viewModel.updateSocialMedia(uiState.socialMedia ?: emptyList())
                     },
@@ -237,6 +237,9 @@ fun ScanResultView(
     LaunchedEffect(scanResponse) {
         Log.i("BerkeTAG", "Populating ViewModel with scan response: $scanResponse")
         scanResponse?.let {
+            Log.i("BerkeTAG", "ExtractedData tags: ${it.extractedData?.tags}")
+            Log.i("BerkeTAG", "Tags size: ${it.extractedData?.tags?.size}")
+
             viewModel.updateFullName(it.extractedData?.fullName.orEmpty())
             viewModel.updateJobTitle(it.extractedData?.jobTitle.orEmpty())
             viewModel.updateCompany(it.extractedData?.organization.orEmpty())
@@ -246,7 +249,10 @@ fun ScanResultView(
             viewModel.updateNotes(it.extractedData?.note.orEmpty())
             viewModel.updateWebsites(it.extractedData?.websites?.firstOrNull().orEmpty())
 
-            viewModel.updateTags(it.extractedData?.groups?.values?.flatten().orEmpty())
+            val tagsToUpdate = it.extractedData?.tags ?: emptyList()
+            Log.i("BerkeTAG", "Updating ViewModel with tags: $tagsToUpdate")
+            viewModel.updateTags(tagsToUpdate)
+
             viewModel.updateImage(it.imageUrl.orEmpty())
             viewModel.updateRawText(it.rawText.orEmpty())
             viewModel.updateSocialMedia(it.extractedData?.socialMedia ?: emptyList())
@@ -383,12 +389,10 @@ fun ScannedCard(imagePath: String = "") {
 
 @Composable
 fun TagsSection(
-    tags: List<String>,
-    onTagRemove: (String) -> Unit,
-    onTagAdd: (String) -> Unit
+    tags: List<Tag>,
+    onTagRemove: (Tag) -> Unit,
+    onTagAdd: (Tag) -> Unit
 ) {
-    var newTagText by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -399,12 +403,14 @@ fun TagsSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             tags.forEach { tag ->
+                val tagCategory = tag.getCategoryEnum()
                 AssistChip(
                     onClick = { },
                     label = {
                         Text(
-                            text = tag,
-                            style = MaterialTheme.typography.bodyLarge
+                            text = tag.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = tagCategory.color
                         )
                     },
                     trailingIcon = {
@@ -414,8 +420,9 @@ fun TagsSection(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
-                                contentDescription = "Remove $tag",
-                                modifier = Modifier.size(20.dp)
+                                contentDescription = "Remove ${tag.name}",
+                                modifier = Modifier.size(20.dp),
+                                tint = tagCategory.color
                             )
                         }
                     }

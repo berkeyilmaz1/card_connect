@@ -11,5 +11,6 @@ data class ConfirmedData(
     @SerializedName("websites") var websites: List<String> = listOf(),
     @SerializedName("addresses") var addresses: List<String> = listOf(),
     @SerializedName("socialMedia") var socialMedia: List<SocialMedia> = listOf(),
-    @SerializedName("tags") var tags: List<String> = listOf(),
+    val tags: List<Tag> = emptyList()
 )
+

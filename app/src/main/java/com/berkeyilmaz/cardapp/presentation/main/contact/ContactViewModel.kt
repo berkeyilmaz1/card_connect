@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetContactsListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -12,14 +12,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 
 sealed class ContactUiState {
     data object Idle : ContactUiState()
     data object Loading : ContactUiState()
-    data class Success(val contacts: List<Contact>) : ContactUiState()
+    data class Success(val contacts: List<InternalContact>) : ContactUiState()
 }
 
 sealed class ContactUiEvent {
@@ -50,12 +49,6 @@ class ContactViewModel @Inject constructor(
                 )
             )
             _uiState.value = ContactUiState.Idle
-        }
-    }
-
-    private fun updateContacts(contacts: List<Contact>) {
-        _uiState.update {
-            ContactUiState.Success(contacts)
         }
     }
 }
