@@ -16,9 +16,11 @@ sealed class GroupsUiState {
     data object Idle : GroupsUiState()
     data object Loading : GroupsUiState()
     data class Success(
-        val contacts: List<Contact>, val mainGroups: List<String>,    // Ana gruplar: İş, Okul vb.
+        val contacts: List<Contact>,
+        val mainGroups: List<String>,    // Ana gruplar: İş, Okul vb.
         val selectedMainGroup: String,   // Kullanıcı hangi ana grupta
-        val subGroups: List<String>      // Alt gruplar: MOVE ON, Google vb.
+        val subGroups: List<String>,     // Alt gruplar: MOVE ON, Google vb.
+        val selectedSubGroup: String? = null  // Seçili alt grup
     ) : GroupsUiState()
 
     data object Error : GroupsUiState()
@@ -96,8 +98,18 @@ class GroupsViewModel @Inject constructor(
             if (state is GroupsUiState.Success) {
                 state.copy(
                     selectedMainGroup = mainGroup,
-                    subGroups = extractSubGroups(state.contacts, mainGroup)
+                    subGroups = extractSubGroups(state.contacts, mainGroup),
+                    selectedSubGroup = null  // Ana grup değişince alt grup seçimi sıfırlanır
                 )
+            } else state
+        }
+    }
+
+    /** Kullanıcı sub group seçtiğinde tetiklenir */
+    fun onSubGroupSelected(subGroup: String?) {
+        _uiState.update { state ->
+            if (state is GroupsUiState.Success) {
+                state.copy(selectedSubGroup = subGroup)
             } else state
         }
     }

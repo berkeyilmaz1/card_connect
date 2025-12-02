@@ -1,5 +1,13 @@
 package com.berkeyilmaz.cardapp.presentation.main.groups
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -26,13 +34,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,11 +51,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.domain.scan_result.model.TagCategory
 import com.berkeyilmaz.cardapp.presentation.main.groups.viewmodel.GroupsUiState
 import com.berkeyilmaz.cardapp.presentation.main.groups.viewmodel.GroupsViewModel
 
@@ -79,8 +89,10 @@ fun GroupsView() {
                     mainGroups = state.mainGroups,
                     selectedMainGroup = state.selectedMainGroup,
                     subGroups = state.subGroups,
+                    selectedSubGroup = state.selectedSubGroup,
                     contacts = state.contacts,
-                    onMainGroupSelected = { viewModel.onMainGroupSelected(it) }
+                    onMainGroupSelected = { viewModel.onMainGroupSelected(it) },
+                    onSubGroupSelected = { viewModel.onSubGroupSelected(it) }
                 )
             }
         }
@@ -93,58 +105,113 @@ fun SuccessSection(
     mainGroups: List<String>,
     selectedMainGroup: String,
     subGroups: List<String>,
+    selectedSubGroup: String?,
     contacts: List<Contact>,
-    onMainGroupSelected: (String) -> Unit
+    onMainGroupSelected: (String) -> Unit,
+    onSubGroupSelected: (String?) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    var showSubGroups by remember { mutableStateOf(false) }
+
+    // Ana grup değiştiğinde animasyonu tetikle
+    LaunchedEffect(selectedMainGroup, subGroups) {
+        showSubGroups = false
+        kotlinx.coroutines.delay(150) // Animasyon için daha uzun delay
+        showSubGroups = true
+    }
 
     AppTitle(stringResource(R.string.groups))
 
-    /** --- ANA GROUP CHIP ROW --- (İş, Okul, Etkinlik) */
+    /** --- ANA GROUP CHIP ROW --- (İş, Okul, Etkinlik) - SÜREKLI DURUR */
     Row(
         modifier = Modifier
             .horizontalScroll(scrollState)
             .padding(bottom = 8.dp)
     ) {
         mainGroups.forEach { group ->
+            val categoryColor = TagCategory.fromString(group).color
+
             FilterChip(
                 selected = selectedMainGroup == group,
                 onClick = { onMainGroupSelected(group) },
                 label = { Text(group) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    selectedContainerColor = categoryColor,
+                    selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                    containerColor = categoryColor.copy(alpha = 0.2f),
+                    labelColor = categoryColor
                 )
             )
             Spacer(Modifier.width(8.dp))
         }
     }
 
-    /** --- ALT GROUP CHIP ROW --- (MOVE ON, Google, Yazılım Ekibi) */
-    Row(
-        modifier = Modifier
-            .horizontalScroll(scrollState)
-            .padding(bottom = 8.dp)
+    /** --- ALT GROUP CHIP ROW - ANİMASYONLU --- (MOVE ON, Google, Yazılım Ekibi) */
+    AnimatedVisibility(
+        visible = showSubGroups && subGroups.isNotEmpty(),
+        enter = fadeIn(
+            animationSpec = tween(durationMillis = 500, delayMillis = 100)
+        ) + expandVertically(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            expandFrom = androidx.compose.ui.Alignment.Top
+        ),
+        exit = fadeOut(animationSpec = tween(250)) +
+               shrinkVertically(animationSpec = tween(250))
     ) {
-        subGroups.forEach { sub ->
+        Row(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(bottom = 8.dp)
+        ) {
+            // "Tümü" chip'i ekle
+            val categoryColor = TagCategory.fromString(selectedMainGroup).color
+
             FilterChip(
-                selected = false,  // İstersen alt grup selection mantığını da ekleriz
-                onClick = { /* TODO: alt grup seçimi istersen buraya ekleriz */ },
-                label = { Text(sub) },
+                selected = selectedSubGroup == null,
+                onClick = { onSubGroupSelected(null) },
+                label = { Text(stringResource(R.string.all)) },
                 colors = FilterChipDefaults.filterChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    selectedContainerColor = categoryColor,
+                    selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                    containerColor = categoryColor.copy(alpha = 0.1f),
+                    labelColor = categoryColor.copy(alpha = 0.7f)
                 )
             )
             Spacer(Modifier.width(8.dp))
+
+            subGroups.forEach { sub ->
+                FilterChip(
+                    selected = selectedSubGroup == sub,
+                    onClick = {
+                        onSubGroupSelected(if (selectedSubGroup == sub) null else sub)
+                    },
+                    label = { Text(sub) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = categoryColor.copy(alpha = 0.8f),
+                        selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                        containerColor = categoryColor.copy(alpha = 0.15f),
+                        labelColor = categoryColor.copy(alpha = 0.9f)
+                    )
+                )
+                Spacer(Modifier.width(8.dp))
+            }
         }
     }
 
-    /** --- CONTACT LIST (SEÇİLEN ANA GRUBA AİT CONTACT’LAR) --- */
+    /** --- CONTACT LIST - İKİ SEVİYELİ FİLTRELEME --- */
     val filteredContacts = contacts.filter { contact ->
-        contact.groups.containsKey(selectedMainGroup)
+        val hasMainGroup = contact.groups.containsKey(selectedMainGroup)
+
+        if (selectedSubGroup == null) {
+            // Alt grup seçilmemişse sadece ana grup filtresi
+            hasMainGroup
+        } else {
+            // Alt grup seçiliyse hem ana grup hem alt grup filtresi
+            hasMainGroup && contact.groups[selectedMainGroup]?.contains(selectedSubGroup) == true
+        }
     }
 
     LazyColumn(
