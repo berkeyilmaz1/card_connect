@@ -1,6 +1,8 @@
 package com.berkeyilmaz.cardapp.presentation.main.main.scan.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageCapture
@@ -17,7 +19,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 sealed class ScanUiState {
@@ -64,15 +68,29 @@ class ScanViewModel @Inject constructor(
 
     fun scanImage(file: File) {
         viewModelScope.launch {
+            val startTime = System.currentTimeMillis()
             setLoading()
-            val fileSizeKb = file.length() / 1024
-            Log.d("BerkeTAG", "Image size: ${fileSizeKb}KB")
 
-            val result = scanUseCase(file)
+            // Orijinal boyut
+            val originalSizeKb = file.length() / 1024
+            Log.d("BerkeTAG", "Original image size: ${originalSizeKb}KB")
+
+            // Görüntüyü sıkıştır
+            val compressedFile = withContext(Dispatchers.IO) {
+                compressImage(file, maxSizeKb = 800)
+            }
+
+            val compressedSizeKb = compressedFile.length() / 1024
+            Log.d("BerkeTAG", "Compressed image size: ${compressedSizeKb}KB")
+
+            val result = scanUseCase(compressedFile)
             Log.i("BerkeTAG", "Scan result: $result")
-            result.fold(onSuccess = { data ->
 
-                val updatedData = data.copy(imageUrl = file.absolutePath)
+            result.fold(onSuccess = { data ->
+                val updatedData = data.copy(imageUrl = compressedFile.absolutePath)
+                val endTime = System.currentTimeMillis()
+                val duration = endTime - startTime
+                Log.d("BerkeTAGTIME", "Scan completed in ${duration}ms")
                 setSuccess(updatedData)
             }, onFailure = { error ->
                 withContext(Dispatchers.Main) {
@@ -81,6 +99,36 @@ class ScanViewModel @Inject constructor(
             })
         }
     }
+
+
+    private fun compressImage(file: File, maxSizeKb: Int = 800): File {
+        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+
+        var quality = 85
+        var outputStream: ByteArrayOutputStream
+
+        do {
+            outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            val bytes = outputStream.toByteArray()
+            val currentSizeKb = bytes.size / 1024
+
+            Log.d("BerkeTAG", "Compression quality: $quality, size: ${currentSizeKb}KB")
+
+            if (currentSizeKb <= maxSizeKb) {
+                FileOutputStream(file).use { fos ->
+                    fos.write(bytes)
+                }
+                break
+            }
+            quality -= 10
+        } while (quality > 20)
+
+        bitmap.recycle()
+        outputStream.close()
+        return file
+    }
+
 
     suspend fun setLoading() =
         withContext(Dispatchers.Main) { _uiState.value = ScanUiState.Loading }

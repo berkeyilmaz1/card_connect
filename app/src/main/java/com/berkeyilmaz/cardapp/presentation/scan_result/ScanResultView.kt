@@ -239,7 +239,7 @@ fun ScanResultView(
             viewModel.updateAddress(it.extractedData?.addresses?.firstOrNull().orEmpty())
             viewModel.updateNotes(it.extractedData?.note.orEmpty())
             viewModel.updateWebsites(it.extractedData?.websites?.firstOrNull().orEmpty())
-            viewModel.updateTags(it.extractedData?.tags.orEmpty())
+//            viewModel.updateTags(it.extractedData?.tags.orEmpty())
             viewModel.updateImage(it.imageUrl.orEmpty())
             viewModel.updateRawText(it.rawText.orEmpty())
             viewModel.updateSocialMedia(it.extractedData?.socialMedia ?: emptyList())
