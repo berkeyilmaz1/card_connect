@@ -11,7 +11,7 @@ import com.berkeyilmaz.cardapp.core.utility.safeNavigate
 import com.berkeyilmaz.cardapp.core.utility.safePopBack
 import com.berkeyilmaz.cardapp.presentation.auth.forgot_password.ForgotPasswordView
 import com.berkeyilmaz.cardapp.presentation.auth.signin.SignInView
-import com.berkeyilmaz.cardapp.presentation.main.main.MainView
+import com.berkeyilmaz.cardapp.presentation.main.MainView
 
 
 @Composable

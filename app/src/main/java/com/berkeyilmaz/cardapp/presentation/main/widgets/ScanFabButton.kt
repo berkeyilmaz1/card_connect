@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.presentation.main.main
+package com.berkeyilmaz.cardapp.presentation.main.widgets
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CameraAlt

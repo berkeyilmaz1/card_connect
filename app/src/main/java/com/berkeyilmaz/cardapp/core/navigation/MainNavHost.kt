@@ -30,7 +30,6 @@ import com.google.gson.Gson
 fun MainNavHost(
     navController: NavHostController,
     context: android.content.Context,
-    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,

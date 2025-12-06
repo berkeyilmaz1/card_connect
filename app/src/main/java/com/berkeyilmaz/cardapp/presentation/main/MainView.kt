@@ -1,5 +1,6 @@
-package com.berkeyilmaz.cardapp.presentation.main.main
+package com.berkeyilmaz.cardapp.presentation.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -14,6 +15,8 @@ import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.core.utility.isFabVisible
 import com.berkeyilmaz.cardapp.core.utility.isInRoutes
 import com.berkeyilmaz.cardapp.core.utility.safeNavigate
+import com.berkeyilmaz.cardapp.presentation.main.widgets.BottomBar
+import com.berkeyilmaz.cardapp.presentation.main.widgets.ScanFabButton
 
 @Composable
 fun MainView() {
@@ -23,19 +26,21 @@ fun MainView() {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     Scaffold(
         bottomBar = {
-        if (currentDestination.isInRoutes(bottomTabsRoutes)) {
-            BottomBar(navController, BOTTOM_TABS)
-        }
-    }, floatingActionButton = {
-        if (currentDestination.isFabVisible(Screen.Main.Home.route)) {
-            ScanFabButton {
-                navController.safeNavigate(Screen.Main.Scan.route)
+            if (currentDestination.isInRoutes(bottomTabsRoutes)) {
+                BottomBar(navController, BOTTOM_TABS)
             }
-        }
-    }, containerColor = MaterialTheme.colorScheme.background
+        }, floatingActionButton = {
+            if (currentDestination.isFabVisible(Screen.Main.Home.route)) {
+                ScanFabButton {
+                    navController.safeNavigate(Screen.Main.Scan.route)
+                }
+            }
+        }, containerColor = MaterialTheme.colorScheme.background
     ) { contentPadding ->
-        MainNavHost(
-            navController, context, modifier = Modifier.padding(contentPadding)
-        )
+        Box(Modifier.padding(contentPadding)) {
+            MainNavHost(
+                navController, context
+            )
+        }
     }
 }
