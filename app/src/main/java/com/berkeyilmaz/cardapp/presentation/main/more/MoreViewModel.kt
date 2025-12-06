@@ -2,7 +2,7 @@ package com.berkeyilmaz.cardapp.presentation.main.more
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.berkeyilmaz.cardapp.domain.auth.AuthResult
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -35,12 +35,12 @@ class MoreViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             when (val result = signOutUseCase()) {
-                is AuthResult.Success -> {
+                is ResponseState.Success -> {
                     _uiState.value = _uiState.value.copy(isLoading = false)
                     _signOutEvent.emit(Unit)
                 }
 
-                is AuthResult.Error -> {
+                is ResponseState.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false, errorMessage = result.message
                     )

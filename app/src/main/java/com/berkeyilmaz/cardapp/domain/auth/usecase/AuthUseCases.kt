@@ -1,7 +1,7 @@
 package com.berkeyilmaz.cardapp.domain.auth.usecase
 
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
-import com.berkeyilmaz.cardapp.domain.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import javax.inject.Inject
 
@@ -34,7 +34,7 @@ class SendEmailVerification @Inject constructor(
 class SignInWithGoogleUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
-    suspend operator fun invoke(): AuthResult<Unit> {
+    suspend operator fun invoke(): ResponseState<Unit> {
         return repository.signInWithGoogle()
     }
 }
@@ -42,7 +42,7 @@ class SignInWithGoogleUseCase @Inject constructor(
 class SignOutUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(): AuthResult<Unit> {
+    suspend operator fun invoke(): ResponseState<Unit> {
         return authRepository.logout()
     }
 }
@@ -50,6 +50,6 @@ class SignOutUseCase @Inject constructor(
 class GetCurrentUserUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
-    suspend operator fun invoke(): AuthResult<FirebaseUser?> =
+    suspend operator fun invoke(): ResponseState<FirebaseUser?> =
         repository.getCurrentUser()
 }

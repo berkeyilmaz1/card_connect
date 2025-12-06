@@ -8,6 +8,10 @@ sealed class UiEvent {
     ) : UiEvent()
 
     data class ShowSnackBar(
+        @field:StringRes val message: Int, val actionLabel: String? = null
+    ) : UiEvent()
+
+    data class ShowSnackBarString(
         val message: String, val actionLabel: String? = null
     ) : UiEvent()
 

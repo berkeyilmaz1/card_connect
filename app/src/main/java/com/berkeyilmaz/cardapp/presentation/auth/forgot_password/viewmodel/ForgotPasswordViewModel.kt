@@ -5,7 +5,7 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.domain.auth.AuthResult
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SendForgotPasswordEmail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -63,13 +63,13 @@ class ForgotPasswordViewModel @Inject constructor(
             val response = forgotPasswordUseCase(_uiState.value.email)
             withContext(Dispatchers.Main) {
                 when (response) {
-                    is AuthResult.Success -> _eventFlow.emit(
+                    is ResponseState.Success -> _eventFlow.emit(
                         ForgotPasswordUiEvent.Success(
                             context.getString(R.string.email_sent_successfully)
                         )
                     )
 
-                    is AuthResult.Error -> _eventFlow.emit(
+                    is ResponseState.Error -> _eventFlow.emit(
                         ForgotPasswordUiEvent.ShowError(
                             response.message
                         )

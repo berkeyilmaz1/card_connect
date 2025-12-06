@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.data.remote
 
+import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.home.HomeRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -15,7 +16,7 @@ class HomeRepositoryImpl @Inject constructor(
             val currentUser = firebaseAuth.currentUser
             ResponseState.Success(currentUser)
         } catch (e: Exception) {
-            ResponseState.Error(e)
+            ResponseState.Error("todo: handle error message")
         }
     }
 }

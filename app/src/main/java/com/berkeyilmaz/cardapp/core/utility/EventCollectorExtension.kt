@@ -4,6 +4,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.berkeyilmaz.cardapp.core.common.UiEvent
 import kotlinx.coroutines.flow.Flow
@@ -37,15 +38,18 @@ fun CollectUiEvent(
     LaunchedEffect(eventFlow) {
         eventFlow.collect { event ->
             when (event) {
-                is UiEvent.Navigate -> navController?.navigate(event.route)
+                is UiEvent.Navigate -> navController?.safeNavigate(event.route)
 
                 UiEvent.NavigateBack -> navController?.popBackStack()
 
                 is UiEvent.ShowSnackBar -> snackBarHostState?.showSnackBar(
-                    event.message, event.actionLabel
+                    context.getString(event.message), event.actionLabel
                 )
 
                 is UiEvent.ShowToast -> context.showShortToast(event.message)
+                is UiEvent.ShowSnackBarString -> snackBarHostState?.showSnackBar(
+                    event.message, event.actionLabel
+                )
             }
         }
     }
