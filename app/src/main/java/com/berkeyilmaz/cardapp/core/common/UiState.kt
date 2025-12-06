@@ -14,6 +14,6 @@ sealed class UiState<out T : Any> {
     data class Success<out T : Any>(val data: T) : UiState<T>()
 
     data class Error(
-        @param:StringRes val errorMessage: Int,
+        @field:StringRes val errorMessage: Int,
     ) : UiState<Nothing>()
 }
