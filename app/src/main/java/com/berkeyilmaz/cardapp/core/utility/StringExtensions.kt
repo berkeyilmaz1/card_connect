@@ -1,6 +1,8 @@
 package com.berkeyilmaz.cardapp.core.utility
 
 import android.util.Patterns
+import androidx.compose.runtime.MutableState
+import com.berkeyilmaz.cardapp.core.validation.BaseValidationRule
 
 /**
  * Checks if the string is a valid email format.
@@ -23,4 +25,16 @@ fun String.isValidPassword(): Boolean {
         "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,}$"
     return Regex(passwordRegex).matches(this)
 }
+
+/**
+ * Validates the string against the provided [BaseValidationRule].
+ * @param rule The validation rule to apply.
+ * @return true if the string passes the validation rule, false otherwise.
+ *
+ * Usage:
+ * ```
+ * val isValid = myString.isValid(MyCustomValidationRule())
+ * ```
+ */
+fun String.isValid(rule: BaseValidationRule): Boolean = rule.validate(this)
 
