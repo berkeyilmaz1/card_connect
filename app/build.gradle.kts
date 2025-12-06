@@ -112,6 +112,9 @@ dependencies {
     // To recognize Latin script
     implementation(libs.text.recognition)
 
+    //Firebase AI
+    implementation(libs.firebase.ai)
+
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.navigation.testing) // Testing Navigation

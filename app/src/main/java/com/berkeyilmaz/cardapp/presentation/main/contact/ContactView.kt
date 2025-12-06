@@ -39,7 +39,7 @@ import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.AppTitle
-import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import kotlinx.coroutines.launch
 
 @Composable
@@ -259,7 +259,7 @@ fun EmptyContactsSection() {
 }
 
 @Composable
-fun ContactList(contacts: List<Contact>) {
+fun ContactList(contacts: List<InternalContact>) {
     Column(modifier = Modifier.fillMaxSize()) {
         AppTitle(stringResource(R.string.contacts))
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_xSmall)))
@@ -275,7 +275,7 @@ fun ContactList(contacts: List<Contact>) {
 }
 
 @Composable
-fun ContactCard(contact: Contact) {
+fun ContactCard(contact: InternalContact) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = { /* TODO: Handle click */ },

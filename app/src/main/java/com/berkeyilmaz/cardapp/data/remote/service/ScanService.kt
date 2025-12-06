@@ -1,10 +1,12 @@
 package com.berkeyilmaz.cardapp.data.remote.service
 
+import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -24,4 +26,9 @@ interface ScanService {
         @Body contactRequest: ContactRequest,
         @Header("Authorization") authorization: String
     ): Response<Unit>
+
+    @GET("contacts")
+    suspend fun getRemoteContacts(
+        @Header("Authorization") authorization: String
+    ): Response<List<Contact>>
 }

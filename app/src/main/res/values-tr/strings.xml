@@ -137,6 +137,10 @@
     <string name="save">Kaydet</string>
     <string name="scan_result_feedback_error">Lütfen bir isim ve en az bir iletişim yöntemi girin.</string>
     <string name="tags">Etiketler</string>
+    <string name="groups">Gruplar</string>
+    <string name="loading_groups">Gruplar yükleniyor...</string>
+    <string name="retry">Tekrar Dene</string>
+    <string name="all">Tümü</string>
 
 </resources>
 

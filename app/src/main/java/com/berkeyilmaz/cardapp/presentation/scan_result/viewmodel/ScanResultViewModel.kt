@@ -10,6 +10,7 @@ import com.berkeyilmaz.cardapp.domain.scan.usecase.CreateContactUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ConfirmedData
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.domain.scan_result.model.SocialMedia
+import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,7 @@ data class ScanResultState(
     val address: String? = null,
     val websites: String? = null,
     val socialMedia: List<SocialMedia>? = null,
-    val tags: List<String>? = listOf(),
+    val tags: List<Tag>? = listOf(),
     val notes: String? = null,
     val image: String? = null,
     val rawText: String? = null
@@ -60,7 +61,7 @@ class ScanResultViewModel @Inject constructor(
         }
 
         val contact = ContactRequest(
-            imageUrl = currentState.image,
+            imageUrl = "https://example.com/image.jpg",
             rawText = currentState.rawText,
             note = currentState.notes,
             confirmedData = ConfirmedData(
@@ -72,8 +73,10 @@ class ScanResultViewModel @Inject constructor(
                 addresses = currentState.address?.let { listOf(it) } ?: emptyList(),
                 websites = currentState.websites?.let { listOf(it) } ?: emptyList(),
                 socialMedia = currentState.socialMedia ?: emptyList(),
-                tags = currentState.tags ?: emptyList(),
+                tags = currentState.tags ?: emptyList()
             ))
+
+        Log.i("ScanResultViewModel", "Creating contact: $contact")
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
@@ -120,11 +123,11 @@ class ScanResultViewModel @Inject constructor(
                 if (deleted) {
                     Log.i("ScanResultViewModel", "Local image deleted: $imagePath")
                 } else {
-                   Log.w("ScanResultViewModel", "Failed to delete local image: $imagePath")
+                    Log.w("ScanResultViewModel", "Failed to delete local image: $imagePath")
                 }
             }
         } catch (e: Exception) {
-           Log.e("ScanResultViewModel", "Error deleting local image: ${e.message}", e)
+            Log.e("ScanResultViewModel", "Error deleting local image: ${e.message}", e)
         }
     }
 
@@ -166,9 +169,10 @@ class ScanResultViewModel @Inject constructor(
         _uiState.update { it.copy(socialMedia = value) }
     }
 
-    fun updateTags(value: List<String>) {
+    fun updateTags(value: List<Tag>) {
         _uiState.update { it.copy(tags = value) }
     }
+
 
     fun updateImage(value: String) {
         _uiState.update { it.copy(image = value) }

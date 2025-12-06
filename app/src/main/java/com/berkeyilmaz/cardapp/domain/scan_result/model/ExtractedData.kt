@@ -4,14 +4,15 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class ExtractedData(
-    @SerializedName("fullName") var fullName: String? = null,
-    @SerializedName("title") var jobTitle: String? = null,
-    @SerializedName("organization") var organization: String? = null,
-    @SerializedName("phones") var phones: List<String> = listOf(),
-    @SerializedName("emails") var emails: List<String> = listOf(),
-    @SerializedName("websites") var websites: List<String> = listOf(),
-    @SerializedName("addresses") var addresses: List<String> = listOf(),
-    @SerializedName("socialMedia") var socialMedia: List<SocialMedia> = listOf(),
-//    @SerializedName("tags") var tags: List<String> = listOf(),
-    @SerializedName("note") var note: String? = null
+    val fullName: String? = null,
+    @SerializedName("title") val jobTitle: String? = null,
+    val organization: String? = null,
+    val phones: List<String> = listOf(),
+    val emails: List<String> = listOf(),
+    val websites: List<String> = listOf(),
+    val addresses: List<String> = listOf(),
+    val socialMedia: List<SocialMedia> = listOf(),
+    val tags: List<Tag> = listOf(),
+    val note: String? = null
 ) : Serializable
+

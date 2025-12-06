@@ -19,6 +19,9 @@ import com.berkeyilmaz.cardapp.domain.home.HomeRepository
 import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
 import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -53,12 +56,10 @@ object AppModule {
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
+        return OkHttpClient.Builder().addInterceptor(loggingInterceptor)
             .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-            .build()
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS).build()
     }
 
     @Provides
@@ -91,6 +92,14 @@ object AppModule {
     fun provideCredentialManager(
         @ApplicationContext context: Context
     ): CredentialManager = CredentialManager.create(context)
+
+    @Provides
+    @Singleton
+    fun provideTextRecognizer(): TextRecognizer {
+        return TextRecognition.getClient(
+            TextRecognizerOptions.Builder().build()
+        )
+    }
 }
 
 @Module

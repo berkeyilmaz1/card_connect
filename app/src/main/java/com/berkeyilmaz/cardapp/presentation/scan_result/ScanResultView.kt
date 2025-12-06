@@ -8,12 +8,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -23,11 +25,12 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Web
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -52,8 +55,10 @@ import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
+import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun ScanResultView(
@@ -75,6 +80,7 @@ fun ScanResultView(
                 )
             }
         }
+
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -174,18 +180,17 @@ fun ScanResultView(
             }),
         ScanResultRowItem(
             title = stringResource(R.string.tags), content = {
-                CustomTextField(
-                    value = uiState.tags.orEmpty().joinToString(", "),
-                    onValueChange = {
-                        viewModel.updateTags(
-                            it.split(",").map { tag -> tag.trim() }.filter { tag -> tag.isNotEmpty() }
-                        )
+                TagsSection(
+                    tags = uiState.tags.orEmpty(),
+                    onTagRemove = { tagToRemove ->
+                        viewModel.updateTags(uiState.tags.orEmpty().filter { it != tagToRemove })
                     },
-                    leadingIcon = Icons.Default.Tag,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
+                    onTagAdd = { newTag ->
+                        val existingTag = uiState.tags.orEmpty().find { it.name == newTag.name }
+                        if (existingTag == null) {
+                            viewModel.updateTags(uiState.tags.orEmpty() + newTag)
+                        }
+                    }
                 )
             }),
         ScanResultRowItem(
@@ -203,7 +208,8 @@ fun ScanResultView(
         ScanResultRowItem(
             title = "Social Media Accounts", content = {
                 CustomTextField(
-                    value = uiState.socialMedia.orEmpty().joinToString(", ") { "${it.platform?.platformName ?: "Unknown"}: ${it.url}" },
+                    value = uiState.socialMedia.orEmpty()
+                        .joinToString(", ") { "${it.platform?.platformName ?: "Unknown"}: ${it.url}" },
                     onValueChange = {
                         viewModel.updateSocialMedia(uiState.socialMedia ?: emptyList())
                     },
@@ -231,6 +237,9 @@ fun ScanResultView(
     LaunchedEffect(scanResponse) {
         Log.i("BerkeTAG", "Populating ViewModel with scan response: $scanResponse")
         scanResponse?.let {
+            Log.i("BerkeTAG", "ExtractedData tags: ${it.extractedData?.tags}")
+            Log.i("BerkeTAG", "Tags size: ${it.extractedData?.tags?.size}")
+
             viewModel.updateFullName(it.extractedData?.fullName.orEmpty())
             viewModel.updateJobTitle(it.extractedData?.jobTitle.orEmpty())
             viewModel.updateCompany(it.extractedData?.organization.orEmpty())
@@ -239,7 +248,11 @@ fun ScanResultView(
             viewModel.updateAddress(it.extractedData?.addresses?.firstOrNull().orEmpty())
             viewModel.updateNotes(it.extractedData?.note.orEmpty())
             viewModel.updateWebsites(it.extractedData?.websites?.firstOrNull().orEmpty())
-//            viewModel.updateTags(it.extractedData?.tags.orEmpty())
+
+            val tagsToUpdate = it.extractedData?.tags ?: emptyList()
+            Log.i("BerkeTAG", "Updating ViewModel with tags: $tagsToUpdate")
+            viewModel.updateTags(tagsToUpdate)
+
             viewModel.updateImage(it.imageUrl.orEmpty())
             viewModel.updateRawText(it.rawText.orEmpty())
             viewModel.updateSocialMedia(it.extractedData?.socialMedia ?: emptyList())
@@ -329,7 +342,7 @@ fun ScannedCard(imagePath: String = "") {
         content = {
             if (imagePath.isNotEmpty()) {
                 SubcomposeAsyncImage(
-                    model = java.io.File(imagePath),
+                    model = File(imagePath),
                     contentDescription = stringResource(R.string.scanned_card),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -371,6 +384,69 @@ fun ScannedCard(imagePath: String = "") {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_4)))
 
+    }
+}
+
+@Composable
+fun TagsSection(
+    tags: List<Tag>,
+    onTagRemove: (Tag) -> Unit,
+    onTagAdd: (Tag) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            tags.forEach { tag ->
+                val tagCategory = tag.getCategoryEnum()
+                AssistChip(
+                    onClick = { },
+                    label = {
+                        Text(
+                            text = tag.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = tagCategory.color
+                        )
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { onTagRemove(tag) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = "Remove ${tag.name}",
+                                modifier = Modifier.size(20.dp),
+                                tint = tagCategory.color
+                            )
+                        }
+                    }
+                )
+            }
+        }
+
+        // Yeni tag ekleme alanı
+//        CustomTextField(
+//            value = newTagText,
+//            onValueChange = { newTagText = it },
+//            leadingIcon = Icons.Default.Tag,
+//            singleLine = true,
+//            maxLines = 1,
+//            keyboardType = KeyboardType.Text,
+//            imeAction = ImeAction.Done,
+//            onImeAction = {
+//                if (newTagText.isNotBlank()) {
+//                    onTagAdd(newTagText.trim())
+//                    newTagText = ""
+//                }
+//            },
+//            placeholder = "Add new tag..."
+//        )
     }
 }
 
