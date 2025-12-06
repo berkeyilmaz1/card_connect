@@ -112,7 +112,7 @@ class SignInViewModel @Inject constructor(
         setLoading(true)
         viewModelScope.launch(Dispatchers.IO) {
             val response = signUpUseCase(email, password)
-
+            //TODO: ADD PASSWORD CHECKER
             withContext(Dispatchers.Main) {
                 when (response) {
                     is AuthResult.Success -> {

@@ -141,6 +141,8 @@
     <string name="loading_groups">Gruplar yükleniyor...</string>
     <string name="retry">Tekrar Dene</string>
     <string name="all">Tümü</string>
+    <string name="please_fill_the_field">Bu alan boş bırakılamaz.</string>
+
 
 </resources>
 

@@ -139,5 +139,6 @@
     <string name="loading_groups">Loading groups...</string>
     <string name="retry">Retry</string>
     <string name="all">All</string>
+    <string name="please_fill_the_field">Please fill the field.</string>
 
 </resources>
