@@ -8,7 +8,7 @@ sealed class UiEvent {
     ) : UiEvent()
 
     data class ShowSnackBar(
-        @field:StringRes val message: Int, @field:StringRes val actionLabel: Int? = null
+        val message: String, val actionLabel: String? = null
     ) : UiEvent()
 
     data class Navigate(
