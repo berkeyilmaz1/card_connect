@@ -74,7 +74,6 @@ class ScanRepositoryImpl @Inject constructor(
         }
     }
 
-
     override suspend fun createContact(contactRequest: ContactRequest): Result<Unit> {
         return try {
             val authToken = getAuthToken()

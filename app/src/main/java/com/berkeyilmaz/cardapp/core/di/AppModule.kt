@@ -5,7 +5,7 @@ import androidx.credentials.CredentialManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.berkeyilmaz.cardapp.data.local.ContactRepositoryImpl
+import com.berkeyilmaz.cardapp.data.remote.ContactRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.LanguageRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.ThemeRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl

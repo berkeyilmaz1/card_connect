@@ -1,6 +1,5 @@
 package com.berkeyilmaz.cardapp.domain.auth.usecase
 
-import com.berkeyilmaz.cardapp.data.model.User
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
@@ -26,7 +25,7 @@ class SendForgotPasswordEmail @Inject constructor(
     suspend operator fun invoke(email: String) = repository.sendForgotPasswordEmail(email)
 }
 
-class SendEmailVerification constructor(
+class SendEmailVerification @Inject constructor(
     private val repository: AuthRepository
 ) {
     suspend operator fun invoke(email: String) = repository.sendEmailVerification()

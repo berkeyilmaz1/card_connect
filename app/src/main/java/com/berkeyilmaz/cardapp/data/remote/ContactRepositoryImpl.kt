@@ -1,4 +1,4 @@
-package com.berkeyilmaz.cardapp.data.local
+package com.berkeyilmaz.cardapp.data.remote
 
 import android.content.ContentResolver
 import android.provider.ContactsContract
@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.collections.emptyList
 
 class ContactRepositoryImpl @Inject constructor(
     private val scanService: ScanService,
@@ -106,5 +105,4 @@ class ContactRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
-
 }
