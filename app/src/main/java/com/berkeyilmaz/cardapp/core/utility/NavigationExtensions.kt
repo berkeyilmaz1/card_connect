@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.core.utility
 
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 
 /**
  * Extension function for safe navigation operations.
@@ -62,15 +63,10 @@ fun NavController.safePopBack() {
  * @param inclusive Whether to include the upToRoute itself in the pop operation
  */
 fun NavController.navigateAndClearBackStack(
-    route: String,
-    upToRoute: String,
-    inclusive: Boolean = true
+    route: String, upToRoute: String, inclusive: Boolean = true
 ) {
     safeNavigate(
-        route = route,
-        popUpToRoute = upToRoute,
-        inclusive = inclusive,
-        singleTop = true
+        route = route, popUpToRoute = upToRoute, inclusive = inclusive, singleTop = true
     )
 }
 
@@ -90,4 +86,12 @@ fun NavController.navigateAsNewRoot(
         }
     } catch (_: Exception) {
     }
+}
+
+fun NavDestination?.isInRoutes(routes: List<String>): Boolean {
+    return this?.route in routes
+}
+
+fun NavDestination?.isFabVisible(route: String): Boolean {
+    return this?.route == route
 }

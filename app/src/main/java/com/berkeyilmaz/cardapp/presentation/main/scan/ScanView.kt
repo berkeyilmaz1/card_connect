@@ -1,10 +1,11 @@
-package com.berkeyilmaz.cardapp.presentation.main.main.scan
+package com.berkeyilmaz.cardapp.presentation.main.scan
 
 
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.CameraController
@@ -43,9 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.presentation.main.main.scan.viewmodel.ScanUiState
-import com.berkeyilmaz.cardapp.presentation.main.main.scan.viewmodel.ScanViewModel
+import com.berkeyilmaz.cardapp.presentation.main.scan.viewmodel.ScanUiState
+import com.berkeyilmaz.cardapp.presentation.main.scan.viewmodel.ScanViewModel
 import com.google.gson.Gson
 import java.io.File
 
@@ -55,7 +57,7 @@ fun ScanView(
     onScanCompleted: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel = hiltViewModel<ScanViewModel>()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -140,7 +142,7 @@ fun ScanView(
 
             // Geri butonu
             IconButton(
-                onClick = { (context as? androidx.activity.ComponentActivity)?.onBackPressedDispatcher?.onBackPressed() },
+                onClick = { (context as? ComponentActivity)?.onBackPressedDispatcher?.onBackPressed() },
                 modifier = Modifier
                     .statusBarsPadding()
                     .align(Alignment.TopStart)

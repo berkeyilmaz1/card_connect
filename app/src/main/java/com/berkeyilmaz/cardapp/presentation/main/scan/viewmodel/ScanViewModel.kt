@@ -1,8 +1,6 @@
-package com.berkeyilmaz.cardapp.presentation.main.main.scan.viewmodel
+package com.berkeyilmaz.cardapp.presentation.main.scan.viewmodel
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageCapture
@@ -20,9 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 sealed class ScanUiState {
