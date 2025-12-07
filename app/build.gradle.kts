@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 
     // Kotlin serialization plugin for type safe routes and navigation arguments
-    kotlin("plugin.serialization") version "2.0.21"
+    alias(libs.plugins.kotlin.serialization)
 
     //Hilt
     id("com.google.devtools.ksp")
@@ -14,12 +14,12 @@ plugins {
 
 android {
     namespace = "com.berkeyilmaz.cardapp"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.berkeyilmaz.cardapp"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -36,11 +36,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -80,7 +80,6 @@ dependencies {
 
     // Coil for image loading
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
 
     //Coroutines
     implementation(libs.kotlinx.coroutines.android)
