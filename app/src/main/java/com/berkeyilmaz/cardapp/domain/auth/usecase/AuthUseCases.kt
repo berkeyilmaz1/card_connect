@@ -18,16 +18,16 @@ class SendForgotPasswordEmail @Inject constructor(
     suspend operator fun invoke(email: String) = repository.sendForgotPasswordEmail(email)
 }
 
-class SendEmailVerification constructor(
-    private val repository: AuthRepository
-) {
-    suspend operator fun invoke(email: String) = repository.sendEmailVerification()
-}
-
 class SignInWithGoogleUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
     suspend operator fun invoke(): AuthResult<Unit> {
         return repository.signInWithGoogle()
     }
+}
+
+class SendEmailVerification @Inject constructor(
+    private val repository: AuthRepository
+) {
+    suspend operator fun invoke(): AuthResult<Unit> = repository.sendEmailVerification()
 }
