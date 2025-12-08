@@ -93,7 +93,7 @@ fun MainNavHost(
                     )
                     Log.d("BerkeTag", "Navigating to ScanResult with response: $scanResponse")
                     navController.safeNavigate(Screen.Main.ScanResult.route)
-                })
+                }, onBackPressed = { navController.safePopBack() })
         }
 
         composable(Screen.Main.ScanResult.route) {
