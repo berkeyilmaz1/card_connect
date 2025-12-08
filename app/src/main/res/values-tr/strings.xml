@@ -142,7 +142,10 @@
     <string name="retry">Tekrar Dene</string>
     <string name="all">Tümü</string>
     <string name="please_fill_the_field">Bu alan boş bırakılamaz.</string>
-
+    <string name="failed_to_get_current_user">Failed to get current user</string>
+    <string name="websites">Websiteler</string>
+    <string name="social_media">Sosyal Medya Hesapları</string>
+    <string name="remove_tag">Kaldır %1$s</string>
 
 </resources>
 

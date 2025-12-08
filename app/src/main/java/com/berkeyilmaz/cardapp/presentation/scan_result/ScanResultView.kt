@@ -1,12 +1,12 @@
 package com.berkeyilmaz.cardapp.presentation.scan_result
 
 import android.Manifest
-import android.util.Log
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -28,27 +28,33 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Web
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.SubcomposeAsyncImage
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
@@ -56,209 +62,44 @@ import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
 import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
+import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultState
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
+import com.berkeyilmaz.cardapp.presentation.scan_result.widgets.ScanResultContent
+import com.berkeyilmaz.cardapp.presentation.scan_result.widgets.ScannedCardImage
+import com.berkeyilmaz.cardapp.presentation.scan_result.widgets.TagsSection
 import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
 fun ScanResultView(
-    scanResponse: ScanResponse?, onNavigateAfterSave: () -> Unit = {}
+    scanResponse: ScanResponse?,
+    onNavigateAfterSave: () -> Unit = {},
+    onClose: () -> Unit,
+    viewModel: ScanResultViewModel = hiltViewModel<ScanResultViewModel>()
 ) {
-
-    val viewModel = hiltViewModel<ScanResultViewModel>()
     val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
-    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState.successMessage) {
-        uiState.successMessage?.let { message ->
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = message,
-                    duration =
-                        SnackbarDuration.Short
-                )
-            }
-        }
+    // Handle snackbar messages
+    HandleSnackbarMessages(
+        successMessage = uiState.successMessage,
+        errorMessage = uiState.errorMessage,
+        snackbarHostState = snackbarHostState,
+        coroutineScope = coroutineScope
+    )
 
-    }
-
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let { message ->
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = message,
-                    duration = SnackbarDuration.Long
-                )
-            }
-        }
-    }
-
+    // Handle permission request
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            viewModel.createContact()
-        } else {
-            Log.w("ScanResultView", "WRITE_CONTACTS izni reddedildi")
-            viewModel.createContact()
-        }
+        viewModel.createContact()
     }
 
-    val resultItems = listOf(
-        ScanResultRowItem(
-            title = stringResource(R.string.full_name), content = {
-                CustomTextField(
-                    value = uiState.fullName.orEmpty(),
-                    onValueChange = { viewModel.updateFullName(it) },
-                    leadingIcon = Icons.Default.Person,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.job_title), content = {
-                CustomTextField(
-                    value = uiState.jobTitle.orEmpty(),
-                    onValueChange = { viewModel.updateJobTitle(it) },
-                    leadingIcon = Icons.Default.Lock,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.company), content = {
-                CustomTextField(
-                    value = uiState.company.orEmpty(),
-                    onValueChange = { viewModel.updateCompany(it) },
-                    leadingIcon = Icons.Default.Business,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.phone_number), content = {
-                CustomTextField(
-                    value = uiState.phoneNumber.orEmpty(),
-                    onValueChange = { viewModel.updatePhoneNumber(it) },
-                    leadingIcon = Icons.Default.Phone,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Phone,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.email), content = {
-                CustomTextField(
-                    value = uiState.email.orEmpty(),
-                    onValueChange = { viewModel.updateEmail(it) },
-                    leadingIcon = Icons.Default.Email,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.address), content = {
-                CustomTextField(
-                    value = uiState.address.orEmpty(),
-                    onValueChange = { viewModel.updateAddress(it) },
-                    leadingIcon = Icons.Default.LocationOn,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.tags), content = {
-                TagsSection(
-                    tags = uiState.tags.orEmpty(),
-                    onTagRemove = { tagToRemove ->
-                        viewModel.updateTags(uiState.tags.orEmpty().filter { it != tagToRemove })
-                    },
-                    onTagAdd = { newTag ->
-                        val existingTag = uiState.tags.orEmpty().find { it.name == newTag.name }
-                        if (existingTag == null) {
-                            viewModel.updateTags(uiState.tags.orEmpty() + newTag)
-                        }
-                    }
-                )
-            }),
-        ScanResultRowItem(
-            title = "Websites", content = {
-                CustomTextField(
-                    value = uiState.websites.orEmpty(),
-                    onValueChange = { viewModel.updateWebsites(it) },
-                    leadingIcon = Icons.Default.Web,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = "Social Media Accounts", content = {
-                CustomTextField(
-                    value = uiState.socialMedia.orEmpty()
-                        .joinToString(", ") { "${it.platform?.platformName ?: "Unknown"}: ${it.url}" },
-                    onValueChange = {
-                        viewModel.updateSocialMedia(uiState.socialMedia ?: emptyList())
-                    },
-                    leadingIcon = Icons.Default.Business,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                )
-            }),
-        ScanResultRowItem(
-            title = stringResource(R.string.notes), content = {
-                CustomTextField(
-                    value = uiState.notes.orEmpty(),
-                    onValueChange = { viewModel.updateNotes(it) },
-                    singleLine = false,
-                    minLines = 5,
-                    maxLines = 10,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done,
-                )
-            }),
-    )
+    // Initialize with scan response
+    InitializeScanData(scanResponse, viewModel)
 
-    LaunchedEffect(scanResponse) {
-        Log.i("BerkeTAG", "Populating ViewModel with scan response: $scanResponse")
-        scanResponse?.let {
-            Log.i("BerkeTAG", "ExtractedData tags: ${it.extractedData?.tags}")
-            Log.i("BerkeTAG", "Tags size: ${it.extractedData?.tags?.size}")
-
-            viewModel.updateFullName(it.extractedData?.fullName.orEmpty())
-            viewModel.updateJobTitle(it.extractedData?.jobTitle.orEmpty())
-            viewModel.updateCompany(it.extractedData?.organization.orEmpty())
-            viewModel.updatePhoneNumber(it.extractedData?.phones?.firstOrNull().orEmpty())
-            viewModel.updateEmail(it.extractedData?.emails?.firstOrNull().orEmpty())
-            viewModel.updateAddress(it.extractedData?.addresses?.firstOrNull().orEmpty())
-            viewModel.updateNotes(it.extractedData?.note.orEmpty())
-            viewModel.updateWebsites(it.extractedData?.websites?.firstOrNull().orEmpty())
-
-            val tagsToUpdate = it.extractedData?.tags ?: emptyList()
-            Log.i("BerkeTAG", "Updating ViewModel with tags: $tagsToUpdate")
-            viewModel.updateTags(tagsToUpdate)
-
-            viewModel.updateImage(it.imageUrl.orEmpty())
-            viewModel.updateRawText(it.rawText.orEmpty())
-            viewModel.updateSocialMedia(it.extractedData?.socialMedia ?: emptyList())
-        }
-    }
-
+    // Handle navigation after save
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onNavigateAfterSave()
@@ -266,187 +107,68 @@ fun ScanResultView(
         }
     }
 
-    Scaffold(
-        snackbarHost = {
-            androidx.compose.material3.SnackbarHost(hostState = snackbarHostState)
-        },
-        bottomBar = {
-            CustomAppButton(
-                text = stringResource(R.string.save),
-                onClick = {
-                    permissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
-                },
-                loading = uiState.isLoading,
-                enabled = !uiState.isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = dimensionResource(R.dimen.padding_normal),
-                        vertical = dimensionResource(R.dimen.padding_small)
-                    )
-            )
-        }) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = dimensionResource(R.dimen.padding_normal))
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(
-                    dimensionResource(R.dimen.padding_small)
-                )
-            ) {
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close, contentDescription = stringResource(
-                                R.string.close
-                            ), modifier = Modifier.clickable(enabled = true, onClick = {
-                                // Kapatma işlemi burada gerçekleştirilecek
-                            })
-                        )
-                    }
-                }
-                item { ScannedCard(imagePath = uiState.image.orEmpty()) }
-
-                items(resultItems) { item ->
-                    ResultSection(title = item.title, content = item.content)
-                }
-            }
-
-        }
-    }
-}
-
-
-@Composable
-fun ResultSection(title: String, content: @Composable () -> Unit) {
-    Column {
-        Text(
-            text = title, style = MaterialTheme.typography.labelMedium
-        )
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_4)))
-        content()
-    }
+    ScanResultContent(
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        onSaveClick = { permissionLauncher.launch(Manifest.permission.WRITE_CONTACTS) },
+        onClose = onClose,
+        viewModel = viewModel
+    )
 }
 
 @Composable
-fun ScannedCard(imagePath: String = "") {
-    val cardImage = ScanResultRowItem(
-        content = {
-            if (imagePath.isNotEmpty()) {
-                SubcomposeAsyncImage(
-                    model = File(imagePath),
-                    contentDescription = stringResource(R.string.scanned_card),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentScale = ContentScale.Fit,
-                    loading = {
-                        androidx.compose.foundation.layout.Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
-                        ) {
-                            androidx.compose.material3.CircularProgressIndicator()
-                        }
-                    },
-                    error = {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_background),
-                            contentDescription = stringResource(R.string.scanned_card),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    })
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_background),
-                    contentDescription = stringResource(R.string.scanned_card),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-        })
-
-    Column {
-        ResultSection(title = cardImage.title, content = cardImage.content)
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_4)))
-
-    }
-}
-
-@Composable
-fun TagsSection(
-    tags: List<Tag>,
-    onTagRemove: (Tag) -> Unit,
-    onTagAdd: (Tag) -> Unit
+private fun HandleSnackbarMessages(
+    successMessage: String?,
+    errorMessage: String?,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: kotlinx.coroutines.CoroutineScope
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            tags.forEach { tag ->
-                val tagCategory = tag.getCategoryEnum()
-                AssistChip(
-                    onClick = { },
-                    label = {
-                        Text(
-                            text = tag.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = tagCategory.color
-                        )
-                    },
-                    trailingIcon = {
-                        IconButton(
-                            onClick = { onTagRemove(tag) },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "Remove ${tag.name}",
-                                modifier = Modifier.size(20.dp),
-                                tint = tagCategory.color
-                            )
-                        }
-                    }
+    LaunchedEffect(successMessage) {
+        successMessage?.let { message ->
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = message, duration = SnackbarDuration.Short
                 )
             }
         }
+    }
 
-        // Yeni tag ekleme alanı
-//        CustomTextField(
-//            value = newTagText,
-//            onValueChange = { newTagText = it },
-//            leadingIcon = Icons.Default.Tag,
-//            singleLine = true,
-//            maxLines = 1,
-//            keyboardType = KeyboardType.Text,
-//            imeAction = ImeAction.Done,
-//            onImeAction = {
-//                if (newTagText.isNotBlank()) {
-//                    onTagAdd(newTagText.trim())
-//                    newTagText = ""
-//                }
-//            },
-//            placeholder = "Add new tag..."
-//        )
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = message, duration = SnackbarDuration.Long
+                )
+            }
+        }
     }
 }
+
+@Composable
+private fun InitializeScanData(
+    scanResponse: ScanResponse?, viewModel: ScanResultViewModel
+) {
+    LaunchedEffect(scanResponse) {
+        scanResponse?.extractedData?.let { data ->
+            viewModel.apply {
+                updateFullName(data.fullName.orEmpty())
+                updateJobTitle(data.jobTitle.orEmpty())
+                updateCompany(data.organization.orEmpty())
+                updatePhoneNumber(data.phones.firstOrNull().orEmpty())
+                updateEmail(data.emails.firstOrNull().orEmpty())
+                updateAddress(data.addresses.firstOrNull().orEmpty())
+                updateNotes(data.note.orEmpty())
+                updateWebsites(data.websites.firstOrNull().orEmpty())
+                updateTags(data.tags)
+                updateSocialMedia(data.socialMedia)
+            }
+        }
+        scanResponse?.let {
+            viewModel.updateImage(it.imageUrl.orEmpty())
+            viewModel.updateRawText(it.rawText.orEmpty())
+        }
+    }
+}
+
+
 

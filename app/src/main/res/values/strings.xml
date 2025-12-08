@@ -141,5 +141,8 @@
     <string name="all">All</string>
     <string name="please_fill_the_field">Please fill the field.</string>
     <string name="failed_to_get_current_user">Failed to get current user</string>
+    <string name="websites">Websites</string>
+    <string name="social_media">Social Media Accounts</string>
+    <string name="remove_tag">Remove %1$s</string>
 
 </resources>

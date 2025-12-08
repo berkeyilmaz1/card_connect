@@ -118,7 +118,8 @@ fun MainNavHost(
                         popUpToRoute = Screen.Main.Home.route,
                         inclusive = false
                     )
-                })
+                }, onClose = { navController.safePopBack() }
+            )
         }
 
         composable(Screen.Main.Settings.route) {
