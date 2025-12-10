@@ -113,6 +113,10 @@ dependencies {
     // To recognize Latin script
     implementation(libs.text.recognition)
 
+    //Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx.v284)
+
     //Firebase AI
     implementation(libs.firebase.ai)
 
