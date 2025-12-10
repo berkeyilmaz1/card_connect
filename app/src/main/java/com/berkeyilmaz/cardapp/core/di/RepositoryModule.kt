@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.core.di
 
 import com.berkeyilmaz.cardapp.data.local.LanguageRepositoryImpl
+import com.berkeyilmaz.cardapp.data.local.PhotoRepositoryImpl
 import com.berkeyilmaz.cardapp.data.local.ThemeRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.ContactRepositoryImpl
@@ -10,6 +11,7 @@ import com.berkeyilmaz.cardapp.domain.LanguageRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.home.HomeRepository
+import com.berkeyilmaz.cardapp.domain.photo.repository.PhotoRepository
 import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
 import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
 import dagger.Binds
@@ -57,4 +59,10 @@ abstract class RepositoryModule {
     abstract fun bindScanRepository(
         scanRepositoryImpl: ScanRepositoryImpl
     ): ScanRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPhotoRepository(
+        impl: PhotoRepositoryImpl
+    ): PhotoRepository
 }
