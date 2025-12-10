@@ -14,7 +14,7 @@ fun PhotoEntity.toDomain(): Photo {
 
 fun Photo.toEntity(): PhotoEntity {
     return PhotoEntity(
-        id = id,
+        id = this.id ?: 0,
         contactId = contactId,
         userId = userId,
         filePath = filePath

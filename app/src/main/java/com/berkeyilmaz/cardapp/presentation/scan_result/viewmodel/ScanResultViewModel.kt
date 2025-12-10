@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.util.ContactsHelper
+import com.berkeyilmaz.cardapp.domain.photo.model.Photo
+import com.berkeyilmaz.cardapp.domain.photo.usecase.InsertPhotoUseCase
 import com.berkeyilmaz.cardapp.domain.scan.usecase.CreateContactUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ConfirmedData
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
@@ -43,6 +45,7 @@ data class ScanResultState(
 @HiltViewModel
 class ScanResultViewModel @Inject constructor(
     private val createContactsUseCase: CreateContactUseCase,
+    private val insertPhotoUseCase: InsertPhotoUseCase,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ScanResultState())
@@ -73,8 +76,15 @@ class ScanResultViewModel @Inject constructor(
                 addresses = currentState.address?.let { listOf(it) } ?: emptyList(),
                 websites = currentState.websites?.let { listOf(it) } ?: emptyList(),
                 socialMedia = currentState.socialMedia ?: emptyList(),
-                tags = currentState.tags ?: emptyList()
-            ))
+                tags = currentState.tags ?: emptyList()))
+
+//TODO: ENESE SÖYLE CREATE CONTACT YAPARKEN GERİYE OLUŞTURULAN CONTACT'I DÖNSÜN PHOTO KAYDEDERKEN NASIL OLACAK
+
+        val photo = Photo(
+            contactId = "", // TODO: Set the actual contact ID after creation
+            userId = "",    // TODO:getcurrentuserId
+            filePath = "" // TODO: Set path logic
+        )
 
         Log.i("ScanResultViewModel", "Creating contact: $contact")
 
@@ -84,6 +94,7 @@ class ScanResultViewModel @Inject constructor(
             try {
                 withContext(Dispatchers.IO) {
                     createContactsUseCase(contact)
+                    insertPhotoUseCase(photo)
 
                     // Telefon rehberine ekle
                     ContactsHelper.addContactToPhone(
