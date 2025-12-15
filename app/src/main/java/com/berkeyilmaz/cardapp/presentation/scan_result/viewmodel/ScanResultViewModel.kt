@@ -78,7 +78,7 @@ class ScanResultViewModel @Inject constructor(
                 socialMedia = currentState.socialMedia ?: emptyList(),
                 tags = currentState.tags ?: emptyList()))
 
-//TODO: ENESE SÖYLE CREATE CONTACT YAPARKEN GERİYE OLUŞTURULAN CONTACT'I DÖNSÜN PHOTO KAYDEDERKEN NASIL OLACAK
+//TODO: ENESE SÖYLE CREATE CONTACT YAPARKEN GERİYE OLUŞTURULAN CONTACT'I DÖNSÜN PHOTO KAYDEDERKEN NASIL OLACAK(contactId için)
 
         val photo = Photo(
             contactId = "", // TODO: Set the actual contact ID after creation

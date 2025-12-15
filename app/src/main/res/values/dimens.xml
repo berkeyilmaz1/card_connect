@@ -30,10 +30,15 @@
     <dimen name="elevation_large">16dp</dimen>
 
     <!-- Icon sizes -->
+    <dimen name="icon_xsmall">16dp</dimen>
+    <dimen name="icon_xxsmall">18dp</dimen>
     <dimen name="icon_small">20dp</dimen>
     <dimen name="icon_medium">28dp</dimen>
     <dimen name="icon_xLarge">64dp</dimen>
 
+    <!-- Card widths -->
+    <dimen name="card_width_min">200dp</dimen>
+    <dimen name="card_width_max">300dp</dimen>
 
     <!-- Corner radius & elevation -->
     <dimen name="corner_radius_large">12dp</dimen>

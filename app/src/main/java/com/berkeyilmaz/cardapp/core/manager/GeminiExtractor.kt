@@ -2,6 +2,8 @@ package com.berkeyilmaz.cardapp.core.manager
 
 
 import android.util.Log
+import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.domain.contact.model.FoundContact
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
@@ -13,7 +15,7 @@ import kotlinx.coroutines.withContext
 object GeminiExtractor {
 
     private val model by lazy {
-        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-2.5-flash")
+        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-2.5-pro")
     }
 
     /**
@@ -122,16 +124,102 @@ STRICT OUTPUT FORMAT (JSON ONLY):
             scanResponse
         }
 
+    suspend fun findContactThatUserAsked(
+        userQuestion: String, contacts: List<Contact>
+    ): List<Contact> = withContext(Dispatchers.IO) {
+
+        val contactsJson = Gson().toJson(contacts)
+
+        val prompt = """
+You are an AI contact resolution engine inside a mobile contacts application.
+
+Your goal:
+- Determine which contact(s) the user is referring to.
+- Use semantic meaning, job titles, organizations, and tags.
+- Prefer returning EXACTLY ONE contact whenever confidence is high.
+- Only return MULTIPLE contacts if more than one contact is equally valid.
+
+IMPORTANT:
+- Think internally, but DO NOT expose your reasoning.
+- Return ONLY valid JSON.
+- NO markdown, NO comments, NO explanations.
+
+====================
+OUTPUT FORMAT RULES
+====================
+
+If ONE contact matches:
+{
+  "contactId": "string",
+  "fullName": "string",
+  "title":"string",
+  "organizationName":"string",
+  "reason": "short explanation"
+}
+
+If MULTIPLE contacts match:
+[
+  {
+    "contactId": "string",
+    "fullName": "string",
+    "title":"string",
+    "organizationName":"string",
+    "reason": "short explanation"
+  }
+]
+
+If NO contact matches:
+[]
+
+====================
+USER QUERY
+====================
+"$userQuestion"
+
+====================
+CONTACTS (JSON)
+====================
+$contactsJson
+""".trimIndent()
+
+
+        val raw = model.generateContent(prompt).text.orEmpty()
+        Log.d("BerkeTAG", "Gemini Raw Response: $raw")
+
+        val cleaned = cleanToJson(raw)
+        Log.d("BerkeTAG", "Cleaned JSON: $cleaned")
+
+        return@withContext runCatching {
+
+            // JSON object --> single result
+            if (cleaned.trim().startsWith("{")) {
+                listOf(Gson().fromJson(cleaned, Contact::class.java))
+            }
+            // JSON array --> multiple result
+            else if (cleaned.trim().startsWith("[")) {
+                Gson().fromJson(cleaned, Array<Contact>::class.java).toList()
+            } else emptyList()
+
+        }.getOrElse {
+            Log.e("BerkeTAG", "Parse error: ${it.message}")
+            emptyList()
+        }
+    }
+
     /**
      * Gemini bazen JSON dışı metin ekleyebilir, bu fonksiyon bunu temizler.
      */
     private fun cleanToJson(input: String): String {
-        // İlk '{' ve son '}' arasını alır
-        val start = input.indexOf('{')
-        val end = input.lastIndexOf('}')
+        val firstObj = input.indexOf('{')
+        val firstArr = input.indexOf('[')
 
-        if (start == -1 || end == -1 || end <= start) return input
+        val start = listOf(firstObj, firstArr).filter { it >= 0 }.minOrNull() ?: return input
 
+        val end = if (start == firstObj) input.lastIndexOf('}')
+        else input.lastIndexOf(']')
+
+        if (end <= start) return input
         return input.substring(start, end + 1)
     }
+
 }

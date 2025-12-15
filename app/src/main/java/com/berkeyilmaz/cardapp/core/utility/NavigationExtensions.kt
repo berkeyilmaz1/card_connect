@@ -91,7 +91,3 @@ fun NavController.navigateAsNewRoot(
 fun NavDestination?.isInRoutes(routes: List<String>): Boolean {
     return this?.route in routes
 }
-
-fun NavDestination?.isFabVisible(route: String): Boolean {
-    return this?.route == route
-}

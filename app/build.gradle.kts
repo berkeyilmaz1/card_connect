@@ -120,6 +120,9 @@ dependencies {
     //Firebase AI
     implementation(libs.firebase.ai)
 
+    //TESS OCR
+    implementation(libs.tess.two)
+
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.navigation.testing) // Testing Navigation

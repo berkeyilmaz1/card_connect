@@ -144,5 +144,14 @@
     <string name="websites">Websites</string>
     <string name="social_media">Social Media Accounts</string>
     <string name="remove_tag">Remove %1$s</string>
+    <string name="welcome_how_can_i_assist_you_in_finding_contacts">Welcome! How can I assist you in finding contacts?</string>
+    <string name="no_contacts_available_to_search">No contacts available to search.</string>
+    <string name="call">Call</string>
+    <string name="found_multiple_contacts">I found multiple contacts matching your criteria:</string>
+    <string name="describe_person">Kişiyi tarif edin...</string>
+    <string name="ai_chat_no_result">Buna uygun bir kişi bulamadım.</string>
+    <string name="here_is_the_contact_i_found">Here is the contact I found:</string>
+    <string name="show_less">Show Less</string>
+    <string name="show_more">Show More (%1$d)</string>
 
 </resources>

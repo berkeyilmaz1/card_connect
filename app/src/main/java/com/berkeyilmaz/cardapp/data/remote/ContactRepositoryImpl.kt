@@ -3,6 +3,7 @@ package com.berkeyilmaz.cardapp.data.remote
 import android.content.ContentResolver
 import android.provider.ContactsContract
 import android.util.Log
+import com.berkeyilmaz.cardapp.core.manager.GeminiExtractor
 import com.berkeyilmaz.cardapp.data.remote.service.ScanService
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
@@ -79,9 +80,7 @@ class ContactRepositoryImpl @Inject constructor(
                     }
                     contacts.add(
                         InternalContact(
-                            internalId = id,
-                            fullName = name,
-                            phoneNumbers = phoneNumbers
+                            internalId = id, fullName = name, phoneNumbers = phoneNumbers
                         )
                     )
                 }
@@ -105,4 +104,18 @@ class ContactRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun searchContactThatUserAsked(
+        text: String, contacts: List<Contact>
+    ): List<Contact> {
+        return try {
+            val response = GeminiExtractor.findContactThatUserAsked(text, contacts)
+            Log.i("ContactRepositoryImpl", "Search response for '$text': $response")
+            response
+        } catch (e: Exception) {
+            Log.e("ContactRepositoryImpl", "Search exception for '$text': ${e.message}")
+            emptyList()
+        }
+    }
+
 }
