@@ -37,31 +37,44 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.presentation.chat.widgets.animations.ChatItemAnimation
 import com.berkeyilmaz.cardapp.presentation.chat.widgets.text_bubbles.AITextBubble
 
 @Composable
-fun SingleContactResultCard(contact: Contact, shouldShowFakeAiText: Boolean = true) {
-    if (shouldShowFakeAiText) {
-        AITextBubble(stringResource(R.string.here_is_the_contact_i_found))
+fun SingleContactResultCard(
+    contact: Contact,
+    shouldShowFakeAiText: Boolean = true,
+    cardId: String? = null
+) {
+    Column {
+        if (shouldShowFakeAiText) {
+            AITextBubble(
+                text = stringResource(R.string.here_is_the_contact_i_found),
+                messageId = cardId?.let { "${it}_ai_text" }
+            )
 
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
-    }
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
+        }
 
-    Card(
-        modifier = Modifier
-            .wrapContentWidth()
-            .widthIn(
-                min = dimensionResource(R.dimen.card_width_min),
-                max = dimensionResource(R.dimen.card_width_max)
-            ),
-        shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_large)),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = dimensionResource(R.dimen.spacer_2)
-        ),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
-    ) {
+        ChatItemAnimation(
+            key = cardId,
+            delayMillis = if (shouldShowFakeAiText && cardId != null) 200 else 0
+        ) {
+            Card(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .widthIn(
+                        min = dimensionResource(R.dimen.card_width_min),
+                        max = dimensionResource(R.dimen.card_width_max)
+                    ),
+                shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_large)),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = dimensionResource(R.dimen.spacer_2)
+                ),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            ) {
         Column(
             modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal))
         ) {
@@ -133,24 +146,40 @@ fun SingleContactResultCard(contact: Contact, shouldShowFakeAiText: Boolean = tr
                     })
             }
         }
+            }
+        }
     }
 }
 
 
 @Composable
-fun MultipleContactsResultCard(contacts: List<Contact>) {
+fun MultipleContactsResultCard(
+    contacts: List<Contact>,
+    cardId: String? = null // Yeni multi-card için unique key
+) {
     var isExpanded by remember { mutableStateOf(false) }
     Column {
-        AITextBubble(stringResource(R.string.found_multiple_contacts))
+        AITextBubble(
+            text = stringResource(R.string.found_multiple_contacts),
+            messageId = cardId?.let { "${it}_multi_text" }
+        )
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
 
-        SingleContactResultCard(contacts.first(),false)
+        SingleContactResultCard(
+            contact = contacts.first(),
+            shouldShowFakeAiText = false,
+            cardId = cardId?.let { "${it}_first_card" }
+        )
 
         if (isExpanded) {
-            contacts.drop(1).forEach { contact ->
+            contacts.drop(1).forEachIndexed { index, contact ->
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
-                SingleContactResultCard(contact, false)
+                SingleContactResultCard(
+                    contact = contact,
+                    shouldShowFakeAiText = false,
+                    cardId = cardId?.let { "${it}_card_${index + 1}" }
+                )
             }
         }
         ExpandableButton(

@@ -13,43 +13,57 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.presentation.chat.widgets.animations.ChatItemAnimation
 
 @Composable
-fun UserMessageBubble(text: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-        Surface(
-            shape = RoundedCornerShape(
-                bottomEnd = 0.dp,
-                bottomStart = dimensionResource(R.dimen.spacer_16),
-                topEnd = dimensionResource(R.dimen.spacer_16),
-                topStart = dimensionResource(R.dimen.spacer_16)
-            ), color = MaterialTheme.colorScheme.primary
-        ) {
-            Text(
-                text = text,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal)),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+fun UserMessageBubble(
+    text: String,
+    messageId: String? = null
+) {
+    ChatItemAnimation(key = messageId) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Surface(
+                shape = RoundedCornerShape(
+                    bottomEnd = 0.dp,
+                    bottomStart = dimensionResource(R.dimen.spacer_16),
+                    topEnd = dimensionResource(R.dimen.spacer_16),
+                    topStart = dimensionResource(R.dimen.spacer_16)
+                ), color = MaterialTheme.colorScheme.primary
+            ) {
+                Text(
+                    text = text,
+                    modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal)),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     }
 }
 
 @Composable
-fun AITextBubble(text: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-        Surface(
-            shape = RoundedCornerShape(
-                bottomEnd = dimensionResource(R.dimen.spacer_16),
-                bottomStart = 0.dp,
-                topEnd = dimensionResource(R.dimen.spacer_16),
-                topStart = dimensionResource(R.dimen.spacer_16)
-            ), color = MaterialTheme.colorScheme.surfaceVariant
-        ) {
-            Text(
-                text = text,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal)),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+fun AITextBubble(
+    text: String,
+    messageId: String? = null
+) {
+    ChatItemAnimation(
+        key = messageId,
+        delayMillis = if (messageId != null) 100 else 0
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            Surface(
+                shape = RoundedCornerShape(
+                    bottomEnd = dimensionResource(R.dimen.spacer_16),
+                    bottomStart = 0.dp,
+                    topEnd = dimensionResource(R.dimen.spacer_16),
+                    topStart = dimensionResource(R.dimen.spacer_16)
+                ), color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Text(
+                    text = text,
+                    modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal)),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
