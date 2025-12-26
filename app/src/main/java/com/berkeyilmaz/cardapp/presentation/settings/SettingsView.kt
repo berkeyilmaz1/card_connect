@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LightMode
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
 
@@ -60,31 +62,46 @@ fun SettingsView(
             title = stringResource(R.string.change_language),
             trailingContent = { LanguageDropdown(viewModel = viewModel) },
             contentDescription = stringResource(R.string.change_language)
+        ),
+        SettingsItem(
+            leadingIcon = Icons.Rounded.AutoAwesome,
+            title = stringResource(R.string.use_local_llm),
+            trailingContent = {
+                // todo: bu tercihleri room ile saklayıp tüm uygulamada bir singleton object üzerinden veya
+                //todo: gerektiği yerde roomdan çağırarak kullanmak nasıl olabilir
+                Switch(
+                    checked = isDarkTheme, onCheckedChange = { isChecked ->
+//                        viewModel.setTheme(
+//                            if (isChecked) AppTheme.DARK else AppTheme.LIGHT
+//                        )
+                    }, colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.secondary
+                    )
+                )
+            },
+            contentDescription = stringResource(R.string.use_local_llm)
         )
     )
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(title = {
-                Text(
-                    text = stringResource(R.string.settings),
-                    style = MaterialTheme.typography.headlineSmall
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(dimensionResource(R.dimen.padding_normal))
+    ) {
+        Row {
+            IconButton(onClick = onNavigateBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
                 )
-            }, navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-            })
-        },
-    ) { paddingValues ->
+            }
+            AppTitle(stringResource(R.string.settings))
+        }
+
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(dimensionResource(R.dimen.padding_normal)),
+                .fillMaxSize(),
             contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small))
         ) {
             items(settingsItems.size) { index ->
