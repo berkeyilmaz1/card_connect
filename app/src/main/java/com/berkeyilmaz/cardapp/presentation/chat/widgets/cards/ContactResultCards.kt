@@ -39,6 +39,7 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.presentation.chat.widgets.animations.ChatItemAnimation
 import com.berkeyilmaz.cardapp.presentation.chat.widgets.text_bubbles.AITextBubble
+import com.berkeyilmaz.cardapp.presentation.main.contact.widgets.ContactAvatar
 
 @Composable
 fun SingleContactResultCard(
@@ -52,15 +53,13 @@ fun SingleContactResultCard(
         if (shouldShowFakeAiText) {
             AITextBubble(
                 text = stringResource(R.string.here_is_the_contact_i_found),
-                messageId = cardId?.let { "${it}_ai_text" }
-            )
+                messageId = cardId?.let { "${it}_ai_text" })
 
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
         }
 
         ChatItemAnimation(
-            key = cardId,
-            delayMillis = if (shouldShowFakeAiText && cardId != null) 200 else 0
+            key = cardId, delayMillis = if (shouldShowFakeAiText && cardId != null) 200 else 0
         ) {
             Card(
                 modifier = Modifier
@@ -77,95 +76,81 @@ fun SingleContactResultCard(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal))
-        ) {
-            // İsim
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(dimensionResource(R.dimen.icon_xxsmall)),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacer_8)))
-                Text(
-                    text = contact.fullName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            // Organizasyon
-            if (contact.organizationName.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_4)))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier.padding(dimensionResource(R.dimen.padding_lowNormal))
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Business,
-                        contentDescription = null,
-                        modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall)),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacer_8)))
-                    Text(
-                        text = contact.organizationName,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Aksiyon butonları
-            if (contact.phone.isNotEmpty() || contact.email.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_8))
-                ) {
-                    if (contact.phone.isNotEmpty()) {
-                        AssistChip(
-                            onClick = { onCall?.invoke(contact.phone) },
-                            label = {
-                                Text(
-                                    stringResource(R.string.call),
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Call,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
-                                )
-                            }
+                    // İsim
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ContactAvatar(contact.fullName, R.dimen.spacer_24)
+                        Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacer_8)))
+                        Text(
+                            text = contact.fullName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
 
-                    if (contact.email.isNotEmpty()) {
-                        AssistChip(
-                            onClick = { onEmail?.invoke(contact.email) },
-                            label = {
-                                Text(
-                                    "Email",
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Email,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
-                                )
+                    // Organizasyon
+                    if (contact.organizationName.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_4)))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Business,
+                                contentDescription = null,
+                                modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall)),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacer_8)))
+                            Text(
+                                text = contact.organizationName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // Aksiyon butonları
+                    if (contact.phone.isNotEmpty() || contact.email.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_8))
+                        ) {
+                            if (contact.phone.isNotEmpty()) {
+                                AssistChip(onClick = { onCall?.invoke(contact.phone) }, label = {
+                                    Text(
+                                        stringResource(R.string.call),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }, leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Call,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+                                    )
+                                })
                             }
-                        )
+
+                            if (contact.email.isNotEmpty()) {
+                                AssistChip(onClick = { onEmail?.invoke(contact.email) }, label = {
+                                    Text(
+                                        "Email", style = MaterialTheme.typography.labelSmall
+                                    )
+                                }, leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Email,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+                                    )
+                                })
+                            }
+                        }
                     }
                 }
-            }
-        }
             }
         }
     }
@@ -183,8 +168,7 @@ fun MultipleContactsResultCard(
     Column {
         AITextBubble(
             text = stringResource(R.string.found_multiple_contacts),
-            messageId = cardId?.let { "${it}_multi_text" }
-        )
+            messageId = cardId?.let { "${it}_multi_text" })
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
 

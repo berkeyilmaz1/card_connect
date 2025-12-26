@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.presentation.main.contact.widgets
 
+import androidx.annotation.DimenRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -128,7 +129,7 @@ private fun ContactCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_normal))
         ) {
-            ContactAvatar(name = contact.fullName)
+            ContactAvatar(name = contact.fullName, R.dimen.spacer_48)
 
             ContactInfo(
                 name = contact.fullName, phoneNumber = contact.phoneNumbers.firstOrNull() ?: ""
@@ -138,10 +139,13 @@ private fun ContactCard(
 }
 
 @Composable
-private fun ContactAvatar(name: String) {
+fun ContactAvatar(
+    name: String,
+    @DimenRes size: Int
+) {
     Box(
         modifier = Modifier
-            .size(dimensionResource(R.dimen.spacer_48))
+            .size(dimensionResource(size))
             .clip(CircleShape)
             .background(
                 brush = Brush.linearGradient(
