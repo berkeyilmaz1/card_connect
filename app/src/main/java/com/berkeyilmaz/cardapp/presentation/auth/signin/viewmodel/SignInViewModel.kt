@@ -26,6 +26,7 @@ data class SignInState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
+    val showTermsAndConditionsSheet: Boolean = false
 )
 
 sealed class SignInUiEvent {
@@ -189,5 +190,13 @@ class SignInViewModel @Inject constructor(
 
     private fun setLoading(isLoading: Boolean) {
         _uiState.update { it.copy(isLoading = isLoading) }
+    }
+
+    fun showTermsAndConditionsSheet(show: Boolean) {
+        _uiState.update { it.copy(showTermsAndConditionsSheet = show) }
+    }
+
+    fun isButtonsEnabled(): Boolean {
+        return uiState.value.email.isNotBlank() && uiState.value.password.isNotBlank() && !uiState.value.isLoading
     }
 }

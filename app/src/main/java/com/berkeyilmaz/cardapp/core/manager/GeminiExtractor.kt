@@ -2,10 +2,7 @@ package com.berkeyilmaz.cardapp.core.manager
 
 
 import android.util.Log
-import com.berkeyilmaz.cardapp.data.ollama.OllamaClient
-import com.berkeyilmaz.cardapp.data.ollama.model.OllamaRequest
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
-import com.berkeyilmaz.cardapp.domain.contact.model.FoundContact
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
