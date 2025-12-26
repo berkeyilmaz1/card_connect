@@ -138,7 +138,7 @@
     <string name="scan_result_feedback_error">Lütfen bir isim ve en az bir iletişim yöntemi girin.</string>
     <string name="tags">Etiketler</string>
     <string name="groups">Gruplar</string>
-    <string name="loading_groups">Gruplar yükleniyor...</string>
+    <string name="loading_groups">Gruplar yükleniyor…</string>
     <string name="retry">Tekrar Dene</string>
     <string name="all">Tümü</string>
     <string name="please_fill_the_field">Bu alan boş bırakılamaz.</string>
@@ -146,6 +146,20 @@
     <string name="websites">Websiteler</string>
     <string name="social_media">Sosyal Medya Hesapları</string>
     <string name="remove_tag">Kaldır %1$s</string>
+    <string name="recently_scanned">Son Taranalar</string>
+    <string name="business_card_image">Kartvizit Görseli</string>
+    <string name="contact_photo">Kişi Fotoğrafı</string>
+    <string name="welcome_how_can_i_assist_you_in_finding_contacts">Hoş geldiniz! Kişileri bulmanıza nasıl yardımcı olabilirim?</string>
+    <string name="no_contacts_available_to_search">Aranabilecek kişi bulunamadı.</string>
+    <string name="call">Ara</string>
+    <string name="found_multiple_contacts">Kriterlerinize uyan birden fazla kişi buldum:</string>
+    <string name="describe_person">Kişiyi tarif edin</string>
+    <string name="ai_chat_no_result">Eşleşme bulamadım.</string>
+    <string name="here_is_the_contact_i_found">İşte bulduğum kişi:</string>
+    <string name="show_less">Daha az göster</string>
+    <string name="show_more">Daha fazla göster (%1$d)</string>
+    <string name="an_error_occurred">Bir hata oluştu</string>
+    <string name="thinking">Düşünüyor…</string>
 
 </resources>
 

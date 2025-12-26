@@ -44,7 +44,9 @@ import com.berkeyilmaz.cardapp.presentation.chat.widgets.text_bubbles.AITextBubb
 fun SingleContactResultCard(
     contact: Contact,
     shouldShowFakeAiText: Boolean = true,
-    cardId: String? = null
+    cardId: String? = null,
+    onCall: ((String) -> Unit)? = null,
+    onEmail: ((String) -> Unit)? = null
 ) {
     Column {
         if (shouldShowFakeAiText) {
@@ -119,31 +121,49 @@ fun SingleContactResultCard(
             }
 
             // Aksiyon butonları
-            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_8))
-            ) {
-                AssistChip(onClick = { /* call */ }, label = {
-                    Text(
-                        stringResource(R.string.call), style = MaterialTheme.typography.labelSmall
-                    )
-                }, leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Call,
-                        contentDescription = null,
-                        modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
-                    )
-                })
-                AssistChip(
-                    onClick = { /* email */ },
-                    label = { Text("Email", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Email,
-                            contentDescription = null,
-                            modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+            if (contact.phone.isNotEmpty() || contact.email.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_8))
+                ) {
+                    if (contact.phone.isNotEmpty()) {
+                        AssistChip(
+                            onClick = { onCall?.invoke(contact.phone) },
+                            label = {
+                                Text(
+                                    stringResource(R.string.call),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Call,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+                                )
+                            }
                         )
-                    })
+                    }
+
+                    if (contact.email.isNotEmpty()) {
+                        AssistChip(
+                            onClick = { onEmail?.invoke(contact.email) },
+                            label = {
+                                Text(
+                                    "Email",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+                                )
+                            }
+                        )
+                    }
+                }
             }
         }
             }
@@ -155,7 +175,9 @@ fun SingleContactResultCard(
 @Composable
 fun MultipleContactsResultCard(
     contacts: List<Contact>,
-    cardId: String? = null // Yeni multi-card için unique key
+    cardId: String? = null,
+    onCall: ((String) -> Unit)? = null,
+    onEmail: ((String) -> Unit)? = null
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     Column {
@@ -169,7 +191,9 @@ fun MultipleContactsResultCard(
         SingleContactResultCard(
             contact = contacts.first(),
             shouldShowFakeAiText = false,
-            cardId = cardId?.let { "${it}_first_card" }
+            cardId = cardId?.let { "${it}_first_card" },
+            onCall = onCall,
+            onEmail = onEmail
         )
 
         if (isExpanded) {
@@ -178,7 +202,9 @@ fun MultipleContactsResultCard(
                 SingleContactResultCard(
                     contact = contact,
                     shouldShowFakeAiText = false,
-                    cardId = cardId?.let { "${it}_card_${index + 1}" }
+                    cardId = cardId?.let { "${it}_card_${index + 1}" },
+                    onCall = onCall,
+                    onEmail = onEmail
                 )
             }
         }

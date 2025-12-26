@@ -136,7 +136,7 @@
     <string name="tags">Tags</string>
     <string name="contact_saved_successfully">Contact saved successfully to phone contacts!</string>
     <string name="groups">Groups</string>
-    <string name="loading_groups">Loading groups...</string>
+    <string name="loading_groups">Loading groups…</string>
     <string name="retry">Retry</string>
     <string name="all">All</string>
     <string name="please_fill_the_field">Please fill the field.</string>
@@ -148,10 +148,15 @@
     <string name="no_contacts_available_to_search">No contacts available to search.</string>
     <string name="call">Call</string>
     <string name="found_multiple_contacts">I found multiple contacts matching your criteria:</string>
-    <string name="describe_person">Kişiyi tarif edin...</string>
-    <string name="ai_chat_no_result">Buna uygun bir kişi bulamadım.</string>
+    <string name="describe_person">Describe the person</string>
+    <string name="ai_chat_no_result">I couldn\'t find any matching contacts.</string>
     <string name="here_is_the_contact_i_found">Here is the contact I found:</string>
     <string name="show_less">Show Less</string>
     <string name="show_more">Show More (%1$d)</string>
+    <string name="an_error_occurred">An error occurred</string>
+    <string name="recently_scanned">Recently Scanned</string>
+    <string name="business_card_image">Business Card Image</string>
+    <string name="contact_photo">Contact Photo</string>
+    <string name="thinking">Thinking…</string>
 
 </resources>

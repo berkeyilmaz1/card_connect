@@ -7,8 +7,6 @@ import com.berkeyilmaz.cardapp.domain.chat.model.ChatMessage
 import com.berkeyilmaz.cardapp.domain.chat.model.ChatState
 import com.berkeyilmaz.cardapp.domain.chat.usecase.AIContactResult
 import com.berkeyilmaz.cardapp.domain.chat.usecase.FindContactByMessageUseCase
-import com.berkeyilmaz.cardapp.domain.contact.model.Contact
-import com.berkeyilmaz.cardapp.domain.contact.model.ContactTag
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetRemoteContactsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,89 +24,15 @@ class ChatViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState
-    val fakeContacts = listOf<Contact>(
-        Contact(
-            contactId = "1",
-            fullName = "John",
-            organizationName = "Acme Corp",
-            title = "Software Engineer",
-            tags = listOf(ContactTag("1", "Work", "Acme Corp")),
-        ),
-        Contact(
-            contactId = "2",
-            fullName = "Jane",
-            organizationName = "Beta Inc",
-            title = "Product Manager",
-            tags = listOf(ContactTag("2", "Work", "Beta Inc")),
-        ),
-    )
 
     init {
-//        sendWelcomeMessage()
-//        fetchContacts()
-        sendFakeContactSingle()
-        sendFakeContactMultiple()
+        sendWelcomeMessage()
     }
 
 
-    private fun sendFakeContactSingle() {
-        val fakeResponse = ChatMessage.AIContactResult(
-            id = UUID.randomUUID().toString(),
-            timestamp = System.currentTimeMillis(),
-            contact = fakeContacts[0]
-
-        )
-        _uiState.update { it.copy(messages = it.messages + fakeResponse) }
-    }
-
-    private fun sendFakeContactMultiple() {
-        val fakeResponse = ChatMessage.AIMultipleResults(
-            id = UUID.randomUUID().toString(),
-            timestamp = System.currentTimeMillis(),
-            contacts = fakeContacts
-
-        )
-        _uiState.update { it.copy(messages = it.messages + fakeResponse) }
-    }
-
-    private fun fetchContacts() = viewModelScope.launch {
-//        val contacts = getUserContacts()
-        val contacts = listOf<Contact>(
-            Contact(
-                contactId = "1",
-                fullName = "John",
-                organizationName = "Acme Corp",
-                title = "Software Engineer",
-                tags = listOf(ContactTag("1", "Work", "Acme Corp")),
-            ), Contact(
-                contactId = "2",
-                fullName = "Jane",
-                organizationName = "Beta Inc",
-                title = "Product Manager",
-                tags = listOf(ContactTag("2", "Work", "Beta Inc")),
-            ), Contact(
-                contactId = "3",
-                fullName = "Alice",
-                organizationName = "Gamma LLC",
-                title = "Designer",
-                tags = listOf(ContactTag("3", "Work", "Gamma LLC")),
-            ), Contact(
-                contactId = "3",
-                fullName = "Alice",
-                organizationName = "TürkHukukDanışmanlıkAş",
-                title = "Avukat",
-                tags = listOf(ContactTag("3", "Service", "Lawyer")),
-            ), Contact(
-                contactId = "4",
-                fullName = "Sertap",
-                organizationName = "Sertap Diş Kliniği",
-                title = "Diş Hekimi",
-                tags = listOf(ContactTag("4", "Work", "Sertap Diş Kliniği")),
-            )
-        )
-        val fakeContacts = contacts
-        _uiState.update { it.copy(contacts = fakeContacts) }
-//        _uiState.update { it.copy(contacts = contacts.getOrDefault(emptyList())) }
+    fun fetchContacts() = viewModelScope.launch {
+        val contacts = getUserContacts()
+        _uiState.update { it.copy(contacts = contacts.getOrDefault(emptyList())) }
     }
 
     private fun sendWelcomeMessage() {

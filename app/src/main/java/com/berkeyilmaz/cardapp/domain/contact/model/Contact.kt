@@ -7,14 +7,15 @@ data class Contact(
     val fullName: String = "",
     val title: String = "",
     val organizationName: String = "",
-    //todo: phone,mail eklenecek, prompta da ekle chatview'a da ekle
+    val phone: String = "",
+    val email: String = "",
     @SerializedName("tags") val tags: List<ContactTag> = emptyList()
 ) {
     // tags'i groups Map'ine çeviren helper property
     val groups: Map<String, List<String>>
         get() = tags.groupBy { it.category }.mapValues { entry -> entry.value.map { it.name } }
 }
-//TODO ANLAMADIM BURAYI VE ÜSTÜ NAME CATEGORY FARKI VARDI
+
 data class ContactTag(
     @SerializedName("tagId") val tagId: String = "",
     @SerializedName("name") val name: String = "",

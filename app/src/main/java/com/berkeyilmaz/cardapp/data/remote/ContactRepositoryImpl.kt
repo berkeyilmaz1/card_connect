@@ -109,6 +109,7 @@ class ContactRepositoryImpl @Inject constructor(
         text: String, contacts: List<Contact>
     ): List<Contact> {
         return try {
+            Log.i("ContactRepositoryImpl", "contacts to search: $contacts")
             val response = GeminiExtractor.findContactThatUserAsked(text, contacts)
             Log.i("ContactRepositoryImpl", "Search response for '$text': $response")
             response

@@ -4,7 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.berkeyilmaz.cardapp.core.manager.GeminiExtractor
+import com.berkeyilmaz.cardapp.data.ollama.OllamaClient
+import com.berkeyilmaz.cardapp.data.ollama.model.OllamaRequest
 import com.berkeyilmaz.cardapp.data.remote.service.ScanService
+import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
@@ -61,10 +64,13 @@ class ScanRepositoryImpl @Inject constructor(
 
             val recognizedText = result.text
             Log.i("BerkeTAG", "Recognized text: $recognizedText")
+            val llmTime = System.currentTimeMillis()
             val scanResponse = GeminiExtractor.extractFromText(recognizedText)
             val endTime = System.currentTimeMillis()
-            Log.i("BerkeTIME", "Text recognition and extraction took ${endTime - startTime} ms")
-
+            Log.i(
+                "BerkeTIME",
+                "Total time: ${endTime - startTime}) ms , OCR time: ${llmTime - startTime} ms, LLM time: ${endTime - llmTime} ms"
+            )
             scanResponse.imageUrl = file.absolutePath
             scanResponse.rawText = recognizedText
 
@@ -74,13 +80,13 @@ class ScanRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createContact(contactRequest: ContactRequest): Result<Unit> {
+    override suspend fun createContact(contactRequest: ContactRequest): Result<Contact> {
         return try {
             val authToken = getAuthToken()
             Log.i("BerkeTAG", "Creating contact with request: ${Gson().toJson(contactRequest)}")
             val response = scanService.createContact(contactRequest, authToken)
             if (response.isSuccessful) {
-                Result.success(Unit)
+                Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Create contact failed with code: ${response.code()}"))
             }

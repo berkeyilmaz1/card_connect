@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.presentation.chat
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -22,6 +23,9 @@ fun ChatView(
     val uiState by chatViewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
 
+    LaunchedEffect(Unit) {
+        chatViewModel.fetchContacts()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -31,7 +35,8 @@ fun ChatView(
         MessageList(
             messages = uiState.messages,
             listState = listState,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            isThinking = uiState.chatState is ChatState.AIThinking
         )
 
         HorizontalDivider()
@@ -50,4 +55,3 @@ fun ChatView(
         }
     }
 }
-

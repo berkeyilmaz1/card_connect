@@ -20,12 +20,19 @@ interface ScanService {
         @Header("Authorization") authorization: String
     ): Response<ScanResponse>
 
+//    @Multipart
+//    @POST("scan/process-image-ollama")
+//    suspend fun scanImage(
+//        @Part file: MultipartBody.Part,
+//        @Header("Authorization") authorization: String
+//    ): Response<ScanResponse>
+
 
     @POST("contacts")
     suspend fun createContact(
         @Body contactRequest: ContactRequest,
         @Header("Authorization") authorization: String
-    ): Response<Unit>
+    ): Response<Contact>
 
     @GET("contacts")
     suspend fun getRemoteContacts(

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -33,7 +32,9 @@ import com.berkeyilmaz.cardapp.presentation.main.widgets.ScanFabButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
-    mainViewModel: MainViewModel = hiltViewModel(), chatViewModel: ChatViewModel = hiltViewModel()
+    rootNavController: androidx.navigation.NavHostController,
+    mainViewModel: MainViewModel = hiltViewModel(),
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -69,7 +70,7 @@ fun MainView(
         }
     }) { padding ->
         Box(Modifier.padding(padding)) {
-            MainNavHost(navController, context)
+            MainNavHost(navController, context, rootNavController)
         }
 
         if (mainUiState.isAiSheetOpen) {

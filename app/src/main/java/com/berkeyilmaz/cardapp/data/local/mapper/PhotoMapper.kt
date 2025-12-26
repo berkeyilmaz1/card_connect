@@ -8,7 +8,8 @@ fun PhotoEntity.toDomain(): Photo {
         id = id,
         contactId = contactId,
         userId = userId,
-        filePath = filePath
+        filePath = filePath,
+        createdAt = createdAt
     )
 }
 

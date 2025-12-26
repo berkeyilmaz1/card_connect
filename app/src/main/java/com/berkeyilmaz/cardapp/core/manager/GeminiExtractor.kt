@@ -2,6 +2,8 @@ package com.berkeyilmaz.cardapp.core.manager
 
 
 import android.util.Log
+import com.berkeyilmaz.cardapp.data.ollama.OllamaClient
+import com.berkeyilmaz.cardapp.data.ollama.model.OllamaRequest
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.contact.model.FoundContact
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
@@ -15,7 +17,7 @@ import kotlinx.coroutines.withContext
 object GeminiExtractor {
 
     private val model by lazy {
-        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-2.5-pro")
+        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-2.5-flash")
     }
 
     /**
@@ -25,23 +27,38 @@ object GeminiExtractor {
         withContext(Dispatchers.IO) {
 
             val prompt = """
-You are an expert business card information extraction and classification agent.
-Your task is to extract information from the OCR text and return structured JSON.
+You are a deterministic business card information extraction and classification agent.
+You operate in a production environment where your output will be parsed automatically.
 
-Input Text:
+Your task:
+* Extract structured contact information from OCR text
+* Classify the contact using predefined categories
+* Output ONLY valid JSON
+
+--------------------
+INPUT TEXT:
 $recognizedText
+--------------------
 
+PROCESSING STEPS (DO NOT OUTPUT THESE STEPS):
+1. Analyze the OCR text and identify entities (person, organization, contact details).
+2. Normalize extracted values (phone, email, website).
+3. Resolve ambiguities by choosing the most relevant and professional data.
+4. Assign tags only when they clearly make sense.
+5. Validate the final JSON structure before returning.
+
+--------------------
 STRICT OUTPUT FORMAT (JSON ONLY):
 {
   "extractedData": {
-    "fullName": "Name Surname",
-    "title": "Job Title or Profession",
-    "organization": "Company or School Name",
-    "phones": ["+90..."],
-    "emails": ["example@domain.com"],
-    "websites": ["www.example.com"],
-    "addresses": ["Full Address"],
-    "socialMedia": ["@username", "linkedin.com/in/..."],
+    "fullName": "Name Surname or null",
+    "title": "Job Title or Profession or null",
+    "organization": "Company / School / Institution Name or null",
+    "phones": [],
+    "emails": [],
+    "websites": [],
+    "addresses": [],
+    "socialMedia": [],
 
     "tags": [
       {
@@ -53,65 +70,53 @@ STRICT OUTPUT FORMAT (JSON ONLY):
   "rawText": "$recognizedText"
 }
 
---- EXTRACTION & TAGGING RULES ---
+--------------------
+EXTRACTION RULES:
 
-1. GENERAL EXTRACTION:
-   - Detect phone numbers in any format.
-   - Detect emails, websites, and addresses.
-   - Extract 'organization' (company name, university, hospital, etc.)
+GENERAL:
+* Detect phone numbers in any international or local format.
+* Normalize phone numbers to international format if possible.
+* Detect emails, websites, addresses, and social links.
+* Extract organization names from company, school, hospital, or institution mentions.
 
-2. TAGGING FORMAT:
-   - Analyze the text, title, and email domain to decide the Main Category. 
-   - MAIN CATEGORIES allowed: "WORK", "SCHOOL", "HEALTH", "SERVICES", "EVENTS", "PERSONAL".
-   - Use UPPERCASE for category values.
-   {
-     "name": "...",
-     "category": "..."
-   }
+MISSING DATA:
+* If a field is not found, use null (for strings) or [] (for arrays).
+* Never invent data.
 
-3. TAG CATEGORIES DEFINITIONS (use UPPERCASE for category field):
+--------------------
+TAGGING RULES:
 
-   A) WORK
-      - Corporate roles: Manager, CEO, Engineer, Developer, Director.
-      - Corporate emails (not Gmail/Hotmail).
-      - Tag name: Organization or Department.
-      - Category: "WORK"
+MAIN CATEGORIES (UPPERCASE ONLY):
+WORK | SCHOOL | HEALTH | SERVICES 
 
-   B) SCHOOL
-      - University, Student, Professor, ".edu" emails.
-      - Tag name: School Name or Department.
-      - Category: "SCHOOL"
+CATEGORY DEFINITIONS:
 
-   C) HEALTH
-      - Titles like Dr., Dt., Uzm., Prof. Dr.
-      - Mentions of Hospital, Clinic, Polyclinic.
-      - Tag name: Medical Branch or Institution.
-      - Category: "HEALTH"
+WORK:
+* Corporate or professional roles (Engineer, Manager, Developer, CEO).
+* Tag name: Organization or department.
 
-   D) SERVICES
-      - Service-based professions: Lawyer, Realtor, Barber, Plumber, Repair services.
-      - Tag name: The Profession.
-      - Category: "SERVICES"
+SCHOOL:
+* Universities, students, professors, ".edu" domains.
+* Tag name: School name or faculty.
 
-   E) EVENTS
-   - This category represents the event or place where the contact was met.
-   - If the OCR contains names of expos, festivals, competitions, fairs, meetups, conferences, or summits, include this tag.
-   - Tag name: The event name (e.g., "Teknofest 2025").
-   - Category: "EVENTS"
+HEALTH:
+* Medical titles (Dr., Dt., Prof. Dr., Uzm.).
+* Hospitals, clinics, polyclinics.
+* Tag name: Medical institution or branch.
 
-   F) PERSONAL
-      - Personal-use contacts: family, friends, individual phone numbers without job info.
-      - Tag name: Relation.
-      - Category: "PERSONAL"
-
-5. CRITICAL RULES:
-   - Only include tags if they make sense.
-   - No duplicates.
-   - NO MARKDOWN, ONLY CLEAN JSON.
+SERVICES:
+* Service providers (Lawyer, Realtor, Barber, Technician).
+* Tag name: The profession.
+--------------------
+CRITICAL CONSTRAINTS:
+* NO markdown
+* NO explanations
+* NO extra fields
+* NO duplicate tags
+* Output MUST be valid JSON
 """.trimIndent()
 
-
-            // Gemini çağrısı
+//TODO: RAW TEXTİ LLM'E YAZDIRTMA
             val resultRaw = model.generateContent(prompt).text
             Log.d("BerkeTAG", "Gemini Raw Response: $resultRaw")
 
@@ -154,6 +159,8 @@ If ONE contact matches:
   "fullName": "string",
   "title":"string",
   "organizationName":"string",
+  "phone":"string",
+  "email":"string",
   "reason": "short explanation"
 }
 
@@ -164,8 +171,11 @@ If MULTIPLE contacts match:
     "fullName": "string",
     "title":"string",
     "organizationName":"string",
+    "phone":"string",
+    "email":"string",
     "reason": "short explanation"
   }
+  ...
 ]
 
 If NO contact matches:
@@ -182,7 +192,7 @@ CONTACTS (JSON)
 $contactsJson
 """.trimIndent()
 
-
+        Log.d("BerkeTAG", "Gemini Prompt: $prompt")
         val raw = model.generateContent(prompt).text.orEmpty()
         Log.d("BerkeTAG", "Gemini Raw Response: $raw")
 
