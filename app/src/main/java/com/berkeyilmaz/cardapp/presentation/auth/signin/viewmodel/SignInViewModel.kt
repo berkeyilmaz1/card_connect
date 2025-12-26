@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.domain.auth.AuthResult
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.LoginUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignInWithGoogleUseCase
@@ -70,7 +70,7 @@ class SignInViewModel @Inject constructor(
 
             withContext(Dispatchers.Main) {
                 when (response) {
-                    is AuthResult.Success -> {
+                    is ResponseState.Success -> {
                         // ✅ Main Graph'a yönlendir
                         val isUserVerified = checkUserIsVerified()
                         if (!isUserVerified) {
@@ -85,7 +85,7 @@ class SignInViewModel @Inject constructor(
                         _eventFlow.emit(SignInUiEvent.NavigateToMain)
                     }
 
-                    is AuthResult.Error -> {
+                    is ResponseState.Error -> {
                         _eventFlow.emit(SignInUiEvent.ShowError(response.message))
                     }
                 }
@@ -112,10 +112,10 @@ class SignInViewModel @Inject constructor(
         setLoading(true)
         viewModelScope.launch(Dispatchers.IO) {
             val response = signUpUseCase(email, password)
-
+            //TODO: ADD PASSWORD CHECKER
             withContext(Dispatchers.Main) {
                 when (response) {
-                    is AuthResult.Success -> {
+                    is ResponseState.Success -> {
                         // ✅ Main Graph'a yönlendir
                         val isUserVerified = checkUserIsVerified()
                         if (!isUserVerified) {
@@ -130,7 +130,7 @@ class SignInViewModel @Inject constructor(
                         _eventFlow.emit(SignInUiEvent.NavigateToMain)
                     }
 
-                    is AuthResult.Error -> {
+                    is ResponseState.Error -> {
                         _eventFlow.emit(SignInUiEvent.ShowError(response.message))
                     }
                 }
@@ -141,7 +141,7 @@ class SignInViewModel @Inject constructor(
 
     suspend fun checkUserIsVerified(): Boolean {
         val user = getCurrentUserUseCase()
-        return if (user is AuthResult.Success) {
+        return if (user is ResponseState.Success) {
             user.data?.isEmailVerified == true
         } else {
             false
@@ -150,7 +150,7 @@ class SignInViewModel @Inject constructor(
 
     suspend fun getCurrentUser(): FirebaseUser? {
         val result = getCurrentUserUseCase()
-        return if (result is AuthResult.Success) {
+        return if (result is ResponseState.Success) {
             result.data
         } else {
             null
@@ -162,11 +162,11 @@ class SignInViewModel @Inject constructor(
         val result = signInWithGoogleUseCase()
 
         when (result) {
-            is AuthResult.Error -> {
+            is ResponseState.Error -> {
                 _eventFlow.emit(SignInUiEvent.ShowError(result.message))
             }
 
-            is AuthResult.Success<*> -> {
+            is ResponseState.Success<*> -> {
                 _eventFlow.emit(SignInUiEvent.NavigateToMain)
             }
         }

@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.navigation.Screen
-import com.berkeyilmaz.cardapp.data.model.ApiResult
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.home.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.presentation.main.home.QuickActionOption
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
@@ -42,7 +42,6 @@ sealed class HomeInUiEvent {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -71,79 +70,72 @@ class HomeViewModel @Inject constructor(
     )
 
 
-    init {
-        viewModelScope.launch {
-            getCurrentUser()
-            checkUserIsVerified()
-            checkUserProfileComplete()
-        }
-    }
 
-    suspend fun checkUserIsVerified() {
-        val isVerified = getCurrentUserUseCase().let { result ->
-            if (result is ApiResult.Success) {
-                Log.d("BerkeTag", "checkUserIsVerified result: ${result.data?.isEmailVerified}")
-                result.data?.isEmailVerified ?: false
-            } else {
-                false
-            }
-        }
-
-        if (!isVerified) {
-            addNotification(
-                HomeNotification(
-                    id = NotificationID.EMAIL_VERIFICATION,
-                    title = context.getString(R.string.notification_email_verification_title),
-                    subtitle = context.getString(R.string.notification_email_verification_subtitle),
-                    buttonText = context.getString(R.string.notification_email_verification_button),
-                    onButtonClick = {})
-            )
-        }
-    }
-
-    suspend fun checkUserProfileComplete() {
-        val isProfileComplete = getCurrentUserUseCase().let { result ->
-            Log.d("BerkeTag", "checkUserProfileComplete result: $result")
-            if (result is ApiResult.Success) {
-                val user = result.data
-                !user?.displayName.isNullOrEmpty() && !user.phoneNumber.isNullOrEmpty()// todo: check other profile fields when added
-            } else {
-                false
-            }
-        }
-        if (!isProfileComplete) {
-            addNotification(
-                HomeNotification(
-                    id = NotificationID.PROFILE_INCOMPLETE,
-                    title = context.getString(R.string.notification_profile_incomplete_title),
-                    subtitle = context.getString(R.string.notification_profile_incomplete_subtitle),
-                    buttonText = context.getString(R.string.notification_profile_incomplete_button),
-                    onButtonClick = {})
-            )
-        }
-    }
-
-    suspend fun getCurrentUser() {
-        setLoading(true)
-        val result = getCurrentUserUseCase()
-        if (result is ApiResult.Error) return updateErrorState(
-            context.getString(R.string.failed_to_load_user_data)
-        )
-        val user = (result as ApiResult.Success).data
-        try {
-            Log.d(
-                "BerkeTag",
-                "User data loaded name: ${user?.displayName}, photoUrl: ${user?.photoUrl}"
-            )
-            updateUserState(
-                user?.displayName ?: "", user?.photoUrl?.toString() ?: ""
-            )
-        } catch (_: Exception) {
-            updateErrorState(context.getString(R.string.failed_to_load_user_data))
-        } finally {
-            setLoading(false)
-        }
-    }
+//    suspend fun checkUserIsVerified() {
+//        val isVerified = getCurrentUserUseCase().let { result ->
+//            if (result is ResponseState.Success) {
+//                Log.d("BerkeTag", "checkUserIsVerified result: ${result.data?.isEmailVerified}")
+//                result.data?.isEmailVerified ?: false
+//            } else {
+//                false
+//            }
+//        }
+//
+//        if (!isVerified) {
+//            addNotification(
+//                HomeNotification(
+//                    id = NotificationID.EMAIL_VERIFICATION,
+//                    title = context.getString(R.string.notification_email_verification_title),
+//                    subtitle = context.getString(R.string.notification_email_verification_subtitle),
+//                    buttonText = context.getString(R.string.notification_email_verification_button),
+//                    onButtonClick = {})
+//            )
+//        }
+//    }
+//
+//    suspend fun checkUserProfileComplete() {
+//        val isProfileComplete = getCurrentUserUseCase().let { result ->
+//            Log.d("BerkeTag", "checkUserProfileComplete result: $result")
+//            if (result is ResponseState.Success) {
+//                val user = result.data
+//                !user?.displayName.isNullOrEmpty() && !user.phoneNumber.isNullOrEmpty()// todo: check other profile fields when added
+//            } else {
+//                false
+//            }
+//        }
+//        if (!isProfileComplete) {
+//            addNotification(
+//                HomeNotification(
+//                    id = NotificationID.PROFILE_INCOMPLETE,
+//                    title = context.getString(R.string.notification_profile_incomplete_title),
+//                    subtitle = context.getString(R.string.notification_profile_incomplete_subtitle),
+//                    buttonText = context.getString(R.string.notification_profile_incomplete_button),
+//                    onButtonClick = {})
+//            )
+//        }
+//    }
+//
+//    suspend fun getCurrentUser() {
+//        setLoading(true)
+//        val result = getCurrentUserUseCase()
+//        if (result is ResponseState.Error) return updateErrorState(
+//            context.getString(R.string.failed_to_load_user_data)
+//        )
+//        val user = (result as ResponseState.Success).data
+//        try {
+//            Log.d(
+//                "BerkeTag",
+//                "User data loaded name: ${user?.displayName}, photoUrl: ${user?.photoUrl}"
+//            )
+//            updateUserState(
+//                user?.displayName ?: "", user?.photoUrl?.toString() ?: ""
+//            )
+//        } catch (_: Exception) {
+//            updateErrorState(context.getString(R.string.failed_to_load_user_data))
+//        } finally {
+//            setLoading(false)
+//        }
+//    }
 
     fun addNotification(notification: HomeNotification) {
         _uiState.update {

@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.data.remote
 
-import com.berkeyilmaz.cardapp.data.model.ApiResult
+import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.home.HomeRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -10,13 +11,12 @@ class HomeRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) : HomeRepository {
 
-    override suspend fun getCurrentUser(): ApiResult<FirebaseUser?> {
+    override suspend fun getCurrentUser(): ResponseState<FirebaseUser?> {
         return try {
             val currentUser = firebaseAuth.currentUser
-            ApiResult.Success(currentUser)
+            ResponseState.Success(currentUser)
         } catch (e: Exception) {
-            ApiResult.Error(e)
+            ResponseState.Error("todo: handle error message")
         }
     }
-
 }

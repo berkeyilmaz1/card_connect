@@ -2,6 +2,7 @@ package com.berkeyilmaz.cardapp.presentation.main.contact
 
 import android.Manifest
 import android.content.Intent
+import androidx.compose.ui.Modifier
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,43 +19,52 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.outlined.ContactPage
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.core.app.ActivityCompat
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.ui.text.style.TextAlign
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
-import kotlinx.coroutines.launch
+import com.berkeyilmaz.cardapp.presentation.main.contact.viewmodel.ContactUiEvent
+import com.berkeyilmaz.cardapp.presentation.main.contact.viewmodel.ContactUiState
+import com.berkeyilmaz.cardapp.presentation.main.contact.viewmodel.ContactViewModel
+import com.berkeyilmaz.cardapp.presentation.main.contact.widgets.ContactContent
 
 @Composable
-fun ContactView(onContactClick: (String) -> Unit) {
-    val viewModel: ContactViewModel = hiltViewModel<ContactViewModel>()
-    val coroutineScope = rememberCoroutineScope()
+fun ContactView(
+    onContactClick: (String) -> Unit, viewModel: ContactViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var hasPermission by remember { mutableStateOf(false) }
-    var shouldShowRationale by remember { mutableStateOf(false) }
-    var permissionRequested by remember { mutableStateOf(false) }
-
-    // Error event'leri dinle
+    // UI olaylarını dinle
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
@@ -67,286 +77,36 @@ fun ContactView(onContactClick: (String) -> Unit) {
         }
     }
 
+    // İzin launcher'ı
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        hasPermission = isGranted
-        if (!isGranted) {
-            val activity = context as? android.app.Activity
-            shouldShowRationale = activity?.let {
-                !ActivityCompat.shouldShowRequestPermissionRationale(
-                    it, Manifest.permission.READ_CONTACTS
-                )
-            } ?: false
-            return@rememberLauncherForActivityResult
-        }
-
-        if (uiState !is ContactUiState.Success) {
-            coroutineScope.launch {
-                viewModel.getContacts(context.contentResolver)
-            }
-        }
+        viewModel.onPermissionResult(context, isGranted)
     }
 
+    // İlk açılışta izin kontrolü
     LaunchedEffect(Unit) {
-        val isPermissionGranted =
-            context.checkSelfPermission(Manifest.permission.READ_CONTACTS) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        hasPermission = isPermissionGranted
-
-        if (isPermissionGranted && uiState !is ContactUiState.Success) {
-            coroutineScope.launch {
-                viewModel.getContacts(context.contentResolver)
-            }
-        } else if (!isPermissionGranted && !permissionRequested) {
-            permissionRequested = true
-            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-        }
+        viewModel.checkAndRequestPermission(
+            activityContext = context, onRequestPermission = {
+                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            })
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(dimensionResource(R.dimen.padding_normal)),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-    ) {
-        when {
-            !hasPermission -> {
-                PermissionSection(shouldShowRationale = shouldShowRationale, onRequestPermission = {
-                    permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                }, onOpenSettings = {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", context.packageName, null)
-                    }
-                    context.startActivity(intent)
-                })
-            }
-
-            uiState is ContactUiState.Loading -> {
-                LoadingSection()
-            }
-
-            uiState is ContactUiState.Success -> {
-                val contacts = (uiState as ContactUiState.Success).contacts
-                if (contacts.isEmpty()) {
-                    EmptyContactsSection()
-                } else {
-                    ContactList(contacts)
-                }
-            }
-
-            uiState is ContactUiState.Idle -> {
-            }
-        }
-    }
-
+    ContactContent(
+        uiState = uiState, onRequestPermission = {
+        permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+    }, onOpenSettings = {
+        openAppSettings(context)
+    }, onContactClick = onContactClick
+    )
 }
 
-@Composable
-fun PermissionSection(
-    shouldShowRationale: Boolean, onRequestPermission: () -> Unit, onOpenSettings: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .size(dimensionResource(R.dimen.spacer_96))
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.ContactPage,
-                contentDescription = stringResource(R.string.scanner_icon),
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.spacer_48))
-                    .align(Alignment.Center)
-            )
-        }
 
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
-
-        Text(
-            text = stringResource(R.string.contacts_permission_is_required_to_display_contacts),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_normal))
-        )
-
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_xSmall)))
-
-        Text(
-            text = stringResource(R.string.please_grant_the_permission_to_continue),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_lowNormal)),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_large)))
-
-
-        if (shouldShowRationale) {
-            Button(
-                onClick = onOpenSettings,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_normal))
-            ) {
-                Text(text = stringResource(R.string.open_settings))
-            }
-        } else {
-            Button(
-                onClick = onRequestPermission,
-                modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_normal))
-            ) {
-                Text(text = stringResource(R.string.please_grant_the_permission_to_continue))
-            }
-        }
+private fun openAppSettings(context: android.content.Context) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", context.packageName, null)
     }
+    context.startActivity(intent)
 }
 
-@Composable
-fun LoadingSection() {
-    Column(
-        modifier = Modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        CircularProgressIndicator()
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
-        Text(
-            text = stringResource(R.string.loading_contacts),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-        )
-    }
-}
 
-@Composable
-fun EmptyContactsSection() {
-    Column(
-        modifier = Modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .size(dimensionResource(R.dimen.spacer_96))
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.ContactPage,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.spacer_48))
-                    .align(Alignment.Center)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
-
-        Text(
-            text = stringResource(R.string.no_contacts_found),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-}
-
-@Composable
-fun ContactList(contacts: List<InternalContact>) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        AppTitle(stringResource(R.string.contacts))
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_xSmall)))
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
-        ) {
-            items(contacts) { contact ->
-                ContactCard(contact = contact)
-            }
-        }
-    }
-}
-
-@Composable
-fun ContactCard(contact: InternalContact) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { /* TODO: Handle click */ },
-        shape = RoundedCornerShape(dimensionResource(R.dimen.padding_normal)),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = dimensionResource(R.dimen.elevation_xSmall)
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(R.dimen.padding_normal)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_normal))
-        ) {
-            // Avatar with gradient background
-            Box(
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.spacer_48))
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.tertiary
-                            )
-                        )
-                    ), contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = contact.fullName?.firstOrNull()?.uppercase() ?: "?",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-
-            // Contact info
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xxSmall))
-            ) {
-                Text(
-                    text = contact.fullName ?: stringResource(R.string.unnamed),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                contact.phoneNumbers?.let {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xxSmall))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Phone,
-                            contentDescription = null,
-                            modifier = Modifier.size(dimensionResource(R.dimen.spacer_16)),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = contact.phoneNumbers.first(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-            }
-        }
-    }
-}
