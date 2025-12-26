@@ -49,7 +49,9 @@ fun AppNavHost(
             route = Screen.Main.Graph.route, startDestination = Screen.Main.Home.route
         ) {
             composable(Screen.Main.Home.route) {
-                MainView()
+                MainView(
+                    rootNavController = navController
+                )
             }
         }
     }

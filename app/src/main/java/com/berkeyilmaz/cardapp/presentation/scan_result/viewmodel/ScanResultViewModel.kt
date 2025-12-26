@@ -5,7 +5,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.core.util.ContactsHelper
+import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.domain.photo.usecase.InsertPhotoUseCase
 import com.berkeyilmaz.cardapp.domain.scan.usecase.CreateContactUseCase
@@ -13,6 +15,7 @@ import com.berkeyilmaz.cardapp.domain.scan_result.model.ConfirmedData
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.domain.scan_result.model.SocialMedia
 import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +49,7 @@ data class ScanResultState(
 class ScanResultViewModel @Inject constructor(
     private val createContactsUseCase: CreateContactUseCase,
     private val insertPhotoUseCase: InsertPhotoUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ScanResultState())
@@ -71,20 +75,16 @@ class ScanResultViewModel @Inject constructor(
                 fullName = currentState.fullName,
                 title = currentState.jobTitle,
                 organization = currentState.company,
-                phones = currentState.phoneNumber?.let { listOf(it) } ?: emptyList(),
+                phones = currentState.phoneNumber
+                    ?.replace("-", "")
+                    ?.replace(" ", "")
+                    ?.let { listOf(it) }
+                    ?: emptyList(),
                 emails = currentState.email?.let { listOf(it) } ?: emptyList(),
                 addresses = currentState.address?.let { listOf(it) } ?: emptyList(),
                 websites = currentState.websites?.let { listOf(it) } ?: emptyList(),
                 socialMedia = currentState.socialMedia ?: emptyList(),
                 tags = currentState.tags ?: emptyList()))
-
-//TODO: ENESE SÖYLE CREATE CONTACT YAPARKEN GERİYE OLUŞTURULAN CONTACT'I DÖNSÜN PHOTO KAYDEDERKEN NASIL OLACAK
-
-        val photo = Photo(
-            contactId = "", // TODO: Set the actual contact ID after creation
-            userId = "",    // TODO:getcurrentuserId
-            filePath = "" // TODO: Set path logic
-        )
 
         Log.i("ScanResultViewModel", "Creating contact: $contact")
 
@@ -93,7 +93,18 @@ class ScanResultViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    createContactsUseCase(contact)
+                    val createdContact = createContactsUseCase(contact).getOrThrow()
+                    val user = getCurrentUser()
+                    if (user?.uid == null) {
+                        throw Exception("User not authenticated")
+                    }
+                    val photo = Photo(
+                        contactId = createdContact.contactId,
+                        userId = user.uid,
+                        filePath = currentState.image ?: "",
+                        createdAt = System.currentTimeMillis()
+                    )
+                    Log.i("BerkeTag", "Inserting photo: $photo")
                     insertPhotoUseCase(photo)
 
                     // Telefon rehberine ekle
@@ -197,4 +208,12 @@ class ScanResultViewModel @Inject constructor(
         _uiState.update { it.copy(isSaved = false) }
     }
 
+    suspend fun getCurrentUser(): FirebaseUser? {
+        val result = getCurrentUserUseCase()
+        return if (result is ResponseState.Success) {
+            result.data
+        } else {
+            null
+        }
+    }
 }

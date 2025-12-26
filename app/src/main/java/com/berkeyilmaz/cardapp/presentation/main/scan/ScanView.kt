@@ -77,7 +77,11 @@ fun ScanView(
     DisposableEffect(lifecycleOwner) {
         cameraController.bindToLifecycle(lifecycleOwner)
         onDispose {
-            try { cameraController.unbind() } catch (e: Exception) { Log.e("CameraX", "Error unbinding camera", e) }
+            try {
+                cameraController.unbind()
+            } catch (e: Exception) {
+                Log.e("CameraX", "Error unbinding camera", e)
+            }
         }
     }
 
@@ -98,17 +102,21 @@ fun ScanView(
                 modifier = Modifier.padding(dimensionResource(R.dimen.padding_normal))
             )
         }
+
         uiState is ScanUiState.Loading -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f))
-                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { },
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }) { },
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
+
         else -> {
             CameraPreview(
                 cameraController = cameraController,

@@ -6,13 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.core.utility.navigateAndClearBackStack
 import com.berkeyilmaz.cardapp.core.utility.safeNavigate
 import com.berkeyilmaz.cardapp.core.utility.safePopBack
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
@@ -30,6 +28,7 @@ import com.google.gson.Gson
 fun MainNavHost(
     navController: NavHostController,
     context: android.content.Context,
+    rootNavController: NavHostController,
 ) {
     NavHost(
         navController = navController,
@@ -73,12 +72,11 @@ fun MainNavHost(
                 onNavigateProfile = { navController.safeNavigate(Screen.Main.Profile.route) },
                 onNavigateSettings = { navController.safeNavigate(Screen.Main.Settings.route) },
                 onSignOut = {
-                    {
-                        navController.navigateAndClearBackStack(
-                            route = Screen.Auth.Graph.route,
-                            upToRoute = Screen.Main.Graph.route,
+                    rootNavController.navigate(Screen.Auth.Graph.route) {
+                        popUpTo(Screen.Main.Graph.route) {
                             inclusive = true
-                        )
+                        }
+                        launchSingleTop = true
                     }
                 })
         }

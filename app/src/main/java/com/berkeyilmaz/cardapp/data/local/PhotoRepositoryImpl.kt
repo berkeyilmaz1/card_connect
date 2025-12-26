@@ -12,20 +12,21 @@ import javax.inject.Inject
 class PhotoRepositoryImpl @Inject constructor(
     private val photoDao: PhotoDAO
 ) : PhotoRepository {
-
-    override suspend fun getPhotosByContactIdAndUserId(
-        contactId: String, userId: String
-    ): Flow<List<Photo>> {
-        return photoDao.getPhotosByContactIdAndUserId(contactId, userId).map { photoEntities ->
-            photoEntities.map { it.toDomain() }
-        }
+    override fun getAllPhotos(userId: String): Flow<List<Photo>> {
+        return photoDao.getAllPhotos(userId).map { entities -> entities.map { it.toDomain() } }
     }
 
-    override suspend fun insertPhoto(photo: Photo) {
+    override fun getPhotosByContactIdAndUserId(
+        contactId: String, userId: String
+    ): Flow<Photo> {
+        return photoDao.getPhotosByContactIdAndUserId(contactId, userId).map { it.toDomain() }
+    }
+
+    override fun insertPhoto(photo: Photo) {
         photoDao.insertPhoto(photo.toEntity())
     }
 
-    override suspend fun deletePhoto(photo: Photo) {
+    override fun deletePhoto(photo: Photo) {
         photoDao.deletePhoto(photo.toEntity())
     }
 }

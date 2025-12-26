@@ -19,15 +19,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -46,6 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeUiState
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
@@ -105,7 +111,7 @@ fun HomeView(
             if (uiState.recentlyScannedCards.isEmpty()) {
                 ScanPromptSection()
             } else {
-                //recently scanned cards list
+                RecentlyScannedCards(uiState.recentlyScannedCards)
             }
 
         }
@@ -117,6 +123,108 @@ fun HomeView(
                 .align(Alignment.BottomCenter)
                 .padding(dimensionResource(R.dimen.padding_normal))
         )
+    }
+}
+
+@Composable
+fun RecentlyScannedCards(
+    recentlyScannedCards: List<Any>
+) {
+    if (recentlyScannedCards.isEmpty()) return
+
+    @Suppress("UNCHECKED_CAST")
+    val cards = recentlyScannedCards as List<Pair<Contact, Photo>>
+
+    HomeSection(title = stringResource(R.string.recently_scanned)) {
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_lowNormal)),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = dimensionResource(R.dimen.padding_xSmall)
+            )
+        ) {
+            items(cards) { (contact, photo) ->
+                RecentContactCard(
+                    contact = contact,
+                    modifier = Modifier.width(dimensionResource(R.dimen.card_width_min)),
+                    photo = photo
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RecentContactCard(
+    contact: Contact,
+    modifier: Modifier = Modifier,
+    photo: Photo? = null
+) {
+    Card(
+        modifier = modifier
+            .height(dimensionResource(R.dimen.spacer_96)),
+        shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_large)),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = dimensionResource(R.dimen.elevation_xSmall)
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        onClick = { /* TODO: Navigate to contact detail */ }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(dimensionResource(R.dimen.padding_lowNormal)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_lowNormal))
+        ) {
+            // Contact initial in circular icon
+            Box(
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen.spacer_48))
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = contact.fullName.firstOrNull()?.uppercase() ?: "?",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+
+            // Contact info section
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
+            ) {
+                // Contact name
+                Text(
+                    text = contact.fullName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+
+                // Contact title/organization
+                if (contact.title.isNotEmpty() || contact.organizationName.isNotEmpty()) {
+                    Text(
+                        text = contact.title.ifEmpty { contact.organizationName },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -7,6 +7,8 @@ data class Contact(
     val fullName: String = "",
     val title: String = "",
     val organizationName: String = "",
+    val phone: String = "",
+    val email: String = "",
     @SerializedName("tags") val tags: List<ContactTag> = emptyList()
 ) {
     // tags'i groups Map'ine çeviren helper property

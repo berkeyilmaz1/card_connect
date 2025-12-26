@@ -7,4 +7,5 @@ import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 interface ContactRepository {
     suspend fun getInternalContacts(contentResolver: ContentResolver): List<InternalContact>
     suspend fun getRemoteContacts(): Result<List<Contact>>
+    suspend fun searchContactThatUserAsked(text: String, contacts: List<Contact>): List<Contact>
 }

@@ -39,7 +39,7 @@ fun GroupsView() {
         modifier = Modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_normal)),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top,
     ) {
 
@@ -47,7 +47,7 @@ fun GroupsView() {
             GroupsUiState.Idle -> {}
             GroupsUiState.Loading -> LoadingSection()
             GroupsUiState.Error -> ErrorSection(onClick = {
-//                viewModel.fetchContacts()
+                viewModel.fetchContacts()
             })
 
             is GroupsUiState.Success -> {
@@ -86,7 +86,7 @@ fun LoadingSection() {
 @Composable
 fun ErrorSection(onClick: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxHeight(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -4,7 +4,8 @@ import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import kotlinx.coroutines.flow.Flow
 
 interface PhotoRepository {
-    suspend fun getPhotosByContactIdAndUserId(contactId: String, userId: String): Flow<List<Photo>>
-    suspend fun insertPhoto(photo: Photo)
-    suspend fun deletePhoto(photo: Photo)
+    fun getAllPhotos(userId: String): Flow<List<Photo>>
+    fun getPhotosByContactIdAndUserId(contactId: String, userId: String): Flow<Photo>
+    fun insertPhoto(photo: Photo)
+    fun deletePhoto(photo: Photo)
 }

@@ -1,6 +1,8 @@
 package com.berkeyilmaz.cardapp.presentation.main.scan.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageCapture
@@ -18,7 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 sealed class ScanUiState {
@@ -65,39 +69,67 @@ class ScanViewModel @Inject constructor(
             })
     }
 
-//    fun scanImage(file: File) {
-//        viewModelScope.launch {
-//            val startTime = System.currentTimeMillis()
-//            setLoading()
-//
-//            // Orijinal boyut
-//            val originalSizeKb = file.length() / 1024
-//            Log.d("BerkeTAG", "Original image size: ${originalSizeKb}KB")
-//
-//            // Görüntüyü sıkıştır
-//            val compressedFile = withContext(Dispatchers.IO) {
-//                compressImage(file, maxSizeKb = 800)
-//            }
-//
-//            val compressedSizeKb = compressedFile.length() / 1024
-//            Log.d("BerkeTAG", "Compressed image size: ${compressedSizeKb}KB")
-//
-//            val result = scanUseCase(compressedFile)
-//            Log.i("BerkeTAG", "Scan result: $result")
-//
-//            result.fold(onSuccess = { data ->
-//                val updatedData = data.copy(imageUrl = compressedFile.absolutePath)
-//                val endTime = System.currentTimeMillis()
-//                val duration = endTime - startTime
-//                Log.d("BerkeTAGTIME", "Scan completed in ${duration}ms")
-//                setSuccess(updatedData)
-//            }, onFailure = { error ->
-//                withContext(Dispatchers.Main) {
-//                    _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")
-//                }
-//            })
-//        }
-//    }
+    fun scanImage(file: File) {
+        viewModelScope.launch {
+            val startTime = System.currentTimeMillis()
+            setLoading()
+
+            // Orijinal boyut
+            val originalSizeKb = file.length() / 1024
+            Log.d("BerkeTAG", "Original image size: ${originalSizeKb}KB")
+
+            // Görüntüyü sıkıştır
+            val compressedFile = withContext(Dispatchers.IO) {
+                compressImage(file, maxSizeKb = 800)
+            }
+
+            val compressedSizeKb = compressedFile.length() / 1024
+            Log.d("BerkeTAG", "Compressed image size: ${compressedSizeKb}KB")
+
+            val result = scanUseCase(compressedFile)
+            Log.i("BerkeTAG", "Scan result: $result")
+
+            result.fold(onSuccess = { data ->
+                val updatedData = data.copy(imageUrl = compressedFile.absolutePath)
+                val endTime = System.currentTimeMillis()
+                val duration = endTime - startTime
+                Log.d("BerkeTAGTIME", "Scan completed in ${duration}ms")
+                setSuccess(updatedData)
+            }, onFailure = { error ->
+                withContext(Dispatchers.Main) {
+                    _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")
+                }
+            })
+        }
+    }
+
+    fun compressImage(
+        file: File, maxSizeKb: Int
+    ): File {
+
+        val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return file
+
+        var quality = 90
+        var compressedFile: File
+
+        do {
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+
+            compressedFile = File.createTempFile(
+                "compressed_", ".jpg", file.parentFile
+            )
+
+            FileOutputStream(compressedFile).use {
+                it.write(stream.toByteArray())
+            }
+
+            quality -= 10
+
+        } while (compressedFile.length() / 1024 > maxSizeKb && quality > 30)
+
+        return compressedFile
+    }
 
     fun scanImageOnDevice(file: File) {
         viewModelScope.launch {
