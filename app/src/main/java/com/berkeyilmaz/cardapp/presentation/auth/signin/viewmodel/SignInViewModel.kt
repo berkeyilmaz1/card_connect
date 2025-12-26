@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel
 
 import android.content.Context
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
@@ -196,7 +197,17 @@ class SignInViewModel @Inject constructor(
         _uiState.update { it.copy(showTermsAndConditionsSheet = show) }
     }
 
+    fun isValidEmail(email: String): Boolean {
+        return try {
+            Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun isButtonsEnabled(): Boolean {
-        return uiState.value.email.isNotBlank() && uiState.value.password.isNotBlank() && !uiState.value.isLoading
+        return uiState.value.email.isNotBlank() && uiState.value.password.isNotBlank() && !uiState.value.isLoading && isValidEmail(
+            uiState.value.email
+        )
     }
 }

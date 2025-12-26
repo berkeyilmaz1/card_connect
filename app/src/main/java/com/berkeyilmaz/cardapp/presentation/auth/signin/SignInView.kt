@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -199,7 +200,16 @@ fun SignInView(
                 sheetState = sheetState,
                 modifier = Modifier.fillMaxSize()
             ) {
-                TermsAndConditionSheet()
+                TermsAndConditionSheet(
+                    onDeclineClick = {
+                        viewModel.showTermsAndConditionsSheet(false)
+                    },
+                    onAcceptClick = {
+                        viewModel.signUp()
+                        viewModel.showTermsAndConditionsSheet(false)
+                    },
+                    loadingState = uiState.isLoading,
+                )
             }
         }
     }
@@ -208,15 +218,14 @@ fun SignInView(
 
 @Composable
 fun TermsAndConditionSheet(
-    onDeclineClick: () -> Unit = {},
-    onAcceptClick: () -> Unit = {},
+    onDeclineClick: () -> Unit,
+    onAcceptClick: () -> Unit,
     loadingState: Boolean = false,
-    acceptButtonEnableState: Boolean = true,
 ) {
     val listState = rememberLazyListState()
     var hasScrolledToBottom by remember { mutableStateOf(false) }
     var timerCompleted by remember { mutableStateOf(false) }
-    var remainingSeconds by remember { mutableStateOf(10) }
+    var remainingSeconds by remember { mutableIntStateOf(10) }
 
     // Check if user has scrolled to bottom
     val isAtBottom by remember {
@@ -244,7 +253,7 @@ fun TermsAndConditionSheet(
     }
 
     // Accept button is enabled only when both conditions are met
-    val canAccept = hasScrolledToBottom && timerCompleted && acceptButtonEnableState
+    val canAccept = hasScrolledToBottom && timerCompleted
 
     Column(
         modifier = Modifier
@@ -275,16 +284,14 @@ fun TermsAndConditionSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(dimensionResource(R.dimen.padding_lowNormal)),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small)),
         ) {
             CustomAppButton(
                 text = stringResource(R.string.decline),
                 onClick = onDeclineClick,
                 fullWidth = false,
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
 
             CustomAppButton(
                 text = if (!timerCompleted) {
@@ -296,6 +303,7 @@ fun TermsAndConditionSheet(
                 loading = loadingState,
                 enabled = canAccept,
                 fullWidth = false,
+                modifier = Modifier.weight(1f)
             )
         }
     }
