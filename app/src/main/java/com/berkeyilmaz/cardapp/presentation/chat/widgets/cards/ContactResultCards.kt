@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -115,14 +114,17 @@ fun SingleContactResultCard(
                     }
 
                     // Aksiyon butonları
-                    if (contact.phones.isNotEmpty() || contact.emails.isNotEmpty()) {
+                    val validPhone = contact.phones.firstOrNull { it.isNotBlank() }
+                    val validEmail = contact.emails.firstOrNull { it.isNotBlank() }
+
+                    if (validPhone != null || validEmail != null) {
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_8))
                         ) {
-                            if (contact.phones.isNotEmpty()) {
+                            if (validPhone != null) {
                                 AssistChip(
-                                    onClick = { onCall?.invoke(contact.phones.first()) },
+                                    onClick = { onCall?.invoke(validPhone) },
                                     label = {
                                         Text(
                                             stringResource(R.string.call),
@@ -138,9 +140,9 @@ fun SingleContactResultCard(
                                     })
                             }
 
-                            if (contact.emails.isNotEmpty()) {
+                            if (validEmail != null) {
                                 AssistChip(
-                                    onClick = { onEmail?.invoke(contact.emails.first()) },
+                                    onClick = { onEmail?.invoke(validEmail) },
                                     label = {
                                         Text(
                                             "Email", style = MaterialTheme.typography.labelSmall

@@ -29,10 +29,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
@@ -143,9 +145,16 @@ fun ContactAvatar(
     name: String,
     @DimenRes size: Int
 ) {
+    val avatarSize = dimensionResource(size)
+    val textStyle = when {
+        avatarSize <= 32.dp -> MaterialTheme.typography.labelMedium
+        avatarSize <= 48.dp -> MaterialTheme.typography.titleMedium
+        else -> MaterialTheme.typography.headlineSmall
+    }
+
     Box(
         modifier = Modifier
-            .size(dimensionResource(size))
+            .size(avatarSize)
             .clip(CircleShape)
             .background(
                 brush = Brush.linearGradient(
@@ -157,7 +166,7 @@ fun ContactAvatar(
     ) {
         Text(
             text = name.firstOrNull()?.uppercase() ?: "?",
-            style = MaterialTheme.typography.headlineSmall,
+            style = textStyle,
             color = MaterialTheme.colorScheme.onPrimary
         )
     }

@@ -158,10 +158,10 @@ If ONE contact matches:
 {
   "contactId": "string",
   "fullName": "string",
-  "title":"string",
-  "organizationName":"string",
-  "phone":"string",
-  "email":"string",
+  "title": "string",
+  "organization": "string",
+  "phones": ["string"],
+  "emails": ["string"],
   "reason": "short explanation"
 }
 
@@ -170,10 +170,10 @@ If MULTIPLE contacts match:
   {
     "contactId": "string",
     "fullName": "string",
-    "title":"string",
-    "organizationName":"string",
-    "phone":"string",
-    "email":"string",
+    "title": "string",
+    "organization": "string",
+    "phones": ["string"],
+    "emails": ["string"],
     "reason": "short explanation"
   }
   ...
