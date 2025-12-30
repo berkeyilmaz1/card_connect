@@ -124,8 +124,10 @@ dependencies {
     //TESS OCR
     implementation(libs.tess.two)
 
-    testImplementation(libs.junit)
+    //AppCheck
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.navigation.testing) // Testing Navigation
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

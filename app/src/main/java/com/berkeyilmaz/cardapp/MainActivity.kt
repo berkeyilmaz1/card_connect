@@ -19,7 +19,11 @@ import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.domain.settings.model.Language
 import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
 import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
+import com.google.firebase.Firebase
+import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.initialize
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -62,7 +66,10 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        Firebase.initialize(context = this)
+        Firebase.appCheck.installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance(),
+        )
         setContent {
             val viewModel: SettingsViewModel = hiltViewModel()
             val currentTheme by viewModel.currentTheme.collectAsState()
