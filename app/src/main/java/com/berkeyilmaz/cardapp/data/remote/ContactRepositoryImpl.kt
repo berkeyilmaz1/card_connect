@@ -91,7 +91,7 @@ class ContactRepositoryImpl @Inject constructor(
     override suspend fun getRemoteContacts(): Result<List<Contact>> {
         return try {
             val authToken = getAuthToken()
-            val response = scanService.getRemoteContacts(authToken)
+            val response = scanService.getRemoteContacts(/**/authToken)
             if (response.isSuccessful) {
                 val contacts = response.body() ?: emptyList()
                 Log.i("ContactRepositoryImpl", "Fetched remote contacts: $contacts")

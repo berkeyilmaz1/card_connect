@@ -7,7 +7,8 @@ import okhttp3.MultipartBody
 import java.io.File
 
 interface ScanRepository {
-    suspend fun scanImage(image: MultipartBody.Part): Result<ScanResponse>
+//    suspend fun scanImage(image: MultipartBody.Part): Result<ScanResponse>
     suspend fun scanImageOnDevice(file: File): Result<ScanResponse>
+//todo: move to contact repository
     suspend fun createContact(contactRequest: ContactRequest): Result<Contact>
 }

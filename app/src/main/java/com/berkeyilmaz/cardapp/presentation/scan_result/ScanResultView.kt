@@ -149,23 +149,21 @@ private fun InitializeScanData(
     scanResponse: ScanResponse?, viewModel: ScanResultViewModel
 ) {
     LaunchedEffect(scanResponse) {
-        scanResponse?.extractedData?.let { data ->
+        scanResponse?.let { data ->
             viewModel.apply {
-                updateFullName(data.fullName.orEmpty())
-                updateJobTitle(data.jobTitle.orEmpty())
-                updateCompany(data.organization.orEmpty())
-                updatePhoneNumber(data.phones.firstOrNull().orEmpty())
-                updateEmail(data.emails.firstOrNull().orEmpty())
-                updateAddress(data.addresses.firstOrNull().orEmpty())
-                updateNotes(data.note.orEmpty())
-                updateWebsites(data.websites.firstOrNull().orEmpty())
-                updateTags(data.tags)
-                updateSocialMedia(data.socialMedia)
+                scanResponse.fullName?.let { updateFullName(it) }
+                scanResponse.title?.let { updateJobTitle(it) }
+                scanResponse.organization?.let { updateCompany(it) }
+                updatePhones(scanResponse.phones)
+                updateEmails(scanResponse.emails)
+                updateWebsites(scanResponse.websites)
+                scanResponse.address?.let { updateAddresses(it) }
+                updateSocialMedia(scanResponse.socialMedias)
+                updateTags(scanResponse.tags)
+                scanResponse.note?.let { updateNotes(it) }
+                updateImage(scanResponse.imageUrl.orEmpty())
+                updateRawText(scanResponse.rawText.orEmpty())
             }
-        }
-        scanResponse?.let {
-            viewModel.updateImage(it.imageUrl.orEmpty())
-            viewModel.updateRawText(it.rawText.orEmpty())
         }
     }
 }

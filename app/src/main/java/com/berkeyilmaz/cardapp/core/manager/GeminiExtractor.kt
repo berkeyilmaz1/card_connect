@@ -47,23 +47,26 @@ PROCESSING STEPS (DO NOT OUTPUT THESE STEPS):
 --------------------
 STRICT OUTPUT FORMAT (JSON ONLY):
 {
-  "extractedData": {
-    "fullName": "Name Surname or null",
-    "title": "Job Title or Profession or null",
-    "organization": "Company / School / Institution Name or null",
-    "phones": [],
-    "emails": [],
-    "websites": [],
-    "addresses": [],
-    "socialMedia": [],
-
-    "tags": [
-      {
-        "name": "TagName",
-        "category": "WORK | SCHOOL | HEALTH | SERVICES | EVENTS | PERSONAL"
-      }
-    ]
-  },
+  "fullName": "Name Surname or null",
+  "title": "Job Title or Profession or null",
+  "organization": "Company / School / Institution Name or null",
+  "phones": [],
+  "emails": [],
+  "websites": [],
+  "address": "Full address as single string or null",
+  "socialMedias": [
+    {
+      "platform": "PlatformName",
+      "url": "https://socialmedia.com/username or null"
+    }
+  ],
+  "tags": [
+    {
+      "name": "TagName",
+      "category": "WORK | SCHOOL | HEALTH | SERVICES | EVENTS | PERSONAL"
+    }
+  ],
+  "note": null,
   "rawText": "$recognizedText"
 }
 
@@ -122,7 +125,7 @@ CRITICAL CONSTRAINTS:
 
             // JSON → ScanResponse
             val scanResponse = Gson().fromJson(cleanedJson, ScanResponse::class.java)
-            Log.d("BerkeTAG", "Parsed Tags: ${scanResponse.extractedData?.tags}")
+            Log.d("BerkeTAG", "Parsed Tags: ${scanResponse.tags}")
             scanResponse
         }
 

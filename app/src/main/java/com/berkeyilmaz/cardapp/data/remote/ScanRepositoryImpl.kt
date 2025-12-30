@@ -26,28 +26,19 @@ class ScanRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) : ScanRepository {
 
-    private suspend fun getAuthToken(): String {
-        return try {
-            val token = firebaseAuth.currentUser?.getIdToken(false)?.await()?.token
-            "Bearer ${token ?: ""}"
-        } catch (e: Exception) {
-            "Bearer "
-        }
-    }
-
-    override suspend fun scanImage(image: MultipartBody.Part): Result<ScanResponse> {
-        return try {
-            val authToken = getAuthToken()
-            val response = scanService.scanImage(image, authToken)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Scan failed with code: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+//    override suspend fun scanImage(image: MultipartBody.Part): Result<ScanResponse> {
+//        return try {
+//            val authToken = getAuthToken()
+//            val response = scanService.scanImage(image, authToken)
+//            if (response.isSuccessful && response.body() != null) {
+//                Result.success(response.body()!!)
+//            } else {
+//                Result.failure(Exception("Scan failed with code: ${response.code()}"))
+//            }
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
 
     override suspend fun scanImageOnDevice(file: File): Result<ScanResponse> {
         return try {
@@ -73,6 +64,14 @@ class ScanRepositoryImpl @Inject constructor(
         }
     }
 
+    suspend fun getAuthToken(): String {
+        val user = firebaseAuth.currentUser
+            ?: throw Exception("User not authenticated")
+        return user.getIdToken(false).await().token
+            ?: throw Exception("Failed to retrieve auth token")
+    }
+
+    //todo: move contact repository impl
     override suspend fun createContact(contactRequest: ContactRequest): Result<Contact> {
         return try {
             val authToken = getAuthToken()
