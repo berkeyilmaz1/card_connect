@@ -70,12 +70,14 @@ class ScanResultViewModel @Inject constructor(
             fullName = currentState.fullName.orEmpty(),
             title = currentState.jobTitle.orEmpty(),
             organization = currentState.company.orEmpty(),
-            phones = currentState.phones.map { it.replace("-", "").replace(" ", "") },
+            phones = currentState.phones,
             emails = currentState.emails,
             websites = currentState.websites,
             address = currentState.addresses.orEmpty(),
             socialMedias = currentState.socialMedias,
-            tags = currentState.tags
+            tags = currentState.tags,
+            note = currentState.notes.orEmpty(),
+            imageUrl = currentState.image.orEmpty()
         )
 
         Log.i("ScanResultViewModel", "Creating contact: $contact")

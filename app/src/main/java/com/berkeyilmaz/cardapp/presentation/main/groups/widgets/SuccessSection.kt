@@ -106,7 +106,7 @@ fun SuccessSection(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
             ),
-            expandFrom = androidx.compose.ui.Alignment.Top
+            expandFrom = Alignment.Top
         ),
         exit = fadeOut(animationSpec = tween(250)) +
                 shrinkVertically(animationSpec = tween(250))
@@ -153,14 +153,14 @@ fun SuccessSection(
 
     /** --- CONTACT LIST - İKİ SEVİYELİ FİLTRELEME --- */
     val filteredContacts = contacts.filter { contact ->
-        val hasMainGroup = contact.groups.containsKey(selectedMainGroup)
+        val hasMainGroup = contact.tags.any { it.category == selectedMainGroup }
 
         if (selectedSubGroup == null) {
             // Alt grup seçilmemişse sadece ana grup filtresi
             hasMainGroup
         } else {
             // Alt grup seçiliyse hem ana grup hem alt grup filtresi
-            hasMainGroup && contact.groups[selectedMainGroup]?.contains(selectedSubGroup) == true
+            hasMainGroup && contact.tags.any { it.category == selectedMainGroup && it.name == selectedSubGroup }
         }
     }
 

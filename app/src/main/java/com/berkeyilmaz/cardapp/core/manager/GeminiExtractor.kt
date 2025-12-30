@@ -43,6 +43,7 @@ PROCESSING STEPS (DO NOT OUTPUT THESE STEPS):
 3. Resolve ambiguities by choosing the most relevant and professional data.
 4. Assign tags only when they clearly make sense.
 5. Validate the final JSON structure before returning.
+6. If any data is missing, use null or empty arrays as specified.
 
 --------------------
 STRICT OUTPUT FORMAT (JSON ONLY):
@@ -56,7 +57,7 @@ STRICT OUTPUT FORMAT (JSON ONLY):
   "address": "Full address as single string or null",
   "socialMedias": [
     {
-      "platform": "PlatformName",
+      "platform": "Platform Name",
       "url": "https://socialmedia.com/username or null"
     }
   ],

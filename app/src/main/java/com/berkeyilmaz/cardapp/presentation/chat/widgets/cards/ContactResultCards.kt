@@ -115,38 +115,44 @@ fun SingleContactResultCard(
                     }
 
                     // Aksiyon butonları
-                    if (contact.phone.isNotEmpty() || contact.email.isNotEmpty()) {
+                    if (contact.phones.isNotEmpty() || contact.emails.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_8)))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_8))
                         ) {
-                            if (contact.phone.isNotEmpty()) {
-                                AssistChip(onClick = { onCall?.invoke(contact.phone) }, label = {
-                                    Text(
-                                        stringResource(R.string.call),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }, leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Call,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
-                                    )
-                                })
+                            if (contact.phones.isNotEmpty()) {
+                                AssistChip(
+                                    onClick = { onCall?.invoke(contact.phones.first()) },
+                                    label = {
+                                        Text(
+                                            stringResource(R.string.call),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Call,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+                                        )
+                                    })
                             }
 
-                            if (contact.email.isNotEmpty()) {
-                                AssistChip(onClick = { onEmail?.invoke(contact.email) }, label = {
-                                    Text(
-                                        "Email", style = MaterialTheme.typography.labelSmall
-                                    )
-                                }, leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Email,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
-                                    )
-                                })
+                            if (contact.emails.isNotEmpty()) {
+                                AssistChip(
+                                    onClick = { onEmail?.invoke(contact.emails.first()) },
+                                    label = {
+                                        Text(
+                                            "Email", style = MaterialTheme.typography.labelSmall
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Email,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(dimensionResource(R.dimen.icon_xsmall))
+                                        )
+                                    })
                             }
                         }
                     }

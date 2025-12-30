@@ -285,19 +285,41 @@ private fun createResultItems(
                 }
             }), ScanResultRowItem(
             title = socialMediaTitle, content = {
-                CustomTextField(
-                    value = formatSocialMedia(uiState.socialMedias),
-                    onValueChange = {
-                        viewModel.updateSocialMedia(
-                            uiState.socialMedias
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {
+                    uiState.socialMedias.forEachIndexed { index, socialMedia ->
+                        CustomTextField(
+                            value = socialMedia.url.orEmpty(),
+                            onValueChange = { newValue ->
+                                val updatedSocialMedias = uiState.socialMedias.toMutableList()
+                                updatedSocialMedias[index] = socialMedia.copy(url = newValue)
+                                viewModel.updateSocialMedia(updatedSocialMedias)
+                            },
+                            leadingIcon = Icons.Default.Business,
+                            label = socialMedia.platform?.platformName ?: "Social Media",
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
                         )
-                    },
-                    leadingIcon = Icons.Default.Business,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Uri,
-                    imeAction = ImeAction.Next
-                )
+                    }
+                    if (uiState.socialMedias.isEmpty()) {
+                        CustomTextField(
+                            value = "",
+                            onValueChange = { newValue ->
+                                if (newValue.isNotEmpty()) {
+                                    viewModel.updateSocialMedia(
+                                        listOf(SocialMedia(url = newValue))
+                                    )
+                                }
+                            },
+                            leadingIcon = Icons.Default.Business,
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                }
             }), ScanResultRowItem(
             title = notesTitle, content = {
                 CustomTextField(
@@ -313,11 +335,6 @@ private fun createResultItems(
     )
 }
 
-private fun formatSocialMedia(socialMedia: List<SocialMedia>): String {
-    return socialMedia.joinToString(", ") { media ->
-        "${media.platform?.platformName ?: "Unknown"}: ${media.url}"
-    }
-}
 
 @Composable
 fun ResultSection(

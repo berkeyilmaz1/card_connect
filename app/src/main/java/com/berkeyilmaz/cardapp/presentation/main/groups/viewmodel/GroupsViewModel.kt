@@ -65,31 +65,35 @@ class GroupsViewModel @Inject constructor(
                     selectedMainGroup = defaultMainGroup,
                     subGroups = extractSubGroups(contacts, defaultMainGroup)
                 )
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _uiState.value = GroupsUiState.Error
             }
         }
 
     }
 
-    /** Tüm ana grupları (keys) döndür: İş, Okul, Etkinlik vb. */
+    /** Tüm ana grupları (category) döndür: İş, Okul, Etkinlik vb. */
     private fun extractMainGroups(contacts: List<Contact>): List<String> {
-        return contacts.flatMap { it.groups.keys }.distinct()
+        return contacts.flatMap { contact -> contact.tags.map { it.category } }.distinct()
     }
 
-    /** En çok tekrar eden ana grup */
+    /** En çok tekrar eden ana grup (category) */
     private fun getMostRepeatedMainGroup(contacts: List<Contact>): String {
-        return contacts.flatMap { it.groups.keys }.groupingBy { it }.eachCount()
+        return contacts.flatMap { contact -> contact.tags.map { it.category } }
+            .groupingBy { it }
+            .eachCount()
             .maxByOrNull { it.value }?.key ?: ""
     }
 
-    /** Bir ana gruba tıklandığında alt kategorileri çıkar */
+    /** Bir ana gruba (category) tıklandığında alt kategorileri (name) çıkar */
     private fun extractSubGroups(
         contacts: List<Contact>, mainGroup: String
     ): List<String> {
         if (mainGroup.isBlank()) return emptyList()
 
-        return contacts.flatMap { it.groups[mainGroup].orEmpty() }.distinct()
+        return contacts.flatMap { contact ->
+            contact.tags.filter { it.category == mainGroup }.map { it.name }
+        }.distinct()
     }
 
     /** Kullanıcı main group seçtiğinde tetiklenir */

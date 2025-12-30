@@ -2,7 +2,10 @@ package com.berkeyilmaz.cardapp.core.di
 
 import android.content.Context
 import androidx.credentials.CredentialManager
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,4 +27,8 @@ object FirebaseModule {
     fun provideCredentialManager(
         @ApplicationContext context: Context
     ): CredentialManager = CredentialManager.create(context)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore = Firebase.firestore
 }

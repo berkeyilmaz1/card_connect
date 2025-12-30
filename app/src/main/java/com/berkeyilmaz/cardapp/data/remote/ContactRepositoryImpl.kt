@@ -8,7 +8,10 @@ import com.berkeyilmaz.cardapp.data.remote.service.ScanService
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
+import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -16,6 +19,7 @@ import javax.inject.Inject
 
 class ContactRepositoryImpl @Inject constructor(
     private val scanService: ScanService,
+    private val database: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
 ) : ContactRepository {
     private suspend fun getAuthToken(): String {
@@ -119,4 +123,31 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun createContact(contactRequest: ContactRequest): Result<Contact> {
+        return try {
+            val currentUser = firebaseAuth.currentUser
+                ?: return Result.failure(Exception("User not authenticated"))
+
+            val documentRef = database.collection("users")
+                .document(currentUser.uid)
+                .collection("contacts")
+                .add(contactRequest)
+                .await()
+
+            val contact = Contact(
+                contactId = documentRef.id,
+                fullName = contactRequest.fullName,
+                organizationName = contactRequest.organization,
+                title = contactRequest.title,
+                emails = contactRequest.emails,
+                phones = contactRequest.phones,
+                tags = contactRequest.tags
+
+            )
+
+            Result.success(contact)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

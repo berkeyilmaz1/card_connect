@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
+import com.berkeyilmaz.cardapp.domain.scan_result.model.getCategoryEnum
 
 @Composable
 fun TagChip(
