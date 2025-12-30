@@ -94,7 +94,7 @@ fun SingleContactResultCard(
                     }
 
                     // Organizasyon
-                    if (contact.organizationName.isNotEmpty()) {
+                    if (contact.organization.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_4)))
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -107,7 +107,7 @@ fun SingleContactResultCard(
                             )
                             Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacer_8)))
                             Text(
-                                text = contact.organizationName,
+                                text = contact.organization,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -11,6 +11,7 @@ import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -22,14 +23,6 @@ class ContactRepositoryImpl @Inject constructor(
     private val database: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
 ) : ContactRepository {
-    private suspend fun getAuthToken(): String {
-        return try {
-            val token = firebaseAuth.currentUser?.getIdToken(false)?.await()?.token
-            "Bearer ${token ?: ""}"
-        } catch (e: Exception) {
-            "Bearer "
-        }
-    }
 
     override suspend fun getInternalContacts(contentResolver: ContentResolver): List<InternalContact> =
         withContext(
@@ -94,16 +87,21 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun getRemoteContacts(): Result<List<Contact>> {
         return try {
-            val authToken = getAuthToken()
-            val response = scanService.getRemoteContacts(/**/authToken)
-            if (response.isSuccessful) {
-                val contacts = response.body() ?: emptyList()
-                Log.i("ContactRepositoryImpl", "Fetched remote contacts: $contacts")
-                Result.success(contacts)
-            } else {
-                Result.failure(Exception("Remote error: ${response.code()}"))
+            val currentUser = firebaseAuth.currentUser
+                ?: return Result.failure(Exception("User not authenticated"))
+            Log.i("BerkeTag", "Fetching contacts for user: ${currentUser.uid}")
+            val documentRef = database.collection("users")
+                .document(currentUser.uid)
+                .collection("contacts")
+                .get().await()
+            Log.i("BerkeTag", "Fetched ${documentRef.size()} contacts from Firestore")
+
+            val contacts = documentRef.documents.mapNotNull { documentSnapshot ->
+                val contact = documentSnapshot.toObject<Contact>()
+                contact?.copy(contactId = documentSnapshot.id)
             }
 
+            Result.success(contacts)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -137,7 +135,7 @@ class ContactRepositoryImpl @Inject constructor(
             val contact = Contact(
                 contactId = documentRef.id,
                 fullName = contactRequest.fullName,
-                organizationName = contactRequest.organization,
+                organization = contactRequest.organization,
                 title = contactRequest.title,
                 emails = contactRequest.emails,
                 phones = contactRequest.phones,
