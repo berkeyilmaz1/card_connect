@@ -48,7 +48,6 @@ class ScanRepositoryImpl @Inject constructor(
                 "Total time: ${endTime - startTime}) ms , OCR time: ${llmTime - startTime} ms, LLM time: ${endTime - llmTime} ms"
             )
             scanResponse.imageUrl = file.absolutePath
-            scanResponse.rawText = recognizedText
 
             Result.success(scanResponse)
         } catch (e: Exception) {

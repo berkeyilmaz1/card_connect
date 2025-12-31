@@ -41,7 +41,6 @@ data class ScanResultState(
     val tags: List<Tag> = emptyList(),
     val notes: String? = null,
     val image: String? = null,
-    val rawText: String? = null
 )
 
 @HiltViewModel
@@ -191,10 +190,6 @@ class ScanResultViewModel @Inject constructor(
 
     fun updateImage(value: String) {
         _uiState.update { it.copy(image = value) }
-    }
-
-    fun updateRawText(value: String) {
-        _uiState.update { it.copy(rawText = value) }
     }
 
     fun resetSavedState() {

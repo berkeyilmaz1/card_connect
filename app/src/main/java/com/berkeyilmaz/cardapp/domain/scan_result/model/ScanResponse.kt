@@ -10,11 +10,9 @@ data class ScanResponse(
     val emails: List<String> = listOf(),
     val websites: List<String> = listOf(),
     val address: String? = null,
-    //todo: added s suffix
     val socialMedias: List<SocialMedia> = listOf(),
     val tags: List<Tag> = listOf(),
     val note: String? = null,
     var imageUrl: String? = null,
-    var rawText: String? = null
 ) : Serializable
 

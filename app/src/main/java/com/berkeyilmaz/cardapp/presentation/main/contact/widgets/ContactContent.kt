@@ -97,7 +97,7 @@ private fun ContactList(
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
         ) {
             items(
-                items = contacts, key = { contact -> contact.internalId }) { contact ->
+                items = contacts, key = { contact -> contact.contactId }) { contact ->
                 ContactCard(
                     contact = contact, onClick = {
                         contact.phoneNumbers.firstOrNull()?.let { phoneNumber ->
