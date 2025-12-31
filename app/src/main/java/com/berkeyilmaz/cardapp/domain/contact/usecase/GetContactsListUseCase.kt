@@ -8,5 +8,5 @@ class GetContactsListUseCase @Inject constructor(
     private val repository: ContactRepository
 ) {
     suspend operator fun invoke(contentResolver: ContentResolver) =
-        repository.getInternalContacts(contentResolver)
+        repository.getInternalContactsWithChanges(contentResolver)
 }

@@ -38,12 +38,9 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.CustomAppButton
 import com.berkeyilmaz.cardapp.core.widgets.CustomTextField
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResultRowItem
+import com.berkeyilmaz.cardapp.domain.scan_result.model.SocialMedia
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultState
 import com.berkeyilmaz.cardapp.presentation.scan_result.viewmodel.ScanResultViewModel
-import kotlin.collections.any
-import kotlin.collections.filter
-import kotlin.collections.orEmpty
-import kotlin.collections.plus
 
 @Composable
 fun ScanResultContent(
@@ -163,73 +160,166 @@ private fun createResultItems(
                 )
             }), ScanResultRowItem(
             title = phoneTitle, content = {
-                CustomTextField(
-                    value = uiState.phoneNumber.orEmpty(),
-                    onValueChange = viewModel::updatePhoneNumber,
-                    leadingIcon = Icons.Default.Phone,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Phone,
-                    imeAction = ImeAction.Next
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {
+                    uiState.phones.forEachIndexed { index, phone ->
+                        CustomTextField(
+                            value = phone,
+                            onValueChange = { newValue ->
+                                val updatedPhones = uiState.phones.toMutableList()
+                                updatedPhones[index] = newValue
+                                viewModel.updatePhones(updatedPhones)
+                            },
+                            leadingIcon = Icons.Default.Phone,
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                    if (uiState.phones.isEmpty()) {
+                        CustomTextField(
+                            value = "",
+                            onValueChange = { newValue ->
+                                if (newValue.isNotEmpty()) {
+                                    viewModel.updatePhones(listOf(newValue))
+                                }
+                            },
+                            leadingIcon = Icons.Default.Phone,
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                }
             }), ScanResultRowItem(
             title = emailTitle, content = {
-                CustomTextField(
-                    value = uiState.email.orEmpty(),
-                    onValueChange = viewModel::updateEmail,
-                    leadingIcon = Icons.Default.Email,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {
+                    uiState.emails.forEachIndexed { index, email ->
+                        CustomTextField(
+                            value = email,
+                            onValueChange = { newValue ->
+                                val updatedEmails = uiState.emails.toMutableList()
+                                updatedEmails[index] = newValue
+                                viewModel.updateEmails(updatedEmails)
+                            },
+                            leadingIcon = Icons.Default.Email,
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                    if (uiState.emails.isEmpty()) {
+                        CustomTextField(
+                            value = "",
+                            onValueChange = { newValue ->
+                                if (newValue.isNotEmpty()) {
+                                    viewModel.updateEmails(listOf(newValue))
+                                }
+                            },
+                            leadingIcon = Icons.Default.Email,
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                }
             }), ScanResultRowItem(
             title = addressTitle, content = {
-                CustomTextField(
-                    value = uiState.address.orEmpty(),
-                    onValueChange = viewModel::updateAddress,
-                    leadingIcon = Icons.Default.LocationOn,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {
+                    CustomTextField(
+                        value = uiState.addresses.orEmpty(),
+                        onValueChange = viewModel::updateAddresses,
+                        leadingIcon = Icons.Default.LocationOn,
+                        singleLine = false,
+                        maxLines = 3,
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    )
+                }
             }), ScanResultRowItem(
             title = tagsTitle, content = {
-                TagsSection(tags = uiState.tags.orEmpty(), onTagRemove = { tag ->
-                    viewModel.updateTags(uiState.tags.orEmpty().filter { it != tag })
+                TagsSection(tags = uiState.tags, onTagRemove = { tag ->
+                    viewModel.updateTags(uiState.tags.filter { it != tag })
                 }, onTagAdd = { newTag ->
-                    val exists = uiState.tags.orEmpty().any { it.name == newTag.name }
+                    val exists = uiState.tags.any { it.name == newTag.name }
                     if (!exists) {
-                        viewModel.updateTags(uiState.tags.orEmpty() + newTag)
+                        viewModel.updateTags(uiState.tags + newTag)
                     }
                 })
             }), ScanResultRowItem(
             title = websitesTitle, content = {
-                CustomTextField(
-                    value = uiState.websites.orEmpty(),
-                    onValueChange = viewModel::updateWebsites,
-                    leadingIcon = Icons.Default.Web,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Uri,
-                    imeAction = ImeAction.Next
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {
+                    uiState.websites.forEachIndexed { index, website ->
+                        CustomTextField(
+                            value = website,
+                            onValueChange = { newValue ->
+                                val updatedWebsites = uiState.websites.toMutableList()
+                                updatedWebsites[index] = newValue
+                                viewModel.updateWebsites(updatedWebsites)
+                            },
+                            leadingIcon = Icons.Default.Web,
+                            singleLine = false,
+                            maxLines = 3,
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                    if (uiState.websites.isEmpty()) {
+                        CustomTextField(
+                            value = "",
+                            onValueChange = { newValue ->
+                                if (newValue.isNotEmpty()) {
+                                    viewModel.updateWebsites(listOf(newValue))
+                                }
+                            },
+                            leadingIcon = Icons.Default.Web,
+                            singleLine = false,
+                            maxLines = 3,
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                }
             }), ScanResultRowItem(
             title = socialMediaTitle, content = {
-                CustomTextField(
-                    value = formatSocialMedia(uiState.socialMedia),
-                    onValueChange = {
-                        viewModel.updateSocialMedia(
-                            uiState.socialMedia ?: emptyList()
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {
+                    uiState.socialMedias.forEachIndexed { index, socialMedia ->
+                        CustomTextField(
+                            value = socialMedia.url.orEmpty(),
+                            onValueChange = { newValue ->
+                                val updatedSocialMedias = uiState.socialMedias.toMutableList()
+                                updatedSocialMedias[index] = socialMedia.copy(url = newValue)
+                                viewModel.updateSocialMedia(updatedSocialMedias)
+                            },
+                            leadingIcon = Icons.Default.Business,
+                            label = socialMedia.platform?.platformName ?: "Social Media",
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
                         )
-                    },
-                    leadingIcon = Icons.Default.Business,
-                    singleLine = false,
-                    maxLines = 3,
-                    keyboardType = KeyboardType.Uri,
-                    imeAction = ImeAction.Next
-                )
+                    }
+                    if (uiState.socialMedias.isEmpty()) {
+                        CustomTextField(
+                            value = "",
+                            onValueChange = { newValue ->
+                                if (newValue.isNotEmpty()) {
+                                    viewModel.updateSocialMedia(
+                                        listOf(SocialMedia(url = newValue))
+                                    )
+                                }
+                            },
+                            leadingIcon = Icons.Default.Business,
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
+                        )
+                    }
+                }
             }), ScanResultRowItem(
             title = notesTitle, content = {
                 CustomTextField(
@@ -245,20 +335,6 @@ private fun createResultItems(
     )
 }
 
-private fun formatSocialMedia(socialMedia: List<*>?): String {
-    return socialMedia?.joinToString(", ") { media ->
-        val platform = media?.let {
-            it::class.java.getMethod("getPlatform").invoke(it)
-        }
-        val platformName = platform?.let {
-            it::class.java.getMethod("getPlatformName").invoke(it) as? String
-        } ?: "Unknown"
-        val url = media?.let {
-            it::class.java.getMethod("getUrl").invoke(it) as? String
-        } ?: ""
-        "$platformName: $url"
-    }.orEmpty()
-}
 
 @Composable
 fun ResultSection(

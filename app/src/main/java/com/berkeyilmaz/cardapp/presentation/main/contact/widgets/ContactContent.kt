@@ -1,5 +1,6 @@
 package com.berkeyilmaz.cardapp.presentation.main.contact.widgets
 
+import androidx.annotation.DimenRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,10 +29,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.widgets.AppTitle
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
@@ -94,7 +97,7 @@ private fun ContactList(
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
         ) {
             items(
-                items = contacts, key = { contact -> contact.internalId }) { contact ->
+                items = contacts, key = { contact -> contact.contactId }) { contact ->
                 ContactCard(
                     contact = contact, onClick = {
                         contact.phoneNumbers.firstOrNull()?.let { phoneNumber ->
@@ -128,7 +131,7 @@ private fun ContactCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_normal))
         ) {
-            ContactAvatar(name = contact.fullName)
+            ContactAvatar(name = contact.fullName, R.dimen.spacer_48)
 
             ContactInfo(
                 name = contact.fullName, phoneNumber = contact.phoneNumbers.firstOrNull() ?: ""
@@ -138,10 +141,20 @@ private fun ContactCard(
 }
 
 @Composable
-private fun ContactAvatar(name: String) {
+fun ContactAvatar(
+    name: String,
+    @DimenRes size: Int
+) {
+    val avatarSize = dimensionResource(size)
+    val textStyle = when {
+        avatarSize <= 32.dp -> MaterialTheme.typography.labelMedium
+        avatarSize <= 48.dp -> MaterialTheme.typography.titleMedium
+        else -> MaterialTheme.typography.headlineSmall
+    }
+
     Box(
         modifier = Modifier
-            .size(dimensionResource(R.dimen.spacer_48))
+            .size(avatarSize)
             .clip(CircleShape)
             .background(
                 brush = Brush.linearGradient(
@@ -153,7 +166,7 @@ private fun ContactAvatar(name: String) {
     ) {
         Text(
             text = name.firstOrNull()?.uppercase() ?: "?",
-            style = MaterialTheme.typography.headlineSmall,
+            style = textStyle,
             color = MaterialTheme.colorScheme.onPrimary
         )
     }

@@ -150,15 +150,6 @@ class SignInViewModel @Inject constructor(
         }
     }
 
-    suspend fun getCurrentUser(): FirebaseUser? {
-        val result = getCurrentUserUseCase()
-        return if (result is ResponseState.Success) {
-            result.data
-        } else {
-            null
-        }
-    }
-
     suspend fun signInWithGoogle() {
         setLoading(true)
         val result = signInWithGoogleUseCase()

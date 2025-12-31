@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.lifecycle.process)
+    implementation(libs.firebase.firestore)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose) // Hilt navigation for Compose
 
@@ -124,8 +125,10 @@ dependencies {
     //TESS OCR
     implementation(libs.tess.two)
 
-    testImplementation(libs.junit)
+    //AppCheck
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.navigation.testing) // Testing Navigation
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

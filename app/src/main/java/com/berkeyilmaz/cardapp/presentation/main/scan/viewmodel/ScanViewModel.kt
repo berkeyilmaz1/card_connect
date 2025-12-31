@@ -11,7 +11,6 @@ import androidx.camera.view.LifecycleCameraController
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.berkeyilmaz.cardapp.domain.scan.usecase.ScanUseCase
 import com.berkeyilmaz.cardapp.domain.scan.usecase.ScanImageOnDeviceUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +33,7 @@ sealed class ScanUiState {
 
 @HiltViewModel
 class ScanViewModel @Inject constructor(
-    private val scanUseCase: ScanUseCase,
+//    private val scanUseCase: ScanUseCase,
     private val scanImageOnDeviceUseCase: ScanImageOnDeviceUseCase
 ) : ViewModel() {
 
@@ -69,39 +68,39 @@ class ScanViewModel @Inject constructor(
             })
     }
 
-    fun scanImage(file: File) {
-        viewModelScope.launch {
-            val startTime = System.currentTimeMillis()
-            setLoading()
-
-            // Orijinal boyut
-            val originalSizeKb = file.length() / 1024
-            Log.d("BerkeTAG", "Original image size: ${originalSizeKb}KB")
-
-            // Görüntüyü sıkıştır
-            val compressedFile = withContext(Dispatchers.IO) {
-                compressImage(file, maxSizeKb = 800)
-            }
-
-            val compressedSizeKb = compressedFile.length() / 1024
-            Log.d("BerkeTAG", "Compressed image size: ${compressedSizeKb}KB")
-
-            val result = scanUseCase(compressedFile)
-            Log.i("BerkeTAG", "Scan result: $result")
-
-            result.fold(onSuccess = { data ->
-                val updatedData = data.copy(imageUrl = compressedFile.absolutePath)
-                val endTime = System.currentTimeMillis()
-                val duration = endTime - startTime
-                Log.d("BerkeTAGTIME", "Scan completed in ${duration}ms")
-                setSuccess(updatedData)
-            }, onFailure = { error ->
-                withContext(Dispatchers.Main) {
-                    _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")
-                }
-            })
-        }
-    }
+//    fun scanImage(file: File) {
+//        viewModelScope.launch {
+//            val startTime = System.currentTimeMillis()
+//            setLoading()
+//
+//            // Orijinal boyut
+//            val originalSizeKb = file.length() / 1024
+//            Log.d("BerkeTAG", "Original image size: ${originalSizeKb}KB")
+//
+//            // Görüntüyü sıkıştır
+//            val compressedFile = withContext(Dispatchers.IO) {
+//                compressImage(file, maxSizeKb = 800)
+//            }
+//
+//            val compressedSizeKb = compressedFile.length() / 1024
+//            Log.d("BerkeTAG", "Compressed image size: ${compressedSizeKb}KB")
+//
+//            val result = scanUseCase(compressedFile)
+//            Log.i("BerkeTAG", "Scan result: $result")
+//
+//            result.fold(onSuccess = { data ->
+//                val updatedData = data.copy(imageUrl = compressedFile.absolutePath)
+//                val endTime = System.currentTimeMillis()
+//                val duration = endTime - startTime
+//                Log.d("BerkeTAGTIME", "Scan completed in ${duration}ms")
+//                setSuccess(updatedData)
+//            }, onFailure = { error ->
+//                withContext(Dispatchers.Main) {
+//                    _uiState.value = ScanUiState.Error(error.message ?: "Unknown Error")
+//                }
+//            })
+//        }
+//    }
 
     fun compressImage(
         file: File, maxSizeKb: Int

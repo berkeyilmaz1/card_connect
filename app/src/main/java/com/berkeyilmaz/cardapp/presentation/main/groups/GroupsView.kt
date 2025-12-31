@@ -91,7 +91,7 @@ fun ErrorSection(onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "An error occurred while loading groups. Please try again later.",
+            text = stringResource(R.string.error_fetching_groups),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
         )

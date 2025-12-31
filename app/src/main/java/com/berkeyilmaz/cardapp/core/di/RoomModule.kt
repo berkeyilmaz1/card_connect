@@ -2,6 +2,7 @@ package com.berkeyilmaz.cardapp.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.berkeyilmaz.cardapp.data.local.dao.InternalContactDAO
 import com.berkeyilmaz.cardapp.data.local.dao.PhotoDAO
 import com.berkeyilmaz.cardapp.data.local.db.CardConnectDatabase
 import dagger.Module
@@ -24,9 +25,12 @@ object DatabaseModule {
             context,
             CardConnectDatabase::class.java,
             "app_db"
-        ).build()
+        ).fallbackToDestructiveMigration(dropAllTables = true).build()
     }
 
     @Provides
     fun providePhotoDao(db: CardConnectDatabase): PhotoDAO = db.photoDao()
+
+    @Provides
+    fun provideInternalContactDao(db: CardConnectDatabase): InternalContactDAO = db.internalContactDao()
 }

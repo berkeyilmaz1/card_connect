@@ -1,23 +1,20 @@
 package com.berkeyilmaz.cardapp.domain.contact.model
 
+import com.berkeyilmaz.cardapp.domain.scan_result.model.SocialMedia
+import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
 import com.google.gson.annotations.SerializedName
 
 data class Contact(
-    val contactId: String = "",
-    val fullName: String = "",
-    val title: String = "",
-    val organizationName: String = "",
-    val phone: String = "",
-    val email: String = "",
-    @SerializedName("tags") val tags: List<ContactTag> = emptyList()
-) {
-    // tags'i groups Map'ine çeviren helper property
-    val groups: Map<String, List<String>>
-        get() = tags.groupBy { it.category }.mapValues { entry -> entry.value.map { it.name } }
-}
-
-data class ContactTag(
-    @SerializedName("tagId") val tagId: String = "",
-    @SerializedName("name") val name: String = "",
-    @SerializedName("category") val category: String = ""
+    @SerializedName("contactId") val contactId: String = "",
+    @SerializedName("fullName") val fullName: String = "",
+    @SerializedName("title") val title: String = "",
+    @SerializedName("organization") val organization: String = "",
+    @SerializedName("phones") val phones: List<String> = listOf(),
+    @SerializedName("emails") val emails: List<String> = listOf(),
+    @SerializedName("tags") val tags: List<Tag> = emptyList(),
+    @SerializedName("note") val note: String = "",
+    @SerializedName("address") val address: String = "",
+    @SerializedName("imageUrl") val imageUrl: String = "",
+    @SerializedName("socialMedias") val socialMedias: List<SocialMedia> = emptyList(),
+    @SerializedName("websites") val websites: List<String> = emptyList()
 )

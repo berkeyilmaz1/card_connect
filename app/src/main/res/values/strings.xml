@@ -161,5 +161,23 @@
     <string name="decline">Decline</string>
     <string name="accept">Accept</string>
     <string name="eula_text">1. UYGULAMANIN TANIMI\nCard Connect;\nKamera aracılığıyla kartvizit görüntülerini tarayan,\nOCR (Optik Karakter Tanıma) ve Yapay Zeka / LLM teknolojileri kullanarak kartvizit üzerindeki bilgileri analiz eden,\nKullanıcının izniyle rehber (contacts) verilerine erişen,\nYapay zeka destekli akıllı gruplandırma ve etiketleme yapan bir mobil uygulamadır.\n\n2. LİSANS KAPSAMI\nKullanıcıya;\nUygulamayı kişisel ve ticari olmayan amaçlarla,\nDevredilemez, münhasır olmayan ve sınırlı bir lisans ile kullanma hakkı tanınır.\nUygulamanın tersine mühendisliği, kopyalanması, satılması veya izinsiz dağıtılması yasaktır.\n\n3. TOPLANAN VERİLER\nUygulama aşağıdaki verileri yalnızca açık rıza ile işler:\n3.1 Kullanıcı Tarafından Sağlanan Veriler\nKartvizit görselleri\nKartvizit üzerindeki ad, soyad, telefon, e-posta, şirket bilgileri\nManuel olarak girilen notlar ve etiketler\n3.2 Otomatik Olarak İşlenen Veriler\nOCR ile çıkarılan metinler\nYapay zeka tarafından oluşturulan sınıflandırma ve gruplamalar\nUygulama performans ve hata kayıtları (anonim)\n3.3 Rehber Verileri\nRehber erişimi sadece kullanıcı izniyle sağlanır\nRehber verileri kullanıcı cihazı dışında üçüncü kişilerle paylaşılmaz\n\n4. VERİLERİN İŞLENME AMACI\nToplanan veriler aşağıdaki amaçlarla işlenir:\nKartvizit bilgilerinin dijitalleştirilmesi\nAkıllı gruplandırma ve analiz yapılması\nKullanıcı deneyiminin iyileştirilmesi\nHataların giderilmesi ve performans analizi\nVeriler amacı dışında kullanılmaz.\n\n5. KVKK (6698 SAYILI KANUN) KAPSAMINDA KULLANICI HAKLARI\nKullanıcı, KVKK’nın 11. maddesi uyarınca:\nKişisel verilerinin işlenip işlenmediğini öğrenme\nİşlenmişse buna ilişkin bilgi talep etme\nYanlış veya eksik işlenen verilerin düzeltilmesini isteme\nVerilerin silinmesini veya yok edilmesini talep etme\nAçık rızasını her zaman geri çekme\nhaklarına sahiptir.\n\n6. GDPR KAPSAMINDA KULLANICI HAKLARI\nAvrupa Birliği kullanıcıları için:\nRight to Access (Erişim Hakkı)\nRight to Rectification (Düzeltme Hakkı)\nRight to Erasure – Right to be Forgotten (Silinme Hakkı)\nRight to Data Portability (Veri Taşınabilirliği)\nRight to Object (İtiraz Hakkı)\nhakları güvence altındadır.\n\n7. VERİ SAKLAMA VE GÜVENLİK\nVeriler yalnızca gerekli süre boyunca saklanır\nEndüstri standartlarında şifreleme ve güvenlik önlemleri uygulanır\nYetkisiz erişime karşı teknik ve idari tedbirler alınır\n\n8. YAPAY ZEKA VE OCR KULLANIMI\nOCR ve LLM çıktıları otomatik analizdir, %100 doğruluk garanti edilmez\nKullanıcı, oluşturulan verileri kontrol etmekle sorumludur\nYapay zeka çıktıları hukuki veya ticari bağlayıcılık taşımaz\n\n9. ÜÇÜNCÜ TARAF HİZMETLER\nUygulama;\nOCR\nYapay zeka modelleri\nAnalitik servisler\ngibi güvenilir üçüncü taraf hizmetler kullanabilir. Bu hizmetler yalnızca gerekli minimum veriye erişir.\n\n10. SORUMLULUK REDDİ\nUygulama “olduğu gibi” sunulmaktadır.\nŞirket, veri kaybı, yanlış analiz veya dolaylı zararlardan sorumlu tutulamaz.\n\n11. SÖZLEŞMEDE DEĞİŞİKLİK\nBu Sözleşme güncellenebilir. Güncellemeler uygulama içinde yayınlandığı anda yürürlüğe girer.\n\n12. UYGULANACAK HUKUK\nBu Sözleşme Türkiye Cumhuriyeti Hukuku’na tabidir.\nUyuşmazlıklarda Düzce Mahkemeleri yetkilidir.\n\n13. İLETİŞİM\nVeri talepleri ve hukuki başvurular için:\n📧 E-posta: info@cardconnect.app\n📍 Uygulama Adı: Card Connect\n</string>
+    <string name="use_local_llm">Use Local LLM</string>
+
+    <!-- Analyze Bottom Sheet -->
+    <string name="analyzing_contacts">Analyzing New Contacts</string>
+    <string name="analyzing_contacts_count">%d new contact(s) are being analyzed with AI</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="analysis_complete">Analysis Complete</string>
+    <string name="contacts_analyzed_count">%d contact(s) analyzed successfully</string>
+    <string name="analysis_error">Analysis Failed</string>
+    <string name="unknown_contact">Unknown Contact</string>
+    <string name="done">Done</string>
+
+    <!-- Cancel Analysis Dialog -->
+    <string name="cancel_analysis_title">Cancel Analysis?</string>
+    <string name="cancel_analysis_message">The contact analysis is still in progress. Are you sure you want to cancel?</string>
+    <string name="yes_cancel">Yes, Cancel</string>
+    <string name="no_continue">No, Continue</string>
+    <string name="error_fetching_groups">An error occurred while loading groups. Please try again later.</string>
 
 </resources>

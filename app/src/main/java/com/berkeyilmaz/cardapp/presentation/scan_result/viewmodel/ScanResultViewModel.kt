@@ -11,7 +11,6 @@ import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.domain.photo.usecase.InsertPhotoUseCase
 import com.berkeyilmaz.cardapp.domain.scan.usecase.CreateContactUseCase
-import com.berkeyilmaz.cardapp.domain.scan_result.model.ConfirmedData
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.domain.scan_result.model.SocialMedia
 import com.berkeyilmaz.cardapp.domain.scan_result.model.Tag
@@ -34,15 +33,14 @@ data class ScanResultState(
     val fullName: String? = null,
     val jobTitle: String? = null,
     val company: String? = null,
-    val phoneNumber: String? = null,
-    val email: String? = null,
-    val address: String? = null,
-    val websites: String? = null,
-    val socialMedia: List<SocialMedia>? = null,
-    val tags: List<Tag>? = listOf(),
+    val phones: List<String> = emptyList(),
+    val emails: List<String> = emptyList(),
+    val addresses: String? = null,
+    val websites: List<String> = emptyList(),
+    val socialMedias: List<SocialMedia> = emptyList(),
+    val tags: List<Tag> = emptyList(),
     val notes: String? = null,
     val image: String? = null,
-    val rawText: String? = null
 )
 
 @HiltViewModel
@@ -61,30 +59,25 @@ class ScanResultViewModel @Inject constructor(
         // Basic validation: require a name or at least one contact method
         val hasName = !currentState.fullName.isNullOrBlank()
         val hasContactMethod =
-            !currentState.phoneNumber.isNullOrBlank() || !currentState.email.isNullOrBlank()
+            currentState.phones.isNotEmpty() || currentState.emails.isNotEmpty()
         if (!hasName && !hasContactMethod) {
             _uiState.update { it.copy(errorMessage = context.getString(R.string.scan_result_feedback_error)) }
             return
         }
 
         val contact = ContactRequest(
-            imageUrl = "https://example.com/image.jpg",
-            rawText = currentState.rawText,
-            note = currentState.notes,
-            confirmedData = ConfirmedData(
-                fullName = currentState.fullName,
-                title = currentState.jobTitle,
-                organization = currentState.company,
-                phones = currentState.phoneNumber
-                    ?.replace("-", "")
-                    ?.replace(" ", "")
-                    ?.let { listOf(it) }
-                    ?: emptyList(),
-                emails = currentState.email?.let { listOf(it) } ?: emptyList(),
-                addresses = currentState.address?.let { listOf(it) } ?: emptyList(),
-                websites = currentState.websites?.let { listOf(it) } ?: emptyList(),
-                socialMedia = currentState.socialMedia ?: emptyList(),
-                tags = currentState.tags ?: emptyList()))
+            fullName = currentState.fullName.orEmpty(),
+            title = currentState.jobTitle.orEmpty(),
+            organization = currentState.company.orEmpty(),
+            phones = currentState.phones,
+            emails = currentState.emails,
+            websites = currentState.websites,
+            address = currentState.addresses.orEmpty(),
+            socialMedias = currentState.socialMedias,
+            tags = currentState.tags,
+            note = currentState.notes.orEmpty(),
+            imageUrl = currentState.image.orEmpty()
+        )
 
         Log.i("ScanResultViewModel", "Creating contact: $contact")
 
@@ -111,12 +104,12 @@ class ScanResultViewModel @Inject constructor(
                     ContactsHelper.addContactToPhone(
                         context = context,
                         displayName = currentState.fullName,
-                        phoneNumber = currentState.phoneNumber,
-                        email = currentState.email,
+                        phoneNumber = currentState.phones.firstOrNull(),
+                        email = currentState.emails.firstOrNull(),
                         company = currentState.company,
                         jobTitle = currentState.jobTitle,
-                        address = currentState.address,
-                        website = currentState.websites,
+                        address = currentState.addresses,
+                        website = currentState.websites.firstOrNull(),
                         notes = currentState.notes
                     )
                 }
@@ -166,29 +159,28 @@ class ScanResultViewModel @Inject constructor(
         _uiState.update { it.copy(company = value) }
     }
 
-    // Accept single string from text fields and convert to list internally.
-    fun updatePhoneNumber(value: String) {
-        _uiState.update { it.copy(phoneNumber = value) }
+    fun updatePhones(value: List<String>) {
+        _uiState.update { it.copy(phones = value) }
     }
 
-    fun updateEmail(value: String) {
-        _uiState.update { it.copy(email = value) }
+    fun updateEmails(value: List<String>) {
+        _uiState.update { it.copy(emails = value) }
     }
 
-    fun updateAddress(value: String) {
-        _uiState.update { it.copy(address = value) }
+    fun updateAddresses(value: String) {
+        _uiState.update { it.copy(addresses = value) }
     }
 
     fun updateNotes(value: String) {
         _uiState.update { it.copy(notes = value) }
     }
 
-    fun updateWebsites(value: String) {
+    fun updateWebsites(value: List<String>) {
         _uiState.update { it.copy(websites = value) }
     }
 
     fun updateSocialMedia(value: List<SocialMedia>) {
-        _uiState.update { it.copy(socialMedia = value) }
+        _uiState.update { it.copy(socialMedias = value) }
     }
 
     fun updateTags(value: List<Tag>) {
@@ -198,10 +190,6 @@ class ScanResultViewModel @Inject constructor(
 
     fun updateImage(value: String) {
         _uiState.update { it.copy(image = value) }
-    }
-
-    fun updateRawText(value: String) {
-        _uiState.update { it.copy(rawText = value) }
     }
 
     fun resetSavedState() {
