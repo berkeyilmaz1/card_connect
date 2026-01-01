@@ -55,7 +55,7 @@ fun ScannedCardImage(imagePath: String) {
 @Composable
 private fun PlaceholderImage() {
     Image(
-        painter = painterResource(id = R.mipmap.ic_launcher),
+        painter = painterResource(id = R.drawable.ic_error),
         contentDescription = stringResource(R.string.scanned_card),
         modifier = Modifier
             .fillMaxWidth()
