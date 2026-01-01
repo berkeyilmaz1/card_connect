@@ -12,10 +12,12 @@ import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContactChanges
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
+import com.berkeyilmaz.cardapp.domain.settings.usecase.GetUseLocalLlmUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -24,6 +26,7 @@ class ContactRepositoryImpl @Inject constructor(
     private val database: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
     private val internalContactDao: InternalContactDAO,
+    private val getUseLocalLlmUseCase: GetUseLocalLlmUseCase,
 ) : ContactRepository {
 
     override suspend fun getInternalContacts(contentResolver: ContentResolver): List<InternalContact> =
@@ -287,8 +290,20 @@ class ContactRepositoryImpl @Inject constructor(
         text: String, contacts: List<Contact>
     ): List<Contact> {
         return try {
+            val useLocalLlm = getUseLocalLlmUseCase().first()
             Log.i("ContactRepositoryImpl", "contacts to search: $contacts")
-            val response = GeminiExtractor.findContactThatUserAsked(text, contacts)
+            Log.i("ContactRepositoryImpl", "Using Local LLM: $useLocalLlm")
+
+            val response = if (useLocalLlm) {
+                // TODO: Implement local LLM call
+                Log.w(
+                    "ContactRepositoryImpl",
+                    "Local LLM not implemented yet, falling back to Gemini"
+                )
+                GeminiExtractor.findContactThatUserAsked(text, contacts)
+            } else {
+                GeminiExtractor.findContactThatUserAsked(text, contacts)
+            }
             Log.i("ContactRepositoryImpl", "Search response for '$text': $response")
             response
         } catch (e: Exception) {
@@ -299,7 +314,27 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun suggestTagsForNewContact(internalContactList: List<InternalContact>): List<ContactRequest> {
         return try {
-            val response = GeminiExtractor.suggestTagsForNewContact(internalContactList)
+            val useLocalLlm = getUseLocalLlmUseCase().first()
+            Log.i(
+                "ContactRepositoryImpl",
+                "Suggesting tags for ${internalContactList.size} contacts"
+            )
+            Log.i("ContactRepositoryImpl", "Using Local LLM: $useLocalLlm")
+
+            val response = if (useLocalLlm) {
+                // TODO: Implement local LLM call
+                Log.w(
+                    "ContactRepositoryImpl",
+                    "Local LLM not implemented yet, falling back to Gemini"
+                )
+                GeminiExtractor.suggestTagsForNewContact(internalContactList)
+            } else {
+                GeminiExtractor.suggestTagsForNewContact(internalContactList)
+            }
+            response.map { it ->
+                it.copy(llmSource = if (useLocalLlm) "Local LLM" else "Gemini LLM")
+            }
+
             response
         } catch (e: Exception) {
             Log.e("ContactRepositoryImpl", "Tag suggestion exception: ${e.message}")

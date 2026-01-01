@@ -33,6 +33,8 @@ fun SettingsView(
     viewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
 ) {
     val currentTheme by viewModel.currentTheme.collectAsState()
+    val useLocalLlm by viewModel.useLocalLlm.collectAsState()
+
     // SYSTEM modunda ise sistem temasını kontrol et, değilse direkt tema değerini kullan
     val isDarkTheme = when (currentTheme) {
         AppTheme.DARK -> true
@@ -67,14 +69,12 @@ fun SettingsView(
             leadingIcon = Icons.Rounded.AutoAwesome,
             title = stringResource(R.string.use_local_llm),
             trailingContent = {
-                // todo: bu tercihleri room ile saklayıp tüm uygulamada bir singleton object üzerinden veya
-                //todo: gerektiği yerde roomdan çağırarak kullanmak nasıl olabilir
                 Switch(
-                    checked = isDarkTheme, onCheckedChange = { isChecked ->
-//                        viewModel.setTheme(
-//                            if (isChecked) AppTheme.DARK else AppTheme.LIGHT
-//                        )
-                    }, colors = SwitchDefaults.colors(
+                    checked = useLocalLlm,
+                    onCheckedChange = { isChecked ->
+                        viewModel.setUseLocalLlm(isChecked)
+                    },
+                    colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.primary,
                         checkedTrackColor = MaterialTheme.colorScheme.secondary
                     )
