@@ -39,7 +39,7 @@ fun GroupsView() {
         modifier = Modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_normal)),
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
     ) {
 

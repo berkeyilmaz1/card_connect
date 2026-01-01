@@ -14,5 +14,6 @@ data class ScanResponse(
     val tags: List<Tag> = listOf(),
     val note: String? = null,
     var imageUrl: String? = null,
+    var llmSource: String? = null
 ) : Serializable
 

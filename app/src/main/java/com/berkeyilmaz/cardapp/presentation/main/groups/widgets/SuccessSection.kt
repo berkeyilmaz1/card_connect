@@ -69,109 +69,105 @@ fun SuccessSection(
         kotlinx.coroutines.delay(150) // Animasyon için daha uzun delay
         showSubGroups = true
     }
+    Column(modifier = Modifier.fillMaxSize()) {
+        AppTitle(stringResource(R.string.groups))
 
-    AppTitle(stringResource(R.string.groups))
-
-    /** --- ANA GROUP CHIP ROW --- (İş, Okul, Etkinlik) - SÜREKLI DURUR */
-    Row(
-        modifier = Modifier
-            .horizontalScroll(scrollState)
-            .padding(bottom = 8.dp)
-    ) {
-        mainGroups.forEach { group ->
-            val categoryColor = TagCategory.fromString(group).color
-
-            FilterChip(
-                selected = selectedMainGroup == group,
-                onClick = { onMainGroupSelected(group) },
-                label = { Text(group) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = categoryColor,
-                    selectedLabelColor = androidx.compose.ui.graphics.Color.White,
-                    containerColor = categoryColor.copy(alpha = 0.2f),
-                    labelColor = categoryColor
-                )
-            )
-            Spacer(Modifier.width(8.dp))
-        }
-    }
-
-    /** --- ALT GROUP CHIP ROW - ANİMASYONLU --- (MOVE ON, Google, Yazılım Ekibi) */
-    AnimatedVisibility(
-        visible = showSubGroups && subGroups.isNotEmpty(),
-        enter = fadeIn(
-            animationSpec = tween(durationMillis = 500, delayMillis = 100)
-        ) + expandVertically(
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            expandFrom = Alignment.Top
-        ),
-        exit = fadeOut(animationSpec = tween(250)) +
-                shrinkVertically(animationSpec = tween(250))
-    ) {
+        /** --- ANA GROUP CHIP ROW --- (İş, Okul, Etkinlik) - SÜREKLI DURUR */
         Row(
             modifier = Modifier
-                .horizontalScroll(rememberScrollState())
+                .horizontalScroll(scrollState)
                 .padding(bottom = 8.dp)
         ) {
-            // "Tümü" chip'i ekle
-            val categoryColor = TagCategory.fromString(selectedMainGroup).color
+            mainGroups.forEach { group ->
+                val categoryColor = TagCategory.fromString(group).color
 
-            FilterChip(
-                selected = selectedSubGroup == null,
-                onClick = { onSubGroupSelected(null) },
-                label = { Text(stringResource(R.string.all)) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = categoryColor,
-                    selectedLabelColor = androidx.compose.ui.graphics.Color.White,
-                    containerColor = categoryColor.copy(alpha = 0.1f),
-                    labelColor = categoryColor.copy(alpha = 0.7f)
-                )
-            )
-            Spacer(Modifier.width(8.dp))
-
-            subGroups.forEach { sub ->
                 FilterChip(
-                    selected = selectedSubGroup == sub,
-                    onClick = {
-                        onSubGroupSelected(if (selectedSubGroup == sub) null else sub)
-                    },
-                    label = { Text(sub) },
+                    selected = selectedMainGroup == group,
+                    onClick = { onMainGroupSelected(group) },
+                    label = { Text(group) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = categoryColor.copy(alpha = 0.8f),
+                        selectedContainerColor = categoryColor,
                         selectedLabelColor = androidx.compose.ui.graphics.Color.White,
-                        containerColor = categoryColor.copy(alpha = 0.15f),
-                        labelColor = categoryColor.copy(alpha = 0.9f)
+                        containerColor = categoryColor.copy(alpha = 0.2f),
+                        labelColor = categoryColor
                     )
                 )
                 Spacer(Modifier.width(8.dp))
             }
         }
-    }
 
-    /** --- CONTACT LIST - İKİ SEVİYELİ FİLTRELEME --- */
-    val filteredContacts = contacts.filter { contact ->
-        val hasMainGroup = contact.tags.any { it.category == selectedMainGroup }
+        /** --- ALT GROUP CHIP ROW - ANİMASYONLU --- (MOVE ON, Google, Yazılım Ekibi) */
+        AnimatedVisibility(
+            visible = showSubGroups && subGroups.isNotEmpty(),
+            enter = fadeIn(
+                animationSpec = tween(durationMillis = 500, delayMillis = 100)
+            ) + expandVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow
+                ), expandFrom = Alignment.Top
+            ),
+            exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(animationSpec = tween(250))
+        ) {
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = 8.dp)
+            ) {
+                // "Tümü" chip'i ekle
+                val categoryColor = TagCategory.fromString(selectedMainGroup).color
 
-        if (selectedSubGroup == null) {
-            // Alt grup seçilmemişse sadece ana grup filtresi
-            hasMainGroup
-        } else {
-            // Alt grup seçiliyse hem ana grup hem alt grup filtresi
-            hasMainGroup && contact.tags.any { it.category == selectedMainGroup && it.name == selectedSubGroup }
+                FilterChip(
+                    selected = selectedSubGroup == null,
+                    onClick = { onSubGroupSelected(null) },
+                    label = { Text(stringResource(R.string.all)) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = categoryColor,
+                        selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                        containerColor = categoryColor.copy(alpha = 0.1f),
+                        labelColor = categoryColor.copy(alpha = 0.7f)
+                    )
+                )
+                Spacer(Modifier.width(8.dp))
+
+                subGroups.forEach { sub ->
+                    FilterChip(
+                        selected = selectedSubGroup == sub, onClick = {
+                            onSubGroupSelected(if (selectedSubGroup == sub) null else sub)
+                        }, label = { Text(sub) }, colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = categoryColor.copy(alpha = 0.8f),
+                            selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                            containerColor = categoryColor.copy(alpha = 0.15f),
+                            labelColor = categoryColor.copy(alpha = 0.9f)
+                        )
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+            }
+        }
+
+        /** --- CONTACT LIST - İKİ SEVİYELİ FİLTRELEME --- */
+        val filteredContacts = contacts.filter { contact ->
+            val hasMainGroup = contact.tags.any { it.category == selectedMainGroup }
+
+            if (selectedSubGroup == null) {
+                // Alt grup seçilmemişse sadece ana grup filtresi
+                hasMainGroup
+            } else {
+                // Alt grup seçiliyse hem ana grup hem alt grup filtresi
+                hasMainGroup && contact.tags.any { it.category == selectedMainGroup && it.name == selectedSubGroup }
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
+        ) {
+            items(filteredContacts) { contact ->
+                ContactCard(contact = contact)
+            }
         }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
-    ) {
-        items(filteredContacts) { contact ->
-            ContactCard(contact = contact)
-        }
-    }
 }
 
 @Composable
