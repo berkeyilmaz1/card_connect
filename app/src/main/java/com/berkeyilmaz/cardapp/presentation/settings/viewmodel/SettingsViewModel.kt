@@ -3,6 +3,8 @@ package com.berkeyilmaz.cardapp.presentation.settings.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.berkeyilmaz.cardapp.domain.settings.LocalLlmModelRepository
+import com.berkeyilmaz.cardapp.domain.settings.LocalLlmModelState
 import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
 import com.berkeyilmaz.cardapp.domain.settings.model.Language
 import com.berkeyilmaz.cardapp.domain.settings.usecase.GetLanguageUseCase
@@ -27,7 +29,8 @@ class SettingsViewModel @Inject constructor(
     private val getLanguageUseCase: GetLanguageUseCase,
     private val saveLanguageUseCase: SaveLanguageUseCase,
     private val getUseLocalLlmUseCase: GetUseLocalLlmUseCase,
-    private val setUseLocalLlmUseCase: SetUseLocalLlmUseCase
+    private val setUseLocalLlmUseCase: SetUseLocalLlmUseCase,
+    private val localLlmModelRepository: LocalLlmModelRepository
 ) : ViewModel() {
 
     // Language State
@@ -47,6 +50,13 @@ class SettingsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = false
     )
+
+    // Local LLM Model State
+    val localLlmModelState: StateFlow<LocalLlmModelState> = localLlmModelRepository.modelState
+
+    // İndirme dialog durumu
+    private val _showDownloadDialog = MutableStateFlow(false)
+    val showDownloadDialog: StateFlow<Boolean> = _showDownloadDialog.asStateFlow()
 
     init {
         observeLanguage()
@@ -79,7 +89,47 @@ class SettingsViewModel @Inject constructor(
 
     fun setUseLocalLlm(useLocal: Boolean) {
         viewModelScope.launch {
-            setUseLocalLlmUseCase(useLocal)
+            // Eğer local LLM aktif edilmek isteniyorsa ve model indirilmemişse
+            if (useLocal && localLlmModelState.value !is LocalLlmModelState.Ready) {
+                // Dialog göster, switch'i henüz aktif etme
+                _showDownloadDialog.value = true
+            } else {
+                setUseLocalLlmUseCase(useLocal)
+            }
         }
+    }
+
+    fun dismissDownloadDialog() {
+        _showDownloadDialog.value = false
+    }
+
+    fun startModelDownload() {
+        viewModelScope.launch {
+            _showDownloadDialog.value = false
+            localLlmModelRepository.downloadModel().collect { state ->
+                Log.d("SettingsViewModel", "Download state: $state")
+                // İndirme tamamlandığında local LLM'i aktif et
+                if (state is LocalLlmModelState.Ready) {
+                    setUseLocalLlmUseCase(true)
+                }
+            }
+        }
+    }
+
+    fun cancelModelDownload() {
+        localLlmModelRepository.cancelDownload()
+    }
+
+    fun deleteModel() {
+        viewModelScope.launch {
+            // Önce local LLM'i devre dışı bırak
+            setUseLocalLlmUseCase(false)
+            // Sonra modeli sil
+            localLlmModelRepository.deleteModel()
+        }
+    }
+
+    fun dismissErrorDialog() {
+        localLlmModelRepository.resetErrorState()
     }
 }

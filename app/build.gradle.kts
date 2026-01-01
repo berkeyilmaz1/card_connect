@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,6 +14,13 @@ plugins {
     alias(libs.plugins.google.gms.google.services) //firebase
 }
 
+// local.properties dosyasını oku
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.berkeyilmaz.cardapp"
     compileSdk = 36
@@ -24,6 +33,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Hugging Face Token'ı BuildConfig'e ekle
+        buildConfigField("String", "HF_TOKEN", "\"${localProperties.getProperty("HF_TOKEN", "")}\"")
     }
 
     buildTypes {
@@ -121,6 +133,9 @@ dependencies {
 
     //Firebase AI
     implementation(libs.firebase.ai)
+
+    //MediaPipe LLM Inference
+    implementation (libs.tasks.genai)
 
     //TESS OCR
     implementation(libs.tess.two)

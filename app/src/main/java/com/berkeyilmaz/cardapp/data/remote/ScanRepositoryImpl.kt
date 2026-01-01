@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.berkeyilmaz.cardapp.core.manager.GeminiExtractor
+import com.berkeyilmaz.cardapp.core.manager.LocalLlmExtractor
 import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.settings.usecase.GetUseLocalLlmUseCase
@@ -19,6 +20,7 @@ class ScanRepositoryImpl @Inject constructor(
     private val textRecognizer: TextRecognizer,
     @param:ApplicationContext private val context: Context,
     private val getUseLocalLlmUseCase: GetUseLocalLlmUseCase,
+    private val localLlmExtractor: LocalLlmExtractor,
 ) : ScanRepository {
 
 //    override suspend fun scanImage(image: MultipartBody.Part): Result<ScanResponse> {
@@ -45,14 +47,23 @@ class ScanRepositoryImpl @Inject constructor(
             Log.i("BerkeTAG", "Recognized text: $recognizedText")
 
             val useLocalLlm = getUseLocalLlmUseCase().first()
-            Log.i("ScanRepositoryImpl", "Using Local LLM: $useLocalLlm")
+            val isModelReady = localLlmExtractor.isModelReady()
+            Log.i("ScanRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady")
 
             val llmTime = System.currentTimeMillis()
-            val scanResponse = if (useLocalLlm) {
-                // TODO: Implement local LLM call
-                Log.w("ScanRepositoryImpl", "Local LLM not implemented yet, falling back to Gemini")
-                GeminiExtractor.extractFromText(recognizedText)
+            val scanResponse = if (useLocalLlm && isModelReady) {
+                Log.i("ScanRepositoryImpl", "Using Local LLM for extraction")
+                val localResult = localLlmExtractor.extractFromText(recognizedText)
+                if (localResult != null) {
+                    localResult
+                } else {
+                    Log.w("ScanRepositoryImpl", "Local LLM failed, falling back to Gemini")
+                    GeminiExtractor.extractFromText(recognizedText)
+                }
             } else {
+                if (useLocalLlm) {
+                    Log.w("ScanRepositoryImpl", "Local LLM enabled but model not ready, using Gemini")
+                }
                 GeminiExtractor.extractFromText(recognizedText)
             }
 
@@ -62,7 +73,8 @@ class ScanRepositoryImpl @Inject constructor(
                 "Total time: ${endTime - startTime}) ms , OCR time: ${llmTime - startTime} ms, LLM time: ${endTime - llmTime} ms"
             )
             scanResponse.imageUrl = file.absolutePath
-            scanResponse.copy(llmSource = if (useLocalLlm) "Local LLM" else "Gemini LLM")
+            val llmSource = if (useLocalLlm && isModelReady) "Local LLM" else "Gemini LLM"
+            scanResponse.copy(llmSource = llmSource)
 
             Result.success(scanResponse)
         } catch (e: Exception) {
