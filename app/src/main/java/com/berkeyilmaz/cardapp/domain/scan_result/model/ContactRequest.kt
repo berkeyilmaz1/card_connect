@@ -14,4 +14,5 @@ data class ContactRequest(
     val tags: List<Tag> = emptyList(),
     val note: String = "",
     val imageUrl: String = "",
+    val llmSource: String = ""
 )
