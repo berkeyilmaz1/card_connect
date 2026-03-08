@@ -30,7 +30,7 @@ class LocalLlmExtractor @Inject constructor(
 ) {
     companion object {
         private const val TAG = "BerkeTag"
-        private const val MAX_TOKENS = 1024
+        private const val MAX_TOKENS = 4096
         private const val TOP_K = 40
     }
 
@@ -203,7 +203,7 @@ class LocalLlmExtractor @Inject constructor(
      * LLM'i kapat ve kaynakları serbest bırak
      */
     fun close() {
-        (llmInference as? LlmInference)?.close()
+        llmInference?.close()
         llmInference = null
         Log.i(TAG, "LLM Inference closed")
     }
@@ -212,78 +212,32 @@ class LocalLlmExtractor @Inject constructor(
 
     private fun buildExtractionPrompt(recognizedText: String): String {
         return """
-Extract contact information from this business card text and return ONLY valid JSON.
+Extract contact info from this text. Return ONLY JSON:
 
-INPUT TEXT:
-$recognizedText
+TEXT: $recognizedText
 
-OUTPUT FORMAT (JSON ONLY):
-{
-  "fullName": "Name or empty string",
-  "title": "Job Title or empty string",
-  "organization": "Company name or empty string",
-  "phones": ["phone numbers"],
-  "emails": ["emails"],
-  "websites": ["websites"],
-  "address": "address or empty string",
-  "socialMedias": [],
-  "tags": [{"name": "tag", "category": "WORK|SCHOOL|HEALTH|SERVICES"}],
-  "note": ""
-}
-
-RULES:
-- NO markdown, NO explanations
-- Return ONLY valid JSON
-- Use empty string for missing fields
-- Use empty array for missing lists
+JSON FORMAT:
+{"fullName":"","title":"","organization":"","phones":[],"emails":[],"websites":[],"address":"","socialMedias":[],"tags":[],"note":""}
 """.trimIndent()
     }
 
     private fun buildSearchPrompt(userQuestion: String, contactsJson: String): String {
         return """
-Find matching contact(s) from the user's query.
-
-USER QUERY: "$userQuestion"
-
-CONTACTS:
+Find matching contactIds for query "$userQuestion" from:
 $contactsJson
 
-Return matching contact IDs as JSON array:
-["contactId1", "contactId2"]
-
-If no match: []
-
-RULES:
-- NO markdown, NO explanations
-- Return ONLY valid JSON array
+Return ONLY JSON array of IDs: ["id1","id2"] or []
 """.trimIndent()
     }
 
     private fun buildTagSuggestionPrompt(contactsJson: String): String {
         return """
-Suggest tags for these contacts. Return as JSON array.
+Suggest tags for contacts. Return ONLY JSON array.
 
-CONTACTS:
-$contactsJson
+INPUT: $contactsJson
 
 OUTPUT FORMAT:
-[
-  {
-    "fullName": "name",
-    "title": "title",
-    "organization": "org",
-    "phones": [],
-    "emails": [],
-    "websites": [],
-    "address": "",
-    "tags": [{"name": "tag", "category": "WORK|SCHOOL|HEALTH|SERVICES"}],
-    "note": ""
-  }
-]
-
-RULES:
-- NO markdown, NO explanations
-- Return ONLY valid JSON
+[{"fullName":"","title":"","organization":"","phones":[],"emails":[],"websites":[],"address":"","tags":[{"name":"","category":"WORK|SCHOOL|HEALTH|SERVICES"}],"note":""}]
 """.trimIndent()
     }
 
