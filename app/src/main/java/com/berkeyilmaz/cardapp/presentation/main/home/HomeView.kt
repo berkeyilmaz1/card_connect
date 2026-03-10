@@ -30,8 +30,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -53,14 +55,17 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
+import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.DuplicateBottomSheetState
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeUiState
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
+import com.berkeyilmaz.cardapp.presentation.main.home.widgets.DuplicateContactsBottomSheet
 import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
 
 data class QuickActionOption(
     val title: String, val icon: ImageVector, val route: String
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeView(
     uiState: HomeUiState,
@@ -123,6 +128,21 @@ fun HomeView(
                 .align(Alignment.BottomCenter)
                 .padding(dimensionResource(R.dimen.padding_normal))
         )
+    }
+
+    // Duplicate contacts bottom sheet
+    val duplicateState = uiState.duplicateBottomSheetState
+    if (duplicateState !is DuplicateBottomSheetState.Hidden) {
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.dismissDuplicateBottomSheet() }
+        ) {
+            DuplicateContactsBottomSheet(
+                state = duplicateState,
+                onMerge = { group, primarySelection -> viewModel.onMergeApproved(group, primarySelection) },
+                onSkip = { viewModel.onDuplicateGroupSkipped() },
+                onDismiss = { viewModel.dismissDuplicateBottomSheet() }
+            )
+        }
     }
 }
 

@@ -3,6 +3,7 @@ package com.berkeyilmaz.cardapp.domain.scan_result.model
 import com.google.gson.annotations.SerializedName
 
 data class ContactRequest(
+    @SerializedName("internalContactId") val internalContactId: String = "",
     @SerializedName("fullName") val fullName: String = "",
     @SerializedName("title") val title: String = "",
     @SerializedName("organization") val organization: String = "",

@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName
 
 data class Contact(
     @SerializedName("contactId") val contactId: String = "",
+    @SerializedName("internalContactId") val internalContactId: String = "",
     @SerializedName("fullName") val fullName: String = "",
     @SerializedName("title") val title: String = "",
     @SerializedName("organization") val organization: String = "",

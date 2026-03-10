@@ -86,7 +86,25 @@ class ScanResultViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val createdContact = createContactsUseCase(contact).getOrThrow()
+                    // 1. Önce telefon rehberine kaydet, internal ID'yi al
+                    val internalContactId = ContactsHelper.addContactToPhone(
+                        context = context,
+                        displayName = currentState.fullName,
+                        phoneNumber = currentState.phones.firstOrNull(),
+                        email = currentState.emails.firstOrNull(),
+                        company = currentState.company,
+                        jobTitle = currentState.jobTitle,
+                        address = currentState.addresses,
+                        website = currentState.websites.firstOrNull(),
+                        notes = currentState.notes
+                    )
+                    Log.i("BerkeTag", "Phone contact saved, internalContactId=$internalContactId")
+
+                    // 2. Internal ID'yi de taşıyarak Firebase'e kaydet
+                    val createdContact = createContactsUseCase(
+                        contact.copy(internalContactId = internalContactId.orEmpty())
+                    ).getOrThrow()
+
                     val user = getCurrentUser()
                     if (user?.uid == null) {
                         throw Exception("User not authenticated")
@@ -99,19 +117,6 @@ class ScanResultViewModel @Inject constructor(
                     )
                     Log.i("BerkeTag", "Inserting photo: $photo")
                     insertPhotoUseCase(photo)
-
-                    // Telefon rehberine ekle
-                    ContactsHelper.addContactToPhone(
-                        context = context,
-                        displayName = currentState.fullName,
-                        phoneNumber = currentState.phones.firstOrNull(),
-                        email = currentState.emails.firstOrNull(),
-                        company = currentState.company,
-                        jobTitle = currentState.jobTitle,
-                        address = currentState.addresses,
-                        website = currentState.websites.firstOrNull(),
-                        notes = currentState.notes
-                    )
                 }
                 _uiState.update {
                     it.copy(

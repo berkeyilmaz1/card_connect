@@ -10,6 +10,10 @@ object ContactsHelper {
     private const val TAG = "ContactsHelper"
     private const val RAW_CONTACT_ID_INDEX = 0
 
+    /**
+     * Telefon rehberine kişi ekler ve eklenen kişinin Contacts._ID'sini döndürür.
+     * Hata durumunda null döner.
+     */
     fun addContactToPhone(
         context: Context,
         displayName: String?,
@@ -20,48 +24,51 @@ object ContactsHelper {
         address: String?,
         website: String?,
         notes: String?
-    ): Boolean = runCatching {
+    ): String? = runCatching {
 
         val ops = arrayListOf<ContentProviderOperation>()
 
         ops.add(createRawContact())
 
-        displayName.addIfNotBlank {
-            ops.add(insertName(it))
-        }
-
-        phoneNumber.addIfNotBlank {
-            ops.add(insertPhone(it))
-        }
-
-        email.addIfNotBlank {
-            ops.add(insertEmail(it))
-        }
+        displayName.addIfNotBlank { ops.add(insertName(it)) }
+        phoneNumber.addIfNotBlank { ops.add(insertPhone(it)) }
+        email.addIfNotBlank { ops.add(insertEmail(it)) }
 
         if (!company.isNullOrBlank() || !jobTitle.isNullOrBlank()) {
             ops.add(insertOrganization(company, jobTitle))
         }
 
-        address.addIfNotBlank {
-            ops.add(insertAddress(it))
+        address.addIfNotBlank { ops.add(insertAddress(it)) }
+        website.addIfNotBlank { ops.add(insertWebsite(it)) }
+        notes.addIfNotBlank { ops.add(insertNotes(it)) }
+
+        val results = context.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
+
+        // results[0] → RawContact insert sonucu, uri = content://raw_contacts/{rawId}
+        val rawContactUri = results[RAW_CONTACT_ID_INDEX].uri
+        val rawContactId = rawContactUri?.lastPathSegment
+
+        // RawContact ID'den aggregated Contact ID'ye çevir
+        val contactId = rawContactId?.let { rawId ->
+            val cursor = context.contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                arrayOf(ContactsContract.RawContacts.CONTACT_ID),
+                "${ContactsContract.RawContacts._ID} = ?",
+                arrayOf(rawId),
+                null
+            )
+            cursor?.use { c ->
+                if (c.moveToFirst()) c.getString(c.getColumnIndex(ContactsContract.RawContacts.CONTACT_ID))
+                else null
+            }
         }
 
-        website.addIfNotBlank {
-            ops.add(insertWebsite(it))
-        }
-
-        notes.addIfNotBlank {
-            ops.add(insertNotes(it))
-        }
-
-        context.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
-
-        Log.i(TAG, "Contact successfully added.")
-        true
+        Log.i(TAG, "Contact successfully added. contactId=$contactId")
+        contactId
 
     }.getOrElse { error ->
         Log.e(TAG, "Error adding contact: ${error.message}", error)
-        false
+        null
     }
 
     // --- PRIVATE HELPERS ---

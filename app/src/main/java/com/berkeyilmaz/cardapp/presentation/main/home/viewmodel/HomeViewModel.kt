@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.presentation.main.home.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.History
@@ -11,8 +12,15 @@ import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.core.common.ResponseState
+import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
+import com.berkeyilmaz.cardapp.domain.contact.model.DuplicateContactGroup
+import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
+import com.berkeyilmaz.cardapp.domain.contact.usecase.FindDuplicateContactsUseCase
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetRemoteContactsUseCase
+import com.berkeyilmaz.cardapp.domain.contact.usecase.MergeContactsUseCase
+import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
+import com.berkeyilmaz.cardapp.presentation.main.home.widgets.PrimarySelection
 import com.berkeyilmaz.cardapp.domain.home.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.domain.photo.usecase.GetAllPhotosUseCase
@@ -28,6 +36,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class DuplicateBottomSheetState {
+    data object Hidden : DuplicateBottomSheetState()
+    data object Scanning : DuplicateBottomSheetState()
+    data class Found(val groups: List<DuplicateContactGroup>, val currentIndex: Int = 0) :
+        DuplicateBottomSheetState()
+    data class Error(val message: String) : DuplicateBottomSheetState()
+}
+
 data class HomeUiState(
     val isLoading: Boolean = false,
     val userName: String? = null,
@@ -37,6 +53,7 @@ data class HomeUiState(
     val snackbarMessage: String? = null,
     val contacts: List<Contact>? = null,
     val photos: List<Photo>? = null,
+    val duplicateBottomSheetState: DuplicateBottomSheetState = DuplicateBottomSheetState.Hidden,
 )
 
 sealed class HomeInUiEvent {
@@ -49,7 +66,10 @@ class HomeViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val getPhotosUseCase: GetAllPhotosUseCase,
     private val getRemoteContacts: GetRemoteContactsUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val findDuplicateContactsUseCase: FindDuplicateContactsUseCase,
+    private val mergeContactsUseCase: MergeContactsUseCase,
+    private val contactRepository: ContactRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -132,6 +152,7 @@ fun fetchContacts() {
             }
             _uiState.update { it.copy(contacts = contacts) }
             calculateRecentlyScannedCards()
+            checkForDuplicates(contacts)
         } catch (e: Exception) {
             updateErrorState(context.getString(R.string.an_error_occurred))
         } finally {
@@ -139,6 +160,106 @@ fun fetchContacts() {
         }
     }
 
+}
+
+private fun checkForDuplicates(contacts: List<Contact>) {
+    viewModelScope.launch {
+        _uiState.update { it.copy(duplicateBottomSheetState = DuplicateBottomSheetState.Scanning) }
+        try {
+            val internalContacts = try {
+                contactRepository.getInternalContacts(context.contentResolver)
+            } catch (e: Exception) {
+                Log.w("BerkeTag", "checkForDuplicates: could not fetch internal contacts: ${e.message}")
+                emptyList()
+            }
+            val groups = findDuplicateContactsUseCase(contacts, internalContacts)
+            _uiState.update {
+                it.copy(
+                    duplicateBottomSheetState = if (groups.isEmpty()) {
+                        DuplicateBottomSheetState.Hidden
+                    } else {
+                        DuplicateBottomSheetState.Found(groups)
+                    }
+                )
+            }
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(
+                    duplicateBottomSheetState = DuplicateBottomSheetState.Error(
+                        e.message ?: context.getString(R.string.an_error_occurred)
+                    )
+                )
+            }
+        }
+    }
+}
+
+fun onMergeApproved(group: DuplicateContactGroup, primarySelection: PrimarySelection) {
+    viewModelScope.launch {
+        when (primarySelection) {
+            is PrimarySelection.Remote -> {
+                val primary = primarySelection.contact
+                val duplicates = group.contacts.filter { it.contactId != primary.contactId }
+                val internalDuplicates = group.internalContacts
+                mergeContactsUseCase(context.contentResolver, primary, duplicates, internalDuplicates)
+            }
+            is PrimarySelection.Internal -> {
+                val internalPrimary = primarySelection.contact
+                // InternalContact'tan ContactRequest oluştur
+                val contactRequest = ContactRequest(
+                    fullName = internalPrimary.fullName,
+                    title = internalPrimary.title ?: "",
+                    organization = internalPrimary.organization ?: "",
+                    phones = internalPrimary.phoneNumbers,
+                    emails = internalPrimary.emails ?: emptyList(),
+                    websites = internalPrimary.websites ?: emptyList(),
+                    address = internalPrimary.address ?: "",
+                    note = internalPrimary.note ?: ""
+                )
+                // Firebase'e yeni contact oluştur — bu primary olacak
+                val createResult = contactRepository.createContact(contactRequest)
+                val newPrimary = createResult.getOrNull()
+                if (newPrimary != null) {
+                    // Tüm remote'lar duplicate, internal'dan sadece seçilen korunacak (diğerleri silinecek)
+                    val internalDuplicates = group.internalContacts.filter {
+                        it.contactId != internalPrimary.contactId
+                    }
+                    mergeContactsUseCase(
+                        context.contentResolver,
+                        newPrimary,
+                        group.contacts, // tüm remote'lar silinecek (newPrimary ayrı oluşturuldu)
+                        internalDuplicates
+                    )
+                }
+            }
+        }
+        advanceToNextGroup()
+        fetchContacts()
+    }
+}
+
+fun onDuplicateGroupSkipped() {
+    advanceToNextGroup()
+}
+
+fun dismissDuplicateBottomSheet() {
+    _uiState.update { it.copy(duplicateBottomSheetState = DuplicateBottomSheetState.Hidden) }
+}
+
+private fun advanceToNextGroup() {
+    val current = _uiState.value.duplicateBottomSheetState
+    if (current is DuplicateBottomSheetState.Found) {
+        val nextIndex = current.currentIndex + 1
+        _uiState.update {
+            it.copy(
+                duplicateBottomSheetState = if (nextIndex < current.groups.size) {
+                    current.copy(currentIndex = nextIndex)
+                } else {
+                    DuplicateBottomSheetState.Hidden
+                }
+            )
+        }
+    }
 }
 
 fun fetchPhotos() {

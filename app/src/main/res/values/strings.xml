@@ -195,4 +195,15 @@
     <string name="no_continue">No, Continue</string>
     <string name="error_fetching_groups">An error occurred while loading groups. Please try again later.</string>
 
+    <!-- Duplicate Contacts -->
+    <string name="duplicate_contacts_found">Tekrarlı Kişiler Bulundu</string>
+    <string name="duplicate_match_phone">Aynı telefon numarasına sahip kişiler</string>
+    <string name="duplicate_match_email">Aynı e-postaya sahip kişiler</string>
+    <string name="merge_contacts">Birleştir</string>
+    <string name="skip_group">Atla</string>
+    <string name="select_primary">Ana kişi olarak seç</string>
+    <string name="duplicate_group_progress">%1$d / %2$d Grup</string>
+    <string name="scanning_duplicates">Tekrarlı kişiler taranıyor...</string>
+    <string name="internal_contact_badge">Telefon Rehberi</string>
+
 </resources>

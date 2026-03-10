@@ -19,6 +19,9 @@ abstract class InternalContactDAO {
     @Query("DELETE FROM internal_contacts")
     abstract suspend fun deleteAllContacts()
 
+    @Query("DELETE FROM internal_contacts WHERE contactId IN (:ids)")
+    abstract suspend fun deleteByIds(ids: List<String>)
+
     @Transaction
     open suspend fun replaceAllContacts(contacts: List<InternalContactEntity>) {
         deleteAllContacts()
