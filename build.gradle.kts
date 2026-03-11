@@ -8,4 +8,5 @@ plugins {
     //KSP
     id("com.google.devtools.ksp") version "2.2.20-2.0.3" apply false
     alias(libs.plugins.google.gms.google.services) apply false
+    id("com.google.firebase.crashlytics") version "3.0.4" apply false
 }

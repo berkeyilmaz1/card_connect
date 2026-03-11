@@ -20,7 +20,9 @@ import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContactChanges
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.domain.settings.usecase.GetUseLocalLlmUseCase
+import com.berkeyilmaz.cardapp.core.util.recordNonFatal
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +38,7 @@ class ContactRepositoryImpl @Inject constructor(
     private val internalContactDao: InternalContactDAO,
     private val getUseLocalLlmUseCase: GetUseLocalLlmUseCase,
     private val localLlmExtractor: LocalLlmExtractor,
+    private val crashlytics: FirebaseCrashlytics,
 ) : ContactRepository {
 
     override suspend fun getInternalContacts(contentResolver: ContentResolver): List<InternalContact> =
@@ -263,6 +266,7 @@ class ContactRepositoryImpl @Inject constructor(
 
                 Pair(currentContacts, changes)
             } catch (e: Exception) {
+                crashlytics.recordNonFatal(e)
                 Log.e(
                     "BerkeTag",
                     "ContactRepositoryImpl - Error in getInternalContactsWithChanges: ${e.message}",
@@ -290,6 +294,7 @@ class ContactRepositoryImpl @Inject constructor(
             Log.i("BerkeTag", "Group Contacts: $contacts contacts from documents")
             Result.success(contacts)
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             Log.e("BerkeTag", "Error fetching contacts: ${e.message}", e)
             Result.failure(e)
         }
@@ -387,6 +392,7 @@ class ContactRepositoryImpl @Inject constructor(
 
             Result.success(contact)
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             Result.failure(e)
         }
     }
@@ -616,6 +622,7 @@ class ContactRepositoryImpl @Inject constructor(
 
             Result.success(mergedContact)
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             Log.e("BerkeTag", "mergeContacts error: ${e.message}", e)
             Result.failure(e)
         }
@@ -656,6 +663,7 @@ class ContactRepositoryImpl @Inject constructor(
                 contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
                 Log.d("BerkeTag", "deleteInternalContacts: deleted ${contacts.size} contacts (${ops.size} raw rows)")
             } catch (e: Exception) {
+                crashlytics.recordNonFatal(e)
                 Log.e("BerkeTag", "deleteInternalContacts error: ${e.message}", e)
             }
         }

@@ -12,6 +12,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.google.gms.google.services) //firebase
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 // local.properties dosyasını oku
@@ -107,6 +108,7 @@ dependencies {
     //Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)

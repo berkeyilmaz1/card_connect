@@ -19,7 +19,9 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
+import com.berkeyilmaz.cardapp.core.util.recordNonFatal
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -27,7 +29,8 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     @param:ApplicationContext val context: Context,
     private val firebaseAuth: FirebaseAuth,
-    private val credentialManager: CredentialManager
+    private val credentialManager: CredentialManager,
+    private val crashlytics: FirebaseCrashlytics
 ) : AuthRepository {
     override suspend fun getCurrentUser(): ResponseState<FirebaseUser?> {
         val currentUser = firebaseAuth.currentUser
@@ -68,12 +71,14 @@ class AuthRepositoryImpl @Inject constructor(
                 }
 
                 else -> {
+                    crashlytics.recordNonFatal(e)
                     ResponseState.Error(
                         e.localizedMessage ?: context.getString(R.string.auth_error)
                     )
                 }
             }
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.auth_error)
             )
@@ -88,6 +93,7 @@ class AuthRepositoryImpl @Inject constructor(
             sendEmailVerification()
             ResponseState.Success(Unit, context.getString(R.string.registration_successful_welcome))
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.register_error)
             )
@@ -139,11 +145,13 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: GetCredentialCancellationException) {
             ResponseState.Error(context.getString(R.string.googleSignInCancelled))
         } catch (e: GetCredentialException) {
+            crashlytics.recordNonFatal(e)
             Log.e("BerkeTAG", "Google GetCredentialException", e)
             ResponseState.Error(
                 "${context.getString(R.string.googleCredentialError)}: ${e.message}"
             )
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.message ?: context.getString(R.string.googleSignInUnknownError)
             )
@@ -158,6 +166,7 @@ class AuthRepositoryImpl @Inject constructor(
                 Unit, context.getString(R.string.password_reset_email_sent_please_check_your_inbox)
             )
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.send_forgot_password_error)
             )
@@ -173,6 +182,7 @@ class AuthRepositoryImpl @Inject constructor(
                 Unit, context.getString(R.string.verification_email_sent_please_check_your_inbox)
             )
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.send_email_verif_error)
             )
@@ -187,6 +197,7 @@ class AuthRepositoryImpl @Inject constructor(
             )
             ResponseState.Success(Unit, context.getString(R.string.logged_out_successfully))
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.logout_error)
             )
@@ -205,6 +216,7 @@ class AuthRepositoryImpl @Inject constructor(
                     context.getString(R.string.re_authentication_required)
                 )
             } else {
+                crashlytics.recordNonFatal(e)
                 ResponseState.Error(
                     e.localizedMessage ?: context.getString(R.string.account_deletion_error)
                 )
@@ -226,6 +238,7 @@ class AuthRepositoryImpl @Inject constructor(
             user.reauthenticate(credential).await()
             ResponseState.Success(Unit, context.getString(R.string.re_authentication_successful))
         } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.re_authentication_failed)
             )
