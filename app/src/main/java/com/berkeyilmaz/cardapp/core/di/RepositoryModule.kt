@@ -9,6 +9,7 @@ import com.berkeyilmaz.cardapp.data.remote.AuthRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.ContactRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.HomeRepositoryImpl
 import com.berkeyilmaz.cardapp.data.remote.ScanRepositoryImpl
+import com.berkeyilmaz.cardapp.data.remote.UserRepositoryImpl
 import com.berkeyilmaz.cardapp.domain.LanguageRepository
 import com.berkeyilmaz.cardapp.domain.auth.AuthRepository
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
@@ -18,6 +19,7 @@ import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
 import com.berkeyilmaz.cardapp.domain.settings.LlmRepository
 import com.berkeyilmaz.cardapp.domain.settings.LocalLlmModelRepository
 import com.berkeyilmaz.cardapp.domain.settings.ThemeRepository
+import com.berkeyilmaz.cardapp.domain.user.UserRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -81,4 +83,10 @@ abstract class RepositoryModule {
     abstract fun bindPhotoRepository(
         impl: PhotoRepositoryImpl
     ): PhotoRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        impl: UserRepositoryImpl
+    ): UserRepository
 }

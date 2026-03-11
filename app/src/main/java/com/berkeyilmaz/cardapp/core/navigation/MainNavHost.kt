@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.core.utility.safeNavigate
 import com.berkeyilmaz.cardapp.core.utility.safePopBack
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
@@ -29,6 +30,7 @@ fun MainNavHost(
     navController: NavHostController,
     context: android.content.Context,
     rootNavController: NavHostController,
+    analyticsManager: AnalyticsManager,
 ) {
     NavHost(
         navController = navController,
@@ -37,6 +39,7 @@ fun MainNavHost(
         composable(Screen.Main.Home.route) {
             val viewModel = hiltViewModel<HomeViewModel>()
             val uiState by viewModel.uiState.collectAsState()
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("Home") }
 
             val savedStateHandle = it.savedStateHandle
             LaunchedEffect(Unit) {
@@ -56,18 +59,19 @@ fun MainNavHost(
         }
 
         composable(Screen.Main.Contact.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("Contacts") }
             ContactView(onContactClick = { contactId ->
                 // TODO: navigate to detail
             })
-
         }
 
         composable(Screen.Main.Groups.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("Groups") }
             GroupsView()
-
         }
 
         composable(Screen.Main.More.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("More") }
             MoreView(
                 onNavigateProfile = { navController.safeNavigate(Screen.Main.Profile.route) },
                 onNavigateSettings = { navController.safeNavigate(Screen.Main.Settings.route) },
@@ -83,6 +87,7 @@ fun MainNavHost(
 
         // Full-screen
         composable(Screen.Main.Scan.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("Scan") }
             ScanView(
                 onScanCompleted = { scanResponse ->
                     navController.safePopBack()
@@ -95,6 +100,7 @@ fun MainNavHost(
         }
 
         composable(Screen.Main.ScanResult.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("ScanResult") }
             val scanResponseJson =
                 navController.previousBackStackEntry?.savedStateHandle?.get<String>("scanResponse")
             val scanResponse = scanResponseJson?.let {
@@ -121,6 +127,7 @@ fun MainNavHost(
         }
 
         composable(Screen.Main.Settings.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("Settings") }
             SettingsView(onNavigateBack = { navController.safePopBack() })
         }
 

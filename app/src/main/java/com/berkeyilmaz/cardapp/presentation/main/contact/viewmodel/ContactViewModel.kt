@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContactChanges
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetContactsListUseCase
@@ -51,6 +52,7 @@ class ContactViewModel @Inject constructor(
     private val getContactsListUseCase: GetContactsListUseCase,
     private val suggestTagsForContactsUseCase: SuggestTagsForContactsUseCase,
     private val createContactUseCase: CreateContactUseCase,
+    private val analyticsManager: AnalyticsManager,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -220,6 +222,7 @@ class ContactViewModel @Inject constructor(
             try {
                 // Batch ile kaydet
                 createContactsBatch(contacts)
+                repeat(contacts.size) { analyticsManager.logContactAdded() }
             } catch (e: Exception) {
                 Log.e("ContactViewModel", "Batch createContact error: ${e.message}")
             }

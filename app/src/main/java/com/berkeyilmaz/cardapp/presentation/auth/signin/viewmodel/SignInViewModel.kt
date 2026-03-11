@@ -5,11 +5,13 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.LoginUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignInWithGoogleUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignUpUseCase
+import com.berkeyilmaz.cardapp.domain.user.UserRepository
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,7 +29,8 @@ data class SignInState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
-    val showTermsAndConditionsSheet: Boolean = false
+    val showTermsAndConditionsSheet: Boolean = false,
+    val showAnalyticsConsentSheet: Boolean = false
 )
 
 sealed class SignInUiEvent {
@@ -42,6 +45,8 @@ class SignInViewModel @Inject constructor(
     private val signUpUseCase: SignUpUseCase,
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val userRepository: UserRepository,
+    private val analyticsManager: AnalyticsManager,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -73,7 +78,6 @@ class SignInViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 when (response) {
                     is ResponseState.Success -> {
-                        // ✅ Main Graph'a yönlendir
                         val isUserVerified = checkUserIsVerified()
                         if (!isUserVerified) {
                             _eventFlow.emit(
@@ -118,7 +122,6 @@ class SignInViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 when (response) {
                     is ResponseState.Success -> {
-                        // ✅ Main Graph'a yönlendir
                         val isUserVerified = checkUserIsVerified()
                         if (!isUserVerified) {
                             _eventFlow.emit(
@@ -139,6 +142,57 @@ class SignInViewModel @Inject constructor(
                 setLoading(false)
             }
         }
+    }
+
+    private suspend fun saveConsentAndSignUp(consent: Boolean) {
+        setLoading(true)
+        viewModelScope.launch(Dispatchers.IO) {
+            val signUpResponse = signUpUseCase(uiState.value.email, uiState.value.password)
+            withContext(Dispatchers.Main) {
+                when (signUpResponse) {
+                    is ResponseState.Success -> {
+                        val user = (getCurrentUserUseCase() as? ResponseState.Success)?.data
+                        if (user != null) {
+                            userRepository.saveAnalyticsConsent(user.uid, consent)
+                            analyticsManager.setAnalyticsEnabled(consent)
+                        }
+                        val isUserVerified = checkUserIsVerified()
+                        if (!isUserVerified) {
+                            _eventFlow.emit(
+                                SignInUiEvent.ShowError(
+                                    context.getString(R.string.please_verify)
+                                )
+                            )
+                            setLoading(false)
+                            return@withContext
+                        }
+                        _eventFlow.emit(SignInUiEvent.NavigateToMain)
+                    }
+                    is ResponseState.Error -> {
+                        _eventFlow.emit(SignInUiEvent.ShowError(signUpResponse.message))
+                    }
+                }
+                setLoading(false)
+            }
+        }
+    }
+
+    fun acceptAnalyticsConsent() {
+        _uiState.update { it.copy(showAnalyticsConsentSheet = false) }
+        viewModelScope.launch {
+            saveConsentAndSignUp(true)
+        }
+    }
+
+    fun declineAnalyticsConsent() {
+        _uiState.update { it.copy(showAnalyticsConsentSheet = false) }
+        viewModelScope.launch {
+            saveConsentAndSignUp(false)
+        }
+    }
+
+    fun showAnalyticsConsentSheet(show: Boolean) {
+        _uiState.update { it.copy(showAnalyticsConsentSheet = show) }
     }
 
     suspend fun checkUserIsVerified(): Boolean {

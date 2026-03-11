@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.core.util.ContactsHelper
 import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
@@ -48,6 +49,7 @@ class ScanResultViewModel @Inject constructor(
     private val createContactsUseCase: CreateContactUseCase,
     private val insertPhotoUseCase: InsertPhotoUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val analyticsManager: AnalyticsManager,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ScanResultState())
@@ -118,6 +120,8 @@ class ScanResultViewModel @Inject constructor(
                     Log.i("BerkeTag", "Inserting photo: $photo")
                     insertPhotoUseCase(photo)
                 }
+                analyticsManager.logScanCard()
+                analyticsManager.logContactAdded()
                 _uiState.update {
                     it.copy(
                         isLoading = false,

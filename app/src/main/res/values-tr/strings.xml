@@ -197,6 +197,10 @@
     <string name="no_continue">Hayır, Devam Et</string>
     <string name="error_fetching_groups">Gruplar yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</string>
 
+    <!-- Analytics Consent -->
+    <string name="analytics_consent_title">Bizi Geliştirmemize Yardım Edin</string>
+    <string name="analytics_consent_description">Deneyiminizi iyileştirmek için anonim kullanım verileri toplamak istiyoruz. Bu tamamen isteğe bağlıdır ve Ayarlar\'dan daha sonra değiştirebilirsiniz.</string>
+    <string name="analytics_consent_data_list">• Ekran görüntülemeleri ve gezinme kalıpları\n• Özellik kullanımı (tarama, kişiler)\n• Genel uygulama performans verileri\n\nKişisel bilgi, kişi verisi veya kart içeriği TOPLAMIYORUZ.</string>
 
 </resources>
 

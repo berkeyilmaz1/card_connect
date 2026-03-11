@@ -3,6 +3,7 @@ package com.berkeyilmaz.cardapp.core.di
 import android.content.Context
 import androidx.credentials.CredentialManager
 import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.FirebaseFirestore
@@ -36,4 +37,9 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideFirebaseCrashlytics(): FirebaseCrashlytics = FirebaseCrashlytics.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAnalytics(@ApplicationContext context: Context): FirebaseAnalytics =
+        FirebaseAnalytics.getInstance(context)
 }

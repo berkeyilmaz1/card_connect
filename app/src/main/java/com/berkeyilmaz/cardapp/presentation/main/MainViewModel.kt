@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.presentation.main
 
 import androidx.lifecycle.ViewModel
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,9 @@ data class MainUiState(
 )
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    val analyticsManager: AnalyticsManager
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState

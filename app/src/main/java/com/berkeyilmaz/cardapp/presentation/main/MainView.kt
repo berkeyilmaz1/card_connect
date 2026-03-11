@@ -70,7 +70,7 @@ fun MainView(
         }
     }) { padding ->
         Box(Modifier.padding(padding)) {
-            MainNavHost(navController, context, rootNavController)
+            MainNavHost(navController, context, rootNavController, mainViewModel.analyticsManager)
         }
 
         if (mainUiState.isAiSheetOpen) {

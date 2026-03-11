@@ -13,10 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.core.cache.languageDataStore
 import com.berkeyilmaz.cardapp.core.navigation.AppNavHost
 import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.domain.settings.model.Language
+import com.berkeyilmaz.cardapp.domain.user.UserRepository
 import com.berkeyilmaz.cardapp.presentation.settings.viewmodel.SettingsViewModel
 import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
 import com.google.firebase.Firebase
@@ -25,16 +27,23 @@ import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderF
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.initialize
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var userRepository: UserRepository
+    @Inject lateinit var analyticsManager: AnalyticsManager
 
     private var currentLanguageCode: String? = null
 
@@ -70,6 +79,17 @@ class MainActivity : ComponentActivity() {
         Firebase.appCheck.installAppCheckProviderFactory(
             PlayIntegrityAppCheckProviderFactory.getInstance(),
         )
+
+        val firebaseUserForConsent = FirebaseAuth.getInstance().currentUser
+        if (firebaseUserForConsent != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val result = userRepository.getAnalyticsConsent(firebaseUserForConsent.uid)
+                if (result is com.berkeyilmaz.cardapp.core.common.ResponseState.Success) {
+                    analyticsManager.setAnalyticsEnabled(result.data)
+                }
+            }
+        }
+
         setContent {
             val viewModel: SettingsViewModel = hiltViewModel()
             val currentTheme by viewModel.currentTheme.collectAsState()

@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInUiEvent
 import com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel.SignInViewModel
+import com.berkeyilmaz.cardapp.presentation.auth.signin.widgets.AnalyticsConsentSheet
 import com.berkeyilmaz.cardapp.presentation.auth.signin.widgets.SignInContent
 import com.berkeyilmaz.cardapp.presentation.auth.signin.widgets.TermsAndConditionSheet
 import kotlinx.coroutines.launch
@@ -95,9 +96,22 @@ fun SignInView(
                 TermsAndConditionSheet(
                     onDeclineClick = { viewModel.showTermsAndConditionsSheet(false) },
                     onAcceptClick = {
-                        viewModel.signUp()
                         viewModel.showTermsAndConditionsSheet(false)
+                        viewModel.showAnalyticsConsentSheet(true)
                     },
+                    loadingState = uiState.isLoading,
+                )
+            }
+        }
+
+        if (uiState.showAnalyticsConsentSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.declineAnalyticsConsent() },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            ) {
+                AnalyticsConsentSheet(
+                    onDeclineClick = { viewModel.declineAnalyticsConsent() },
+                    onAcceptClick = { viewModel.acceptAnalyticsConsent() },
                     loadingState = uiState.isLoading,
                 )
             }
