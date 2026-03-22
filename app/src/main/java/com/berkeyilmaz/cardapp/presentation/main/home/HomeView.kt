@@ -39,6 +39,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,11 +47,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
@@ -59,6 +66,7 @@ import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.DuplicateBottomS
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeUiState
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.home.widgets.DuplicateContactsBottomSheet
+import com.berkeyilmaz.cardapp.presentation.profile.viewmodel.GreetingPeriod
 import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
 
 data class QuickActionOption(
@@ -406,59 +414,40 @@ fun NotificationSection(
 
 @Composable
 fun ProfileSection(uiState: HomeUiState) {
+    val lottieRes = when (uiState.greetingPeriod) {
+        GreetingPeriod.MORNING, GreetingPeriod.AFTERNOON -> R.raw.lottie_sun
+        GreetingPeriod.EVENING, GreetingPeriod.NIGHT -> R.raw.lottie_moon
+    }
+    val greetingText = when (uiState.greetingPeriod) {
+        GreetingPeriod.MORNING -> "Günaydın"
+        GreetingPeriod.AFTERNOON -> "İyi günler"
+        GreetingPeriod.EVENING -> "İyi akşamlar"
+        GreetingPeriod.NIGHT -> "İyi geceler"
+    }
+
+    val lottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieRes))
+    val lottieProgress by animateLottieCompositionAsState(
+        composition = lottieComposition,
+        iterations = LottieConstants.IterateForever
+    )
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = if (uiState.userName.isNullOrEmpty()) {
-                    stringResource(R.string.scan_connect)
-                } else {
-                    stringResource(R.string.welcome_back)
-                },
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+        Text(
+            text = greetingText + if (!uiState.userName.isNullOrEmpty()) ", ${uiState.userName}" else "",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
-            Text(
-                text = if (uiState.userName.isNullOrEmpty()) {
-                    stringResource(R.string.ready_to_scan_a_new_card)
-                } else {
-                    uiState.userName
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
-
-        }
-        Spacer(modifier = Modifier.weight(1f))
-
-        if (!uiState.userProfileImageUrl.isNullOrEmpty()) {
-            Box(
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.spacer_48))
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            ) {
-                AsyncImage(
-                    model = uiState.userProfileImageUrl,
-                    contentDescription = stringResource(R.string.profile_image),
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.spacer_64))
-                        .clip(CircleShape)
-                        .border(
-                            width = dimensionResource(R.dimen.spacer_2),
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        ),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
+        LottieAnimation(
+            composition = lottieComposition,
+            progress = { lottieProgress },
+            modifier = Modifier.size(72.dp)
+        )
     }
 }
 

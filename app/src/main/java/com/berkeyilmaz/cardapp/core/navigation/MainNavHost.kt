@@ -22,6 +22,7 @@ import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.HomeViewModel
 import com.berkeyilmaz.cardapp.presentation.main.more.MoreView
 import com.berkeyilmaz.cardapp.presentation.main.scan.ScanView
 import com.berkeyilmaz.cardapp.presentation.scan_result.ScanResultView
+import com.berkeyilmaz.cardapp.presentation.profile.ProfileView
 import com.berkeyilmaz.cardapp.presentation.settings.SettingsView
 import com.google.gson.Gson
 
@@ -132,7 +133,8 @@ fun MainNavHost(
         }
 
         composable(Screen.Main.Profile.route) {
-            // TODO: ProfileView
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("Profile") }
+            ProfileView(onNavigateBack = { navController.safePopBack() })
         }
     }
 }

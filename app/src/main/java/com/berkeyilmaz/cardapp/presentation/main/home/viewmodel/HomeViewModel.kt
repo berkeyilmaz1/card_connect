@@ -22,10 +22,12 @@ import com.berkeyilmaz.cardapp.domain.contact.usecase.MergeContactsUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.presentation.main.home.widgets.PrimarySelection
 import com.berkeyilmaz.cardapp.domain.home.usecase.GetCurrentUserUseCase
+import com.berkeyilmaz.cardapp.domain.user.usecase.GetUserInfoUseCase
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.domain.photo.usecase.GetAllPhotosUseCase
 import com.berkeyilmaz.cardapp.presentation.main.home.QuickActionOption
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
+import com.berkeyilmaz.cardapp.presentation.profile.viewmodel.GreetingPeriod
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,6 +50,7 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val userName: String? = null,
     val userProfileImageUrl: String? = null,
+    val greetingPeriod: GreetingPeriod = GreetingPeriod.MORNING,
     val notificationList: List<HomeNotification> = emptyList(),
     val recentlyScannedCards: List<Any> = emptyList(), // Replace with actual data model
     val snackbarMessage: String? = null,
@@ -67,6 +70,7 @@ class HomeViewModel @Inject constructor(
     private val getPhotosUseCase: GetAllPhotosUseCase,
     private val getRemoteContacts: GetRemoteContactsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val getUserInfoUseCase: GetUserInfoUseCase,
     private val findDuplicateContactsUseCase: FindDuplicateContactsUseCase,
     private val mergeContactsUseCase: MergeContactsUseCase,
     private val contactRepository: ContactRepository
@@ -97,8 +101,34 @@ class HomeViewModel @Inject constructor(
     )
 
     init {
+        computeGreetingPeriod()
+        fetchUserName()
         fetchContacts()
         fetchPhotos()
+    }
+
+    private fun fetchUserName() {
+        viewModelScope.launch {
+            val userResult = getCurrentUserUseCase()
+            if (userResult is ResponseState.Success) {
+                val uid = userResult.data?.uid ?: return@launch
+                val infoResult = getUserInfoUseCase(uid)
+                if (infoResult is ResponseState.Success) {
+                    _uiState.update { it.copy(userName = infoResult.data.displayName.ifBlank { null }) }
+                }
+            }
+        }
+    }
+
+    private fun computeGreetingPeriod() {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val period = when (hour) {
+            in 6..11 -> GreetingPeriod.MORNING
+            in 12..17 -> GreetingPeriod.AFTERNOON
+            in 18..21 -> GreetingPeriod.EVENING
+            else -> GreetingPeriod.NIGHT
+        }
+        _uiState.update { it.copy(greetingPeriod = period) }
     }
 
     fun calculateRecentlyScannedCards() {

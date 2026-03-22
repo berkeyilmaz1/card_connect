@@ -5,4 +5,14 @@ import com.berkeyilmaz.cardapp.core.common.ResponseState
 interface UserRepository {
     suspend fun saveAnalyticsConsent(userId: String, consent: Boolean): ResponseState<Unit>
     suspend fun getAnalyticsConsent(userId: String): ResponseState<Boolean>
+    suspend fun updateDisplayName(displayName: String): ResponseState<Unit>
+    suspend fun savePhotoUrl(userId: String, photoUrl: String): ResponseState<Unit>
+    suspend fun getPhotoUrl(userId: String): ResponseState<String?>
+    suspend fun saveUserInfo(userId: String, displayName: String, phone: String): ResponseState<Unit>
+    suspend fun getUserInfo(userId: String): ResponseState<UserInfo>
 }
+
+data class UserInfo(
+    val displayName: String = "",
+    val phone: String = ""
+)
