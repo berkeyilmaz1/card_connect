@@ -206,6 +206,7 @@
     <string name="internal_contact_badge">Telefon Rehberi</string>
 
     <!-- Analytics Consent -->
+    <string name="analytics_data_collection">Analytics Data Collection</string>
     <string name="analytics_consent_title">Help Us Improve</string>
     <string name="analytics_consent_description">We\'d like to collect anonymous usage data to improve your experience. This is completely optional and you can change this later in Settings.</string>
     <string name="analytics_consent_data_list">• Screen views and navigation patterns\n• Feature usage (scan, contacts)\n• General app performance data\n\nWe do NOT collect personal information, contact data, or card content.</string>

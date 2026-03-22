@@ -100,95 +100,44 @@ class SignInViewModel @Inject constructor(
         }
     }
 
-    fun signUp() {
-        val email = uiState.value.email
-        val password = uiState.value.password
-
-        if (email.isBlank() || password.isBlank()) {
-            viewModelScope.launch {
-                _eventFlow.emit(
-                    SignInUiEvent.ShowError(
-                        context.getString(R.string.fill_all_fields)
-                    )
-                )
-            }
-            return
-        }
-
-        setLoading(true)
-        viewModelScope.launch(Dispatchers.IO) {
-            val response = signUpUseCase(email, password)
-            //TODO: ADD PASSWORD CHECKER
-            withContext(Dispatchers.Main) {
-                when (response) {
-                    is ResponseState.Success -> {
-                        val isUserVerified = checkUserIsVerified()
-                        if (!isUserVerified) {
-                            _eventFlow.emit(
-                                SignInUiEvent.ShowError(
-                                    context.getString(R.string.please_verify)
-                                )
-                            )
-                            setLoading(false)
-                            return@withContext
-                        }
-                        _eventFlow.emit(SignInUiEvent.NavigateToMain)
-                    }
-
-                    is ResponseState.Error -> {
-                        _eventFlow.emit(SignInUiEvent.ShowError(response.message))
-                    }
-                }
-                setLoading(false)
-            }
-        }
-    }
-
-    private suspend fun saveConsentAndSignUp(consent: Boolean) {
+    private fun signUpWithConsent(consent: Boolean) {
         setLoading(true)
         viewModelScope.launch(Dispatchers.IO) {
             val signUpResponse = signUpUseCase(uiState.value.email, uiState.value.password)
-            withContext(Dispatchers.Main) {
-                when (signUpResponse) {
-                    is ResponseState.Success -> {
-                        val user = (getCurrentUserUseCase() as? ResponseState.Success)?.data
-                        if (user != null) {
-                            userRepository.saveAnalyticsConsent(user.uid, consent)
-                            analyticsManager.setAnalyticsEnabled(consent)
-                        }
-                        val isUserVerified = checkUserIsVerified()
-                        if (!isUserVerified) {
-                            _eventFlow.emit(
-                                SignInUiEvent.ShowError(
-                                    context.getString(R.string.please_verify)
-                                )
-                            )
-                            setLoading(false)
-                            return@withContext
-                        }
-                        _eventFlow.emit(SignInUiEvent.NavigateToMain)
+            when (signUpResponse) {
+                is ResponseState.Success -> {
+                    val user = (getCurrentUserUseCase() as? ResponseState.Success)?.data
+                    if (user != null) {
+                        userRepository.saveAnalyticsConsent(user.uid, consent)
+                        analyticsManager.setAnalyticsEnabled(consent)
                     }
-                    is ResponseState.Error -> {
-                        _eventFlow.emit(SignInUiEvent.ShowError(signUpResponse.message))
+                    withContext(Dispatchers.Main) {
+                        _eventFlow.emit(
+                            SignInUiEvent.ShowError(
+                                context.getString(R.string.please_verify)
+                            )
+                        )
+                        setLoading(false)
                     }
                 }
-                setLoading(false)
+                is ResponseState.Error -> {
+                    withContext(Dispatchers.Main) {
+                        _eventFlow.emit(SignInUiEvent.ShowError(signUpResponse.message))
+                        setLoading(false)
+                    }
+                }
             }
         }
     }
 
     fun acceptAnalyticsConsent() {
         _uiState.update { it.copy(showAnalyticsConsentSheet = false) }
-        viewModelScope.launch {
-            saveConsentAndSignUp(true)
-        }
+        signUpWithConsent(true)
     }
 
     fun declineAnalyticsConsent() {
         _uiState.update { it.copy(showAnalyticsConsentSheet = false) }
-        viewModelScope.launch {
-            saveConsentAndSignUp(false)
-        }
+        signUpWithConsent(false)
     }
 
     fun showAnalyticsConsentSheet(show: Boolean) {

@@ -3,6 +3,9 @@ package com.berkeyilmaz.cardapp.presentation.settings.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
+import com.berkeyilmaz.cardapp.core.common.ResponseState
+import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.settings.LocalLlmModelRepository
 import com.berkeyilmaz.cardapp.domain.settings.LocalLlmModelState
 import com.berkeyilmaz.cardapp.domain.settings.model.AppTheme
@@ -13,6 +16,7 @@ import com.berkeyilmaz.cardapp.domain.settings.usecase.GetUseLocalLlmUseCase
 import com.berkeyilmaz.cardapp.domain.settings.usecase.SaveLanguageUseCase
 import com.berkeyilmaz.cardapp.domain.settings.usecase.SetThemeUseCase
 import com.berkeyilmaz.cardapp.domain.settings.usecase.SetUseLocalLlmUseCase
+import com.berkeyilmaz.cardapp.domain.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,7 +34,10 @@ class SettingsViewModel @Inject constructor(
     private val saveLanguageUseCase: SaveLanguageUseCase,
     private val getUseLocalLlmUseCase: GetUseLocalLlmUseCase,
     private val setUseLocalLlmUseCase: SetUseLocalLlmUseCase,
-    private val localLlmModelRepository: LocalLlmModelRepository
+    private val localLlmModelRepository: LocalLlmModelRepository,
+    private val userRepository: UserRepository,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val analyticsManager: AnalyticsManager
 ) : ViewModel() {
 
     // Language State
@@ -58,8 +65,13 @@ class SettingsViewModel @Inject constructor(
     private val _showDownloadDialog = MutableStateFlow(false)
     val showDownloadDialog: StateFlow<Boolean> = _showDownloadDialog.asStateFlow()
 
+    // Analytics Consent State
+    private val _analyticsConsent = MutableStateFlow(false)
+    val analyticsConsent: StateFlow<Boolean> = _analyticsConsent.asStateFlow()
+
     init {
         observeLanguage()
+        loadAnalyticsConsent()
     }
 
     private fun observeLanguage() {
@@ -131,5 +143,31 @@ class SettingsViewModel @Inject constructor(
 
     fun dismissErrorDialog() {
         localLlmModelRepository.resetErrorState()
+    }
+
+    private fun loadAnalyticsConsent() {
+        viewModelScope.launch {
+            val user = getCurrentUserUseCase()
+            if (user is ResponseState.Success) {
+                val uid = user.data?.uid ?: return@launch
+                val result = userRepository.getAnalyticsConsent(uid)
+                if (result is ResponseState.Success) {
+                    _analyticsConsent.value = result.data
+                    analyticsManager.setAnalyticsEnabled(result.data)
+                }
+            }
+        }
+    }
+
+    fun setAnalyticsConsent(enabled: Boolean) {
+        viewModelScope.launch {
+            val user = getCurrentUserUseCase()
+            if (user is ResponseState.Success) {
+                val uid = user.data?.uid ?: return@launch
+                userRepository.saveAnalyticsConsent(uid, enabled)
+                analyticsManager.setAnalyticsEnabled(enabled)
+                _analyticsConsent.value = enabled
+            }
+        }
     }
 }

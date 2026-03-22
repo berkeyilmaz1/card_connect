@@ -94,10 +94,18 @@ fun SignInView(
                 modifier = Modifier.fillMaxSize()
             ) {
                 TermsAndConditionSheet(
-                    onDeclineClick = { viewModel.showTermsAndConditionsSheet(false) },
+                    onDeclineClick = {
+                        coroutineScope.launch {
+                            sheetState.hide()
+                            viewModel.showTermsAndConditionsSheet(false)
+                        }
+                    },
                     onAcceptClick = {
-                        viewModel.showTermsAndConditionsSheet(false)
-                        viewModel.showAnalyticsConsentSheet(true)
+                        coroutineScope.launch {
+                            sheetState.hide()
+                            viewModel.showTermsAndConditionsSheet(false)
+                            viewModel.showAnalyticsConsentSheet(true)
+                        }
                     },
                     loadingState = uiState.isLoading,
                 )

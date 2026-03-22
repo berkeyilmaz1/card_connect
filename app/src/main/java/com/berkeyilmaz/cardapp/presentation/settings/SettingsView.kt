@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.rounded.Analytics
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Language
@@ -40,6 +41,7 @@ fun SettingsView(
     val useLocalLlm by viewModel.useLocalLlm.collectAsState()
     val localLlmModelState by viewModel.localLlmModelState.collectAsState()
     val showDownloadDialog by viewModel.showDownloadDialog.collectAsState()
+    val analyticsConsent by viewModel.analyticsConsent.collectAsState()
 
     // SYSTEM modunda ise sistem temasını kontrol et, değilse direkt tema değerini kullan
     val isDarkTheme = when (currentTheme) {
@@ -96,6 +98,21 @@ fun SettingsView(
             title = stringResource(R.string.change_language),
             trailingContent = { LanguageDropdown(viewModel = viewModel) },
             contentDescription = stringResource(R.string.change_language)
+        ),
+        SettingsItem(
+            leadingIcon = Icons.Rounded.Analytics,
+            title = stringResource(R.string.analytics_data_collection),
+            trailingContent = {
+                Switch(
+                    checked = analyticsConsent,
+                    onCheckedChange = { viewModel.setAnalyticsConsent(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.secondary
+                    )
+                )
+            },
+            contentDescription = stringResource(R.string.analytics_data_collection)
         ),
         SettingsItem(
             leadingIcon = Icons.Rounded.AutoAwesome,
