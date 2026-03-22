@@ -117,7 +117,7 @@ fun SettingsView(
         SettingsItem(
             leadingIcon = Icons.Rounded.AutoAwesome,
             title = stringResource(R.string.use_local_llm),
-            subtitle = when (localLlmModelState) {
+            subtitle = stringResource(R.string.use_local_llm_subtitle) + "\n" + when (localLlmModelState) {
                 is LocalLlmModelState.NotDownloaded -> stringResource(R.string.model_not_downloaded)
                 is LocalLlmModelState.Downloading -> stringResource(R.string.model_downloading)
                 is LocalLlmModelState.Ready -> stringResource(R.string.model_ready)
