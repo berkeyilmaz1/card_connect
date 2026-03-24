@@ -28,8 +28,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.StarOutline
+import com.berkeyilmaz.cardapp.core.navigation.Screen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -71,6 +76,30 @@ import com.berkeyilmaz.cardapp.presentation.ui.theme.AppTheme
 
 data class QuickActionOption(
     val title: String, val icon: ImageVector, val route: String
+)
+
+@Composable
+fun quickActionOptions(): List<QuickActionOption> = listOf(
+    QuickActionOption(
+        title = stringResource(R.string.add_new),
+        icon = Icons.Outlined.Add,
+        route = Screen.Main.Scan.route
+    ),
+    QuickActionOption(
+        title = stringResource(R.string.history),
+        icon = Icons.Outlined.History,
+        route = ""
+    ),
+    QuickActionOption(
+        title = stringResource(R.string.favorites),
+        icon = Icons.Outlined.StarOutline,
+        route = "{}"
+    ),
+    QuickActionOption(
+        title = stringResource(R.string.settings),
+        icon = Icons.Outlined.Settings,
+        route = Screen.Main.Settings.route
+    )
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,7 +147,7 @@ fun HomeView(
             }
             ProfileSection(uiState = uiState)
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_lowNormal)))
-            QuickActions(viewModel.quickActionOptions, onClick = { onQuickOptionClick(it) })
+            QuickActions(quickActionOptions(), onClick = { onQuickOptionClick(it) })
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_normal)))
 
             if (uiState.recentlyScannedCards.isEmpty()) {

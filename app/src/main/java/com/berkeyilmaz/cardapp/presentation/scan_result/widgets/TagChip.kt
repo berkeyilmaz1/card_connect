@@ -18,11 +18,11 @@ import com.berkeyilmaz.cardapp.domain.scan_result.model.getCategoryEnum
 
 @Composable
 fun TagChip(
-    tag: Tag, onRemove: () -> Unit
+    tag: Tag, onRemove: () -> Unit, onClick: () -> Unit = {}
 ) {
     val tagCategory = tag.getCategoryEnum()
 
-    AssistChip(onClick = { }, label = {
+    AssistChip(onClick = onClick, label = {
         Text(
             text = tag.name, style = MaterialTheme.typography.bodyLarge, color = tagCategory.color
         )

@@ -94,7 +94,7 @@
     <string name="sign_out">Sign Out</string>
     <string name="change_language">Change Language</string>
     <string name="english">English</string>
-    <string name="turkish">Türkçe</string>
+    <string name="turkish">Turkish</string>
     <string name="language">Language</string>
 
     <!-- Navigation Titles -->
@@ -144,6 +144,9 @@
     <string name="websites">Websites</string>
     <string name="social_media">Social Media Accounts</string>
     <string name="remove_tag">Remove %1$s</string>
+    <string name="add_tag">Add tag</string>
+    <string name="edit_tag">Edit tag</string>
+    <string name="tag_name">Tag name</string>
     <string name="welcome_how_can_i_assist_you_in_finding_contacts">Welcome! How can I assist you in finding contacts?</string>
     <string name="no_contacts_available_to_search">No contacts available to search.</string>
     <string name="call">Call</string>
@@ -196,15 +199,15 @@
     <string name="error_fetching_groups">An error occurred while loading groups. Please try again later.</string>
 
     <!-- Duplicate Contacts -->
-    <string name="duplicate_contacts_found">Tekrarlı Kişiler Bulundu</string>
-    <string name="duplicate_match_phone">Aynı telefon numarasına sahip kişiler</string>
-    <string name="duplicate_match_email">Aynı e-postaya sahip kişiler</string>
-    <string name="merge_contacts">Birleştir</string>
-    <string name="skip_group">Atla</string>
-    <string name="select_primary">Ana kişi olarak seç</string>
-    <string name="duplicate_group_progress">%1$d / %2$d Grup</string>
-    <string name="scanning_duplicates">Tekrarlı kişiler taranıyor...</string>
-    <string name="internal_contact_badge">Telefon Rehberi</string>
+    <string name="duplicate_contacts_found">Duplicate Contacts Found</string>
+    <string name="duplicate_match_phone">People who have the same phone number</string>
+    <string name="duplicate_match_email">People who have the same e-mail</string>
+    <string name="merge_contacts">Merge</string>
+    <string name="skip_group">Skip</string>
+    <string name="select_primary">Select primary</string>
+    <string name="duplicate_group_progress">%1$d / %2$d Group</string>
+    <string name="scanning_duplicates">Scanning for duplicate contacts…</string>
+    <string name="internal_contact_badge">Contacts</string>
 
     <!-- Analytics Consent -->
     <string name="analytics_data_collection">Analytics Data Collection</string>

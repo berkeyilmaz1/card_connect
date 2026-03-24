@@ -146,6 +146,9 @@
     <string name="websites">Websiteler</string>
     <string name="social_media">Sosyal Medya Hesapları</string>
     <string name="remove_tag">Kaldır %1$s</string>
+    <string name="add_tag">Etiket ekle</string>
+    <string name="edit_tag">Etiketi düzenle</string>
+    <string name="tag_name">Etiket adı</string>
     <string name="recently_scanned">Son Taranalar</string>
     <string name="business_card_image">Kartvizit Görseli</string>
     <string name="contact_photo">Kişi Fotoğrafı</string>
@@ -203,5 +206,15 @@
     <string name="analytics_consent_description">Deneyiminizi iyileştirmek için anonim kullanım verileri toplamak istiyoruz. Bu tamamen isteğe bağlıdır ve Ayarlar\'dan daha sonra değiştirebilirsiniz.</string>
     <string name="analytics_consent_data_list">• Ekran görüntülemeleri ve gezinme kalıpları\n• Özellik kullanımı (tarama, kişiler)\n• Genel uygulama performans verileri\n\nKişisel bilgi, kişi verisi veya kart içeriği TOPLAMIYORUZ.</string>
 
+    <!-- Duplicate Contacts -->
+    <string name="duplicate_contacts_found">Tekrarlı Kişiler Bulundu</string>
+    <string name="duplicate_match_phone">Aynı telefon numarasına sahip kişiler</string>
+    <string name="duplicate_match_email">Aynı e-postaya sahip kişiler</string>
+    <string name="merge_contacts">Birleştir</string>
+    <string name="skip_group">Atla</string>
+    <string name="select_primary">Ana kişi olarak seç</string>
+    <string name="duplicate_group_progress">%1$d / %2$d Grup</string>
+    <string name="scanning_duplicates">Tekrarlı kişiler taranıyor...</string>
+    <string name="internal_contact_badge">Telefon Rehberi</string>
 </resources>
 

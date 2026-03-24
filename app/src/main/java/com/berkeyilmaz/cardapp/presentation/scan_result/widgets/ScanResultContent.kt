@@ -241,14 +241,21 @@ private fun createResultItems(
                 }
             }), ScanResultRowItem(
             title = tagsTitle, content = {
-                TagsSection(tags = uiState.tags, onTagRemove = { tag ->
-                    viewModel.updateTags(uiState.tags.filter { it != tag })
-                }, onTagAdd = { newTag ->
-                    val exists = uiState.tags.any { it.name == newTag.name }
-                    if (!exists) {
-                        viewModel.updateTags(uiState.tags + newTag)
+                TagsSection(
+                    tags = uiState.tags,
+                    onTagRemove = { tag ->
+                        viewModel.updateTags(uiState.tags.filter { it != tag })
+                    },
+                    onTagAdd = { newTag ->
+                        val exists = uiState.tags.any { it.name == newTag.name }
+                        if (!exists) {
+                            viewModel.updateTags(uiState.tags + newTag)
+                        }
+                    },
+                    onTagEdit = { old, new ->
+                        viewModel.updateTags(uiState.tags.map { if (it == old) new else it })
                     }
-                })
+                )
             }), ScanResultRowItem(
             title = websitesTitle, content = {
                 Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_4))) {

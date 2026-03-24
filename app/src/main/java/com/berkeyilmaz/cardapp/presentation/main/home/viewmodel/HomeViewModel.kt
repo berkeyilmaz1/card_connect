@@ -2,15 +2,9 @@ package com.berkeyilmaz.cardapp.presentation.main.home.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.core.navigation.Screen
 import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
@@ -25,7 +19,6 @@ import com.berkeyilmaz.cardapp.domain.home.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.GetUserInfoUseCase
 import com.berkeyilmaz.cardapp.domain.photo.model.Photo
 import com.berkeyilmaz.cardapp.domain.photo.usecase.GetAllPhotosUseCase
-import com.berkeyilmaz.cardapp.presentation.main.home.QuickActionOption
 import com.berkeyilmaz.cardapp.presentation.main.home.models.HomeNotification
 import com.berkeyilmaz.cardapp.presentation.profile.viewmodel.GreetingPeriod
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -82,23 +75,6 @@ class HomeViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<HomeInUiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    val quickActionOptions = listOf(
-        QuickActionOption(
-            title = context.getString(R.string.add_new),
-            icon = Icons.Outlined.Add,
-            route = Screen.Main.Scan.route
-        ), QuickActionOption(
-            title = context.getString(R.string.history), icon = Icons.Outlined.History, route = ""
-        ), QuickActionOption(
-            title = context.getString(R.string.favorites),
-            icon = Icons.Outlined.StarOutline,
-            route = "{}"
-        ), QuickActionOption(
-            title = context.getString(R.string.settings),
-            icon = Icons.Outlined.Settings,
-            route = Screen.Main.Settings.route
-        )
-    )
 
     init {
         computeGreetingPeriod()
