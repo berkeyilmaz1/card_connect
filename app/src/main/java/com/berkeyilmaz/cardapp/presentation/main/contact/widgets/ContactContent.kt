@@ -100,7 +100,7 @@ private fun ContactList(
                 items = contacts, key = { contact -> contact.contactId }) { contact ->
                 ContactCard(
                     contact = contact, onClick = {
-                        contact.phoneNumbers.firstOrNull()?.let { phoneNumber ->
+                        contact.phones.firstOrNull()?.let { phoneNumber ->
                             onContactClick(phoneNumber)
                         }
                     })
@@ -134,7 +134,7 @@ private fun ContactCard(
             ContactAvatar(name = contact.fullName, R.dimen.spacer_48)
 
             ContactInfo(
-                name = contact.fullName, phoneNumber = contact.phoneNumbers.firstOrNull() ?: ""
+                name = contact.fullName, phoneNumber = contact.phones.firstOrNull() ?: ""
             )
         }
     }

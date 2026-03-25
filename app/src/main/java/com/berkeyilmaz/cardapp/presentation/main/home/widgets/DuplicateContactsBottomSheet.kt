@@ -364,9 +364,9 @@ private fun InternalContactItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                if (internal.phoneNumbers.isNotEmpty()) {
+                if (internal.phones.isNotEmpty()) {
                     Text(
-                        text = internal.phoneNumbers.first(),
+                        text = internal.phones.first(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

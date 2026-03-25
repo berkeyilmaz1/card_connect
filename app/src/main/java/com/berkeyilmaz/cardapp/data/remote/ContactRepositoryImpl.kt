@@ -24,6 +24,7 @@ import com.berkeyilmaz.cardapp.core.util.recordNonFatal
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -76,7 +77,7 @@ class ContactRepositoryImpl @Inject constructor(
                 if (name.isNullOrEmpty()) continue
 
                 // Phone numbers
-                val phoneNumbers = mutableListOf<String>()
+                val phones = mutableListOf<String>()
                 if (hasPhoneNumber) {
                     val phoneCursor = contentResolver.query(
                         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -91,7 +92,7 @@ class ContactRepositoryImpl @Inject constructor(
                             pc.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                         while (pc.moveToNext()) {
                             val number = pc.getString(numberIndex)
-                            phoneNumbers.add(number)
+                            phones.add(number)
                         }
                     }
                 }
@@ -204,7 +205,7 @@ class ContactRepositoryImpl @Inject constructor(
                     InternalContact(
                         contactId = id,
                         fullName = name,
-                        phoneNumbers = phoneNumbers,
+                        phones = phones,
                         emails = emails.ifEmpty { null },
                         websites = websites.ifEmpty { null },
                         organization = organization,
@@ -439,7 +440,7 @@ class ContactRepositoryImpl @Inject constructor(
         val internalEmailMap = mutableMapOf<String, MutableList<InternalContact>>()
 
         for (internal in internalContacts) {
-            for (phone in internal.phoneNumbers) {
+            for (phone in internal.phones) {
                 val normalized = normalizePhone(phone)
                 if (normalized.isNotEmpty()) {
                     internalPhoneMap.getOrPut(normalized) { mutableListOf() }.add(internal)
@@ -543,7 +544,7 @@ class ContactRepositoryImpl @Inject constructor(
             val allInternal = internalDuplicates
 
             // --- Merge alanları ---
-            val mergedPhones = (allRemote.flatMap { it.phones } + allInternal.flatMap { it.phoneNumbers })
+            val mergedPhones = (allRemote.flatMap { it.phones } + allInternal.flatMap { it.phones })
                 .map { normalizePhone(it) }.filter { it.isNotEmpty() }.distinct()
             val mergedEmails = (allRemote.flatMap { it.emails } + allInternal.flatMap { it.emails ?: emptyList() })
                 .map { normalizeEmail(it) }.filter { it.isNotEmpty() }.distinct()
@@ -672,6 +673,39 @@ class ContactRepositoryImpl @Inject constructor(
         val ids = contacts.map { it.contactId }
         internalContactDao.deleteByIds(ids)
         Log.d("BerkeTag", "deleteInternalContacts: removed ${ids.size} entries from Room cache")
+    }
+
+    override suspend fun syncInternalContactsToFirestore(contacts: List<InternalContact>): Result<Unit> {
+        return try {
+            val currentUser = firebaseAuth.currentUser
+                ?: return Result.failure(Exception("User not authenticated"))
+            val internalContactsRef = database.collection("users")
+                .document(currentUser.uid)
+                .collection("internalContacts")
+            contacts.filter { it.contactId.isNotBlank() }.chunked(500).forEach { chunk ->
+                val batch = database.batch()
+                for (contact in chunk) {
+                    val data = mapOf(
+                        "contactId" to contact.contactId,
+                        "fullName" to contact.fullName,
+                        "phones" to contact.phones,
+                        "emails" to contact.emails,
+                        "websites" to contact.websites,
+                        "organization" to contact.organization,
+                        "title" to contact.title,
+                        "address" to contact.address,
+                        "note" to contact.note
+                    )
+                    batch.set(internalContactsRef.document(contact.contactId), data, SetOptions.merge())
+                }
+                batch.commit().await()
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            Log.e("BerkeTag", "syncInternalContactsToFirestore error: ${e.message}", e)
+            Result.failure(e)
+        }
     }
 
 }

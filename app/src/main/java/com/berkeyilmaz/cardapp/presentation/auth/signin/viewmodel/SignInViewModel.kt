@@ -12,6 +12,7 @@ import com.berkeyilmaz.cardapp.domain.auth.usecase.LoginUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignInWithGoogleUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignUpUseCase
 import com.berkeyilmaz.cardapp.domain.user.UserRepository
+import com.berkeyilmaz.cardapp.domain.user.usecase.InitUserDataUseCase
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -46,6 +47,7 @@ class SignInViewModel @Inject constructor(
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val userRepository: UserRepository,
+    private val initUserDataUseCase: InitUserDataUseCase,
     private val analyticsManager: AnalyticsManager,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -109,6 +111,7 @@ class SignInViewModel @Inject constructor(
                     val user = (getCurrentUserUseCase() as? ResponseState.Success)?.data
                     if (user != null) {
                         userRepository.saveAnalyticsConsent(user.uid, consent)
+                        initUserDataUseCase(user.uid)
                         analyticsManager.setAnalyticsEnabled(consent)
                     }
                     withContext(Dispatchers.Main) {
@@ -163,6 +166,10 @@ class SignInViewModel @Inject constructor(
             }
 
             is ResponseState.Success<*> -> {
+                val user = (getCurrentUserUseCase() as? ResponseState.Success)?.data
+                if (user != null) {
+                    initUserDataUseCase(user.uid)
+                }
                 _eventFlow.emit(SignInUiEvent.NavigateToMain)
             }
         }

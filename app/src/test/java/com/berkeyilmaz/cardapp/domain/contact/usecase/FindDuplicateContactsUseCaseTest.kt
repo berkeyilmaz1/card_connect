@@ -27,7 +27,7 @@ class FindDuplicateContactsUseCaseTest {
     @Test
     fun `invoke delegates to repository findDuplicateContacts`() = runTest {
         val remoteContacts = listOf(Contact(contactId = "1", phones = listOf("+905551111111")))
-        val internalContacts = listOf(InternalContact(contactId = "ic1", phoneNumbers = listOf("+905551111111")))
+        val internalContacts = listOf(InternalContact(contactId = "ic1", phones = listOf("+905551111111")))
         val expected = listOf(
             DuplicateContactGroup(
                 contacts = remoteContacts,
@@ -47,7 +47,7 @@ class FindDuplicateContactsUseCaseTest {
     @Test
     fun `invoke returns empty list when no duplicates`() = runTest {
         val remoteContacts = listOf(Contact(contactId = "1"))
-        val internalContacts = listOf(InternalContact(contactId = "ic1", phoneNumbers = listOf()))
+        val internalContacts = listOf(InternalContact(contactId = "ic1", phones = listOf()))
         whenever(repository.findDuplicateContacts(remoteContacts, internalContacts)).thenReturn(emptyList())
 
         val result = useCase(remoteContacts, internalContacts)

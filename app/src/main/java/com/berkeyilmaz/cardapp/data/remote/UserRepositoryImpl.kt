@@ -98,6 +98,34 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun initUserData(userId: String): ResponseState<Unit> {
+        return try {
+            val docRef = firestore.collection("users").document(userId)
+            val doc = docRef.get().await()
+            if (!doc.contains("initSync")) {
+                docRef.set(mapOf("initSync" to false), SetOptions.merge()).await()
+            }
+            ResponseState.Success(Unit)
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            ResponseState.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    override suspend fun setInitSync(value: Boolean): ResponseState<Unit> {
+        return try {
+            val userId = firebaseAuth.currentUser?.uid
+                ?: return ResponseState.Error("No user signed in")
+            firestore.collection("users").document(userId)
+                .set(mapOf("initSync" to value), SetOptions.merge())
+                .await()
+            ResponseState.Success(Unit)
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            ResponseState.Error(e.message ?: "Unknown error")
+        }
+    }
+
     override suspend fun getUserInfo(userId: String): ResponseState<UserInfo> {
         return try {
             val doc = firestore.collection("users").document(userId).get().await()

@@ -24,7 +24,7 @@ class SuggestTagsForContactsUseCaseTest {
 
     @Test
     fun `invoke delegates to repository suggestTagsForNewContact`() = runTest {
-        val contacts = listOf(InternalContact(contactId = "1", fullName = "Ali", phoneNumbers = listOf()))
+        val contacts = listOf(InternalContact(contactId = "1", fullName = "Ali", phones = listOf()))
         val expected = listOf(ContactRequest(fullName = "Ali"))
         whenever(repository.suggestTagsForNewContact(contacts)).thenReturn(expected)
 
@@ -46,8 +46,8 @@ class SuggestTagsForContactsUseCaseTest {
     @Test
     fun `invoke returns multiple contact requests`() = runTest {
         val contacts = listOf(
-            InternalContact(contactId = "1", fullName = "Ali", phoneNumbers = listOf()),
-            InternalContact(contactId = "2", fullName = "Veli", phoneNumbers = listOf())
+            InternalContact(contactId = "1", fullName = "Ali", phones = listOf()),
+            InternalContact(contactId = "2", fullName = "Veli", phones = listOf())
         )
         val expected = listOf(
             ContactRequest(fullName = "Ali"),

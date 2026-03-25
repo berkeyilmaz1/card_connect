@@ -13,10 +13,16 @@ import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContactChanges
+import com.berkeyilmaz.cardapp.core.common.ResponseState
+import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetContactsListUseCase
 import com.berkeyilmaz.cardapp.domain.contact.usecase.SuggestTagsForContactsUseCase
+import com.berkeyilmaz.cardapp.domain.contact.usecase.SyncInternalContactsUseCase
 import com.berkeyilmaz.cardapp.domain.scan.usecase.CreateContactUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
+import com.berkeyilmaz.cardapp.domain.sync.usecase.GetInitialSyncDoneUseCase
+import com.berkeyilmaz.cardapp.domain.sync.usecase.SetInitialSyncDoneUseCase
+import com.berkeyilmaz.cardapp.domain.user.usecase.SetInitSyncUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -24,6 +30,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -51,6 +58,11 @@ sealed class ContactUiEvent {
 class ContactViewModel @Inject constructor(
     private val getContactsListUseCase: GetContactsListUseCase,
     private val suggestTagsForContactsUseCase: SuggestTagsForContactsUseCase,
+    private val syncInternalContactsUseCase: SyncInternalContactsUseCase,
+    private val getInitialSyncDoneUseCase: GetInitialSyncDoneUseCase,
+    private val setInitialSyncDoneUseCase: SetInitialSyncDoneUseCase,
+    private val setInitSyncUseCase: SetInitSyncUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val createContactUseCase: CreateContactUseCase,
     private val analyticsManager: AnalyticsManager,
     @param:ApplicationContext private val context: Context
@@ -140,6 +152,18 @@ class ContactViewModel @Inject constructor(
                 checkIfThereAreAnyAddedContacts(changes)
             }
             _uiState.value = ContactUiState.Success(contacts)
+            viewModelScope.launch {
+                val userId = (getCurrentUserUseCase() as? ResponseState.Success)?.data?.uid
+                    ?: return@launch
+                val alreadySynced = getInitialSyncDoneUseCase(userId).first()
+                if (!alreadySynced) {
+                    val result = syncInternalContactsUseCase(contacts)
+                    if (result.isSuccess) {
+                        setInitialSyncDoneUseCase(userId, true)
+                        setInitSyncUseCase(true)
+                    }
+                }
+            }
         } catch (e: Exception) {
             _uiEvent.emit(
                 ContactUiEvent.ShowError(

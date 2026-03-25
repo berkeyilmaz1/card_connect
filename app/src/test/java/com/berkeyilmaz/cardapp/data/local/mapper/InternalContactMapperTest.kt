@@ -12,7 +12,7 @@ class InternalContactMapperTest {
         val contact = InternalContact(
             contactId = "1",
             fullName = "Ali Veli",
-            phoneNumbers = listOf("+905551234567"),
+            phones = listOf("+905551234567"),
             emails = listOf("ali@example.com"),
             websites = listOf("https://ali.com"),
             organization = "ACME Corp",
@@ -22,7 +22,7 @@ class InternalContactMapperTest {
 
         assertEquals("1", entity.contactId)
         assertEquals("Ali Veli", entity.fullName)
-        assertEquals(listOf("+905551234567"), entity.phoneNumbers)
+        assertEquals(listOf("+905551234567"), entity.phones)
         assertEquals(listOf("ali@example.com"), entity.emails)
         assertEquals(listOf("https://ali.com"), entity.websites)
         assertEquals("ACME Corp", entity.organization)
@@ -34,7 +34,7 @@ class InternalContactMapperTest {
         val contact = InternalContact(
             contactId = "2",
             fullName = "Test User",
-            phoneNumbers = listOf(),
+            phones = listOf(),
             emails = null
         )
         val entity = contact.toEntity()
@@ -46,7 +46,7 @@ class InternalContactMapperTest {
         val contact = InternalContact(
             contactId = "3",
             fullName = "Test User",
-            phoneNumbers = listOf(),
+            phones = listOf(),
             websites = null
         )
         val entity = contact.toEntity()
@@ -58,7 +58,7 @@ class InternalContactMapperTest {
         val entity = InternalContactEntity(
             contactId = "1",
             fullName = "Ali Veli",
-            phoneNumbers = listOf("+905551234567"),
+            phones = listOf("+905551234567"),
             emails = listOf("ali@example.com"),
             websites = listOf("https://ali.com"),
             organization = "ACME Corp",
@@ -68,7 +68,7 @@ class InternalContactMapperTest {
 
         assertEquals("1", contact.contactId)
         assertEquals("Ali Veli", contact.fullName)
-        assertEquals(listOf("+905551234567"), contact.phoneNumbers)
+        assertEquals(listOf("+905551234567"), contact.phones)
         assertEquals(listOf("ali@example.com"), contact.emails)
         assertEquals(listOf("https://ali.com"), contact.websites)
         assertEquals("ACME Corp", contact.organization)
@@ -80,7 +80,7 @@ class InternalContactMapperTest {
         val entity = InternalContactEntity(
             contactId = "2",
             fullName = "Test",
-            phoneNumbers = listOf(),
+            phones = listOf(),
             emails = emptyList(),
             websites = emptyList(),
             organization = null,
@@ -95,7 +95,7 @@ class InternalContactMapperTest {
         val entity = InternalContactEntity(
             contactId = "3",
             fullName = "Test",
-            phoneNumbers = listOf(),
+            phones = listOf(),
             emails = emptyList(),
             websites = emptyList(),
             organization = null,
@@ -108,8 +108,8 @@ class InternalContactMapperTest {
     @Test
     fun `toEntityList maps list correctly`() {
         val contacts = listOf(
-            InternalContact(contactId = "1", fullName = "Ali", phoneNumbers = listOf()),
-            InternalContact(contactId = "2", fullName = "Veli", phoneNumbers = listOf())
+            InternalContact(contactId = "1", fullName = "Ali", phones = listOf()),
+            InternalContact(contactId = "2", fullName = "Veli", phones = listOf())
         )
         val entities = contacts.toEntityList()
         assertEquals(2, entities.size)
@@ -122,12 +122,12 @@ class InternalContactMapperTest {
         val entities = listOf(
             InternalContactEntity(
                 contactId = "1", fullName = "Ali",
-                phoneNumbers = listOf(), emails = listOf(), websites = listOf(),
+                phones = listOf(), emails = listOf(), websites = listOf(),
                 organization = null, title = null
             ),
             InternalContactEntity(
                 contactId = "2", fullName = "Veli",
-                phoneNumbers = listOf(), emails = listOf(), websites = listOf(),
+                phones = listOf(), emails = listOf(), websites = listOf(),
                 organization = null, title = null
             )
         )
@@ -142,7 +142,7 @@ class InternalContactMapperTest {
         val original = InternalContact(
             contactId = "rt1",
             fullName = "Round Trip",
-            phoneNumbers = listOf("+901234567890"),
+            phones = listOf("+901234567890"),
             emails = listOf("rt@test.com"),
             websites = listOf("https://rt.com"),
             organization = "RT Corp",
@@ -152,7 +152,7 @@ class InternalContactMapperTest {
 
         assertEquals(original.contactId, result.contactId)
         assertEquals(original.fullName, result.fullName)
-        assertEquals(original.phoneNumbers, result.phoneNumbers)
+        assertEquals(original.phones, result.phones)
         assertEquals(original.emails, result.emails)
         assertEquals(original.websites, result.websites)
         assertEquals(original.organization, result.organization)
