@@ -276,9 +276,9 @@ private fun DuplicateContactItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (contact.organization.isNotEmpty()) {
+                if (!contact.organization.isNullOrEmpty()) {
                     Text(
-                        text = contact.organization,
+                        text = contact.organization.orEmpty(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

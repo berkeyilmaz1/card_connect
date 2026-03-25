@@ -587,30 +587,30 @@ class ContactRepositoryImpl @Inject constructor(
                     .firstOrNull { it.fullName.isNotEmpty() }?.fullName
                     ?: allInternal.firstOrNull { it.fullName.isNotEmpty() }?.fullName ?: ""
             }
-            val title = primaryContact.title.ifEmpty {
+            val title = primaryContact.title.orEmpty().ifEmpty {
                 allRemote.drop(1)
-                    .firstOrNull { it.title.isNotEmpty() }?.title
+                    .firstOrNull { !it.title.isNullOrEmpty() }?.title
                     ?: allInternal.firstOrNull { !it.title.isNullOrEmpty() }?.title ?: ""
             }
-            val organization = primaryContact.organization.ifEmpty {
+            val organization = primaryContact.organization.orEmpty().ifEmpty {
                 allRemote.drop(1)
-                    .firstOrNull { it.organization.isNotEmpty() }?.organization
+                    .firstOrNull { !it.organization.isNullOrEmpty() }?.organization
                     ?: allInternal.firstOrNull { !it.organization.isNullOrEmpty() }?.organization
                     ?: ""
             }
-            val note = primaryContact.note.ifEmpty {
+            val note = primaryContact.note.orEmpty().ifEmpty {
                 allRemote.drop(1)
-                    .firstOrNull { it.note.isNotEmpty() }?.note
+                    .firstOrNull { !it.note.isNullOrEmpty() }?.note
                     ?: allInternal.firstOrNull { !it.note.isNullOrEmpty() }?.note ?: ""
             }
-            val address = primaryContact.address.ifEmpty {
+            val address = primaryContact.address.orEmpty().ifEmpty {
                 allRemote.drop(1)
-                    .firstOrNull { it.address.isNotEmpty() }?.address
+                    .firstOrNull { !it.address.isNullOrEmpty() }?.address
                     ?: allInternal.firstOrNull { !it.address.isNullOrEmpty() }?.address ?: ""
             }
-            val imageUrl = primaryContact.imageUrl.ifEmpty {
+            val imageUrl = primaryContact.imageUrl.orEmpty().ifEmpty {
                 allRemote.drop(1)
-                    .firstOrNull { it.imageUrl.isNotEmpty() }?.imageUrl ?: ""
+                    .firstOrNull { !it.imageUrl.isNullOrEmpty() }?.imageUrl ?: ""
             }
 
             val mergedContact = primaryContact.copy(
@@ -654,11 +654,11 @@ class ContactRepositoryImpl @Inject constructor(
                 displayName = mergedContact.fullName,
                 phoneNumber = mergedContact.phones.firstOrNull(),
                 email = mergedContact.emails.firstOrNull(),
-                company = mergedContact.organization.ifEmpty { null },
-                jobTitle = mergedContact.title.ifEmpty { null },
-                address = mergedContact.address.ifEmpty { null },
+                company = mergedContact.organization?.ifEmpty { null },
+                jobTitle = mergedContact.title?.ifEmpty { null },
+                address = mergedContact.address?.ifEmpty { null },
                 website = mergedContact.websites.firstOrNull(),
-                notes = mergedContact.note.ifEmpty { null })
+                notes = mergedContact.note?.ifEmpty { null })
             Log.d(
                 "BerkeTag", "mergeContacts: local contact created for '${mergedContact.fullName}'"
             )

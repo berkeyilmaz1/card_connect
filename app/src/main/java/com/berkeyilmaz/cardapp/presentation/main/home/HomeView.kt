@@ -271,9 +271,9 @@ fun RecentContactCard(
                 )
 
                 // Contact title/organization
-                if (contact.title.isNotEmpty() || contact.organization.isNotEmpty()) {
+                if (!contact.title.isNullOrEmpty() || !contact.organization.isNullOrEmpty()) {
                     Text(
-                        text = contact.title.ifEmpty { contact.organization },
+                        text = contact.title.orEmpty().ifEmpty { contact.organization.orEmpty() },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
