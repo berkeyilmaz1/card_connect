@@ -46,7 +46,6 @@ sealed class AnalyzeBottomSheetState {
 
 sealed class ContactUiEvent {
     data class ShowError(val message: String) : ContactUiEvent()
-    data object ShowCancelConfirmation : ContactUiEvent()
 }
 
 @HiltViewModel
