@@ -17,15 +17,11 @@ import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.ReadInitContactSyncDataUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.WriteInitContactSyncDataUseCase
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
-import com.berkeyilmaz.cardapp.domain.contact.model.InternalContactChanges
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetContactsListUseCase
 import com.berkeyilmaz.cardapp.domain.contact.usecase.SaveInternalContactsListUseCase
-import com.berkeyilmaz.cardapp.domain.contact.usecase.SuggestTagsForContactsUseCase
-import com.berkeyilmaz.cardapp.domain.scan.usecase.CreateContactUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -56,8 +52,6 @@ sealed class ContactUiEvent {
 @HiltViewModel
 class ContactViewModel @Inject constructor(
     private val getContactsListUseCase: GetContactsListUseCase,
-    private val suggestTagsForContactsUseCase: SuggestTagsForContactsUseCase,
-    private val createContactUseCase: CreateContactUseCase,
     private val analyticsManager: AnalyticsManager,
     private val saveInternalContactsListUseCase: SaveInternalContactsListUseCase,
     private val writeInitContactSyncDataUseCase: WriteInitContactSyncDataUseCase,
@@ -78,7 +72,6 @@ class ContactViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     private var hasRequestedPermission = false
-    private var analyzeJob: Job? = null
 
     fun checkAndRequestPermission(
         activityContext: Context, onRequestPermission: () -> Unit
@@ -145,12 +138,9 @@ class ContactViewModel @Inject constructor(
     suspend fun getContacts(contentResolver: ContentResolver) {
         try {
             _uiState.value = ContactUiState.Loading
-            val (contacts, changes) = getContactsListUseCase(contentResolver)
+            val contacts = getContactsListUseCase(contentResolver)
             Log.d("BerkeTag", "Contacts loaded: ${contacts.size}")
             performInitialSyncIfNeeded(contacts)
-            if (changes.hasChanges) {
-                checkIfThereAreAnyAddedContacts(changes)
-            }
             _uiState.value = ContactUiState.Success(contacts)
         } catch (e: Exception) {
             _uiEvent.emit(
@@ -186,47 +176,7 @@ class ContactViewModel @Inject constructor(
         }
     }
 
-    private fun checkIfThereAreAnyAddedContacts(changes: InternalContactChanges) {
-        if (changes.added.isEmpty()) {
-            return
-        }
-        Log.d("BerkeTag", "Added contacts: ${changes.added}")
-        analyzeNewContacts(changes.added)
-    }
-
-    private fun analyzeNewContacts(addedContacts: List<InternalContact>) {
-        analyzeJob = viewModelScope.launch {
-            try {
-                _bottomSheetState.value = AnalyzeBottomSheetState.Loading(addedContacts.size)
-
-                val suggestions = suggestTagsForContactsUseCase(addedContacts)
-                Log.d("BerkeTag", "Suggestions received: ${suggestions.size}")
-
-                _bottomSheetState.value = AnalyzeBottomSheetState.Success(suggestions)
-            } catch (e: Exception) {
-                Log.e("BerkeTag", "Analyze error: ${e.message}")
-                _bottomSheetState.value = AnalyzeBottomSheetState.Error(
-                    e.localizedMessage
-                        ?: context.getString(R.string.an_error_occurred_when_getting_contacts)
-                )
-            }
-        }
-    }
-
     fun onBottomSheetDismissRequest() {
-        // Eğer loading durumundaysa uyarı göster
-        if (_bottomSheetState.value is AnalyzeBottomSheetState.Loading) {
-            viewModelScope.launch {
-                _uiEvent.emit(ContactUiEvent.ShowCancelConfirmation)
-            }
-        } else {
-            dismissBottomSheet()
-        }
-    }
-
-    fun confirmCancelAnalysis() {
-        analyzeJob?.cancel()
-        analyzeJob = null
         dismissBottomSheet()
     }
 
