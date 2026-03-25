@@ -225,7 +225,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
 
-    suspend fun reAuthenticate(password: String): ResponseState<Unit> {
+    override suspend fun reAuthenticate(password: String): ResponseState<Unit> {
         val user = firebaseAuth.currentUser ?: return ResponseState.Error(
             context.getString(
                 R.string.no_user_logged_in

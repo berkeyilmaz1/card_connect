@@ -113,4 +113,37 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteUserData(userId: String): ResponseState<Unit> {
+        return try {
+            val batch = firestore.batch()
+            val userDocRef = firestore.collection("users").document(userId)
+            
+            // Alt koleksiyonları temizle
+            val collections = listOf("contacts", "scans", "notifications")
+            for (collectionPath in collections) {
+                val snapshots = userDocRef.collection(collectionPath).get().await()
+                for (doc in snapshots.documents) {
+                    batch.delete(doc.reference)
+                }
+            }
+            
+            // Ana kullanıcı dökümanını sil
+            batch.delete(userDocRef)
+            
+            // Tüm işlemleri tek seferde çalıştır
+            batch.commit().await()
+            
+            ResponseState.Success(Unit)
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            // Hata mesajını daha anlaşılır kılalım
+            val errorMessage = if (e.message?.contains("PERMISSION_DENIED") == true) {
+                "Firebase Firestore Rules error: Please check your security rules for delete permission."
+            } else {
+                e.message ?: "Unknown error"
+            }
+            ResponseState.Error(errorMessage)
+        }
+    }
+
 }

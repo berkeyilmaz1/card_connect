@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.core.common.ResponseState
+import com.berkeyilmaz.cardapp.domain.auth.usecase.DeleteAccountUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
+import com.berkeyilmaz.cardapp.domain.auth.usecase.ReAuthenticateUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.GetPhotoUrlUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.GetUserInfoUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.SavePhotoUrlUseCase
@@ -32,6 +34,8 @@ class ProfileViewModel @Inject constructor(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val savePhotoUrlUseCase: SavePhotoUrlUseCase,
     private val getPhotoUrlUseCase: GetPhotoUrlUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val reAuthenticateUseCase: ReAuthenticateUseCase,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -100,6 +104,29 @@ class ProfileViewModel @Inject constructor(
                 }
                 is ResponseState.Error -> _uiState.update {
                     it.copy(isSaving = false, errorMessage = result.message)
+                }
+            }
+        }
+    }
+
+    fun deleteAccount(password: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingAccount = true, errorMessage = null) }
+            
+            // 1. Re-authenticate
+            val authResult = reAuthenticateUseCase(password)
+            if (authResult is ResponseState.Error) {
+                _uiState.update { it.copy(isDeletingAccount = false, errorMessage = authResult.message) }
+                return@launch
+            }
+            
+            // 2. Delete account and data
+            when (val result = deleteAccountUseCase()) {
+                is ResponseState.Success -> {
+                    _uiState.update { it.copy(isDeletingAccount = false, accountDeleted = true) }
+                }
+                is ResponseState.Error -> {
+                    _uiState.update { it.copy(isDeletingAccount = false, errorMessage = result.message) }
                 }
             }
         }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,17 +32,22 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
@@ -53,10 +59,14 @@ import com.berkeyilmaz.cardapp.presentation.profile.viewmodel.ProfileViewModel
 @Composable
 fun ProfileView(
     onNavigateBack: () -> Unit = {},
+    onNavigateToAuth: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var password by remember { mutableStateOf("") }
 
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -70,11 +80,88 @@ fun ProfileView(
         }
     }
 
+    LaunchedEffect(uiState.accountDeleted) {
+        if (uiState.accountDeleted) {
+            onNavigateToAuth()
+        }
+    }
+
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearError()
         }
+    }
+
+    // İlk Onay Diyaloğu
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text(stringResource(R.string.delete_account_confirmation_title)) },
+            text = { Text(stringResource(R.string.delete_account_confirmation_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        showPasswordDialog = true
+                    }
+                ) {
+                    Text(stringResource(R.string.next), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Şifre Onay Diyaloğu
+    if (showPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showPasswordDialog = false
+                password = ""
+            },
+            title = { Text(stringResource(R.string.delete_account)) },
+            text = {
+                Column {
+                    Text("Lütfen onaylamak için şifrenizi girin.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text(stringResource(R.string.password)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (password.isNotEmpty()) {
+                            viewModel.deleteAccount(password)
+                            showPasswordDialog = false
+                            password = ""
+                        }
+                    },
+                    enabled = password.isNotEmpty()
+                ) {
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showPasswordDialog = false 
+                    password = ""
+                }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -92,10 +179,10 @@ fun ProfileView(
                 IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Geri"
+                        contentDescription = stringResource(R.string.back)
                     )
                 }
-                AppTitle("Profil")
+                AppTitle(stringResource(R.string.profile))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -118,7 +205,7 @@ fun ProfileView(
                 } else if (uiState.photoBytes != null) {
                     AsyncImage(
                         model = uiState.photoBytes,
-                        contentDescription = "Profil fotoğrafı",
+                        contentDescription = stringResource(R.string.profile_image),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(96.dp)
@@ -146,7 +233,7 @@ fun ProfileView(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.CameraAlt,
-                            contentDescription = "Fotoğraf seç",
+                            contentDescription = stringResource(R.string.profile_image),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(36.dp)
                         )
@@ -181,7 +268,7 @@ fun ProfileView(
             OutlinedTextField(
                 value = uiState.displayName,
                 onValueChange = viewModel::onDisplayNameChange,
-                label = { Text("Ad Soyad") },
+                label = { Text(stringResource(R.string.full_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -191,7 +278,7 @@ fun ProfileView(
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = {},
-                label = { Text("E-posta") },
+                label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
                 readOnly = true,
                 enabled = false,
@@ -203,7 +290,7 @@ fun ProfileView(
             OutlinedTextField(
                 value = uiState.phone,
                 onValueChange = viewModel::onPhoneChange,
-                label = { Text("Telefon") },
+                label = { Text(stringResource(R.string.phone_number)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth()
@@ -212,10 +299,21 @@ fun ProfileView(
             Spacer(modifier = Modifier.height(24.dp))
 
             CustomAppButton(
-                text = "Kaydet",
+                text = stringResource(R.string.save),
                 onClick = viewModel::saveProfile,
                 loading = uiState.isSaving,
                 fullWidth = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CustomAppButton(
+                text = stringResource(R.string.delete_account),
+                onClick = { showDeleteConfirmDialog = true },
+                loading = uiState.isDeletingAccount,
+                fullWidth = true,
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError
             )
         }
 

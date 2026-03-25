@@ -10,6 +10,7 @@ interface UserRepository {
     suspend fun getPhotoUrl(userId: String): ResponseState<String?>
     suspend fun saveUserInfo(userId: String, displayName: String, phone: String): ResponseState<Unit>
     suspend fun getUserInfo(userId: String): ResponseState<UserInfo>
+    suspend fun deleteUserData(userId: String): ResponseState<Unit>
 }
 
 data class UserInfo(
