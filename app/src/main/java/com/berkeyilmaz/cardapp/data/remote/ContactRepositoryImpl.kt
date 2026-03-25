@@ -30,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import javax.inject.Inject
 
 class ContactRepositoryImpl @Inject constructor(
@@ -674,14 +675,18 @@ class ContactRepositoryImpl @Inject constructor(
         userId: String, internalContacts: List<InternalContact>
     ): ResponseState<Boolean> {
         return try {
-            val currentUser =
-                firebaseAuth.currentUser ?: return ResponseState.Error("User not authenticated")
+            firebaseAuth.currentUser ?: return ResponseState.Error("User not authenticated")
 
-            val ref = database.document("users")
-                .collection(userId)
-                .document("contacts")
-                .set(internalContacts)
-                .await()
+            val batch = database.batch()
+            val collectionRef = database.collection("users")
+                .document(userId)
+                .collection("contacts")
+
+            internalContacts.forEach { contact ->
+                val docRef = collectionRef.document(UUID.randomUUID().toString())
+                batch.set(docRef, contact)
+            }
+            batch.commit().await()
 
             Log.d(
                 "BerkeTag",

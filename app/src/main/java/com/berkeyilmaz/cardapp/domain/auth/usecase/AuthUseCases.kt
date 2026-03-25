@@ -60,3 +60,10 @@ class WriteInitContactSyncDataUseCase @Inject constructor(
     suspend operator fun invoke(userId: String, syncValue: String): ResponseState<Unit> =
         repository.writeInitContactSyncData(userId, syncValue)
 }
+
+class ReadInitContactSyncDataUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
+    suspend operator fun invoke(userId: String): ResponseState<String> =
+        repository.readInitContactSyncData(userId)
+}

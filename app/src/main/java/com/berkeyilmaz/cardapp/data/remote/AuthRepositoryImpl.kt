@@ -248,6 +248,20 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
 
+    override suspend fun readInitContactSyncData(userId: String): ResponseState<String> {
+        return try {
+            firebaseAuth.currentUser
+                ?: return ResponseState.Error(context.getString(R.string.no_user_logged_in))
+            val snapshot = firestore.collection("users").document(userId).get().await()
+            val syncValue = snapshot.getString("initSync")
+                ?: return ResponseState.Error("initSync field not found")
+            ResponseState.Success(syncValue)
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            ResponseState.Error(e.localizedMessage ?: "Error reading initSync data")
+        }
+    }
+
     suspend fun reAuthenticate(password: String): ResponseState<Unit> {
         val user = firebaseAuth.currentUser ?: return ResponseState.Error(
             context.getString(

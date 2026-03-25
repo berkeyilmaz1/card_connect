@@ -24,4 +24,6 @@ interface AuthRepository {
     suspend fun deleteAccount(): ResponseState<Unit>
 
     suspend fun writeInitContactSyncData(userId: String, syncValue: String): ResponseState<Unit>
+
+    suspend fun readInitContactSyncData(userId: String): ResponseState<String>
 }
