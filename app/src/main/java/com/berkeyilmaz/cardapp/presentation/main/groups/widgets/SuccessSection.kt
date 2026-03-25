@@ -58,7 +58,8 @@ fun SuccessSection(
     selectedSubGroup: String?,
     contacts: List<Contact>,
     onMainGroupSelected: (String) -> Unit,
-    onSubGroupSelected: (String?) -> Unit
+    onSubGroupSelected: (String?) -> Unit,
+    onContactClick: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     var showSubGroups by remember { mutableStateOf(false) }
@@ -163,7 +164,7 @@ fun SuccessSection(
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_xSmall))
         ) {
             items(filteredContacts) { contact ->
-                ContactCard(contact = contact)
+                ContactCard(contact = contact, onClick = { onContactClick(contact.contactId) })
             }
         }
     }
@@ -171,10 +172,10 @@ fun SuccessSection(
 }
 
 @Composable
-fun ContactCard(contact: Contact) {
+fun ContactCard(contact: Contact, onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        onClick = { /* TODO: Handle click */ },
+        onClick = onClick,
         shape = RoundedCornerShape(dimensionResource(R.dimen.padding_normal)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant

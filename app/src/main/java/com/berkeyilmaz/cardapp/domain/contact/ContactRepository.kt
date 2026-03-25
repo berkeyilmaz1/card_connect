@@ -25,4 +25,5 @@ interface ContactRepository {
         internalDuplicates: List<InternalContact>
     ): Result<Contact>
     suspend fun syncInternalContactsToFirestore(contacts: List<InternalContact>): Result<Unit>
+    suspend fun getContactById(contactId: String): Result<Contact>
 }

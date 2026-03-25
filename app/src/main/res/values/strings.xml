@@ -209,6 +209,12 @@
     <string name="scanning_duplicates">Scanning for duplicate contacts…</string>
     <string name="internal_contact_badge">Contacts</string>
 
+    <!-- Contact Detail -->
+    <string name="phones">Phone Numbers</string>
+    <string name="note">Note</string>
+    <string name="share">Share</string>
+    <string name="other">Other</string>
+
     <!-- Analytics Consent -->
     <string name="analytics_data_collection">Analytics Data Collection</string>
     <string name="analytics_consent_title">Help Us Improve</string>

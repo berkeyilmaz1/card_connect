@@ -708,4 +708,22 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getContactById(contactId: String): Result<Contact> {
+        return try {
+            val uid = firebaseAuth.currentUser?.uid
+                ?: return Result.failure(Exception("User not authenticated"))
+            val snapshot = database.collection("users")
+                .document(uid)
+                .collection("contacts")
+                .document(contactId)
+                .get().await()
+            val contact = snapshot.toObject<Contact>()
+                ?: return Result.failure(Exception("Contact not found"))
+            Result.success(contact.copy(contactId = snapshot.id))
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            Result.failure(e)
+        }
+    }
+
 }

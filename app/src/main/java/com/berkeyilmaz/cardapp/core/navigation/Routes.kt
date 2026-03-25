@@ -69,15 +69,19 @@ sealed class Screen(
         )
 
         // Parameterized Routes
-//        data class ContactDetail(val id: String) : Main(
-//            route = "contact_detail/$id", titleRes = R.string.contact_detail
-//        ) {
-//            companion object {
-//                const val ROUTE_PATTERN = "contact_detail/{id}"
-//                const val ARG_ID = "id"
-//
-//                fun createRoute(id: String) = "contact_detail/$id"
-//            }
-//        }
+        data class ContactDetail(val id: String) : Main(
+            route = "contact_detail/$id", titleRes = R.string.contact_detail
+        ) {
+            companion object {
+                const val ROUTE_PATTERN = "contact_detail/{id}"
+                const val ARG_ID = "id"
+
+                fun createRoute(id: String) = "contact_detail/$id"
+            }
+        }
+
+        data object InternalContactDetail : Main(
+            route = "internal_contact_detail", titleRes = R.string.contact_detail
+        )
     }
 }

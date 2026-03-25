@@ -45,7 +45,7 @@ fun ContactContent(
     uiState: ContactUiState,
     onRequestPermission: () -> Unit,
     onOpenSettings: () -> Unit,
-    onContactClick: (String) -> Unit
+    onContactClick: (InternalContact) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -85,7 +85,7 @@ fun ContactContent(
 
 @Composable
 private fun ContactList(
-    contacts: List<InternalContact>, onContactClick: (String) -> Unit
+    contacts: List<InternalContact>, onContactClick: (InternalContact) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         AppTitle(stringResource(R.string.contacts))
@@ -100,9 +100,7 @@ private fun ContactList(
                 items = contacts, key = { contact -> contact.contactId }) { contact ->
                 ContactCard(
                     contact = contact, onClick = {
-                        contact.phones.firstOrNull()?.let { phoneNumber ->
-                            onContactClick(phoneNumber)
-                        }
+                        onContactClick(contact)
                     })
             }
         }

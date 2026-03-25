@@ -8,13 +8,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.berkeyilmaz.cardapp.R
 import com.berkeyilmaz.cardapp.core.analytics.AnalyticsManager
 import com.berkeyilmaz.cardapp.core.utility.safeNavigate
 import com.berkeyilmaz.cardapp.core.utility.safePopBack
+import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
+import com.berkeyilmaz.cardapp.presentation.contact_detail.ContactDetailView
+import com.berkeyilmaz.cardapp.presentation.contact_detail.viewmodel.ContactDetailViewModel
+import com.berkeyilmaz.cardapp.presentation.internal_contact_detail.InternalContactDetailView
 import com.berkeyilmaz.cardapp.presentation.main.contact.ContactView
 import com.berkeyilmaz.cardapp.presentation.main.groups.GroupsView
 import com.berkeyilmaz.cardapp.presentation.main.home.HomeView
@@ -56,19 +62,27 @@ fun MainNavHost(
                 onNotificationAction = { viewModel.removeNotification(it) },
                 onQuickOptionClick = { route ->
                     if (route.isNotEmpty()) navController.safeNavigate(route)
+                },
+                onContactClick = { contactId ->
+                    navController.safeNavigate(Screen.Main.ContactDetail.createRoute(contactId))
                 })
         }
 
         composable(Screen.Main.Contact.route) {
             LaunchedEffect(Unit) { analyticsManager.logScreenView("Contacts") }
-            ContactView(onContactClick = { contactId ->
-                // TODO: navigate to detail
+            ContactView(onContactClick = { contact ->
+                navController.currentBackStackEntry?.savedStateHandle?.set(
+                    "internalContact", Gson().toJson(contact)
+                )
+                navController.safeNavigate(Screen.Main.InternalContactDetail.route)
             })
         }
 
         composable(Screen.Main.Groups.route) {
             LaunchedEffect(Unit) { analyticsManager.logScreenView("Groups") }
-            GroupsView()
+            GroupsView(onContactClick = { contactId ->
+                navController.safeNavigate(Screen.Main.ContactDetail.createRoute(contactId))
+            })
         }
 
         composable(Screen.Main.More.route) {
@@ -84,6 +98,37 @@ fun MainNavHost(
                         launchSingleTop = true
                     }
                 })
+        }
+
+        // Contact Detail (Firebase Contact model — from Groups/Home)
+        composable(
+            route = Screen.Main.ContactDetail.ROUTE_PATTERN,
+            arguments = listOf(
+                navArgument(Screen.Main.ContactDetail.ARG_ID) { type = NavType.StringType }
+            )
+        ) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("ContactDetail") }
+            val viewModel = hiltViewModel<ContactDetailViewModel>()
+            val uiState by viewModel.uiState.collectAsState()
+            ContactDetailView(
+                uiState = uiState,
+                onNavigateBack = { navController.safePopBack() }
+            )
+        }
+
+        // Internal Contact Detail (local InternalContact model — from Contacts tab)
+        composable(Screen.Main.InternalContactDetail.route) {
+            LaunchedEffect(Unit) { analyticsManager.logScreenView("InternalContactDetail") }
+            val json = navController.previousBackStackEntry?.savedStateHandle?.get<String>("internalContact")
+            val contact = json?.let { j ->
+                try { Gson().fromJson(j, InternalContact::class.java) } catch (e: Exception) { null }
+            }
+            if (contact != null) {
+                InternalContactDetailView(
+                    contact = contact,
+                    onNavigateBack = { navController.safePopBack() }
+                )
+            }
         }
 
         // Full-screen
