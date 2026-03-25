@@ -1,7 +1,10 @@
 package com.berkeyilmaz.cardapp.presentation.auth.signin.viewmodel
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Patterns
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.R
@@ -11,8 +14,10 @@ import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.LoginUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignInWithGoogleUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.SignUpUseCase
+import com.berkeyilmaz.cardapp.domain.auth.usecase.WriteInitContactSyncDataUseCase
+import com.berkeyilmaz.cardapp.domain.contact.usecase.GetContactsListUseCase
+import com.berkeyilmaz.cardapp.domain.contact.usecase.SaveInternalContactsListUseCase
 import com.berkeyilmaz.cardapp.domain.user.UserRepository
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +52,9 @@ class SignInViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val userRepository: UserRepository,
     private val analyticsManager: AnalyticsManager,
+    private val writeInitContactSyncDataUseCase: WriteInitContactSyncDataUseCase,
+    private val getInternalContactsUseCase: GetContactsListUseCase,
+    private val saveInternalContactsListUseCase: SaveInternalContactsListUseCase,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -88,6 +96,7 @@ class SignInViewModel @Inject constructor(
                             setLoading(false)
                             return@withContext
                         }
+                        fetchInternalContactsAndWriteToFirebase()
                         _eventFlow.emit(SignInUiEvent.NavigateToMain)
                     }
 
@@ -96,6 +105,37 @@ class SignInViewModel @Inject constructor(
                     }
                 }
                 setLoading(false)
+            }
+        }
+    }
+
+    private fun fetchInternalContactsAndWriteToFirebase() {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.READ_CONTACTS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!hasPermission) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = (getCurrentUserUseCase() as? ResponseState.Success)?.data
+            user?.let {
+                val internalContacts = getInternalContactsUseCase(context.contentResolver)
+                //TODO fix first kısmını, duplicate için böyle yapmıştım.
+                val result = saveInternalContactsListUseCase(it.uid, internalContacts.first)
+                when (result) {
+                    is ResponseState.Error -> {
+                        withContext(Dispatchers.Main) {
+                            _eventFlow.emit(
+                                SignInUiEvent.ShowError(
+                                    result.message
+                                )
+                            )
+                        }
+                    }
+
+                    is ResponseState.Success<*> -> {
+                        writeInitContactSyncDataUseCase(it.uid, "true")
+                    }
+                }
             }
         }
     }
@@ -110,6 +150,9 @@ class SignInViewModel @Inject constructor(
                     if (user != null) {
                         userRepository.saveAnalyticsConsent(user.uid, consent)
                         analyticsManager.setAnalyticsEnabled(consent)
+                        // İlk kayıt sırasında flag olarak false oluşturuyoruz.
+                        writeInitContactSyncDataUseCase(user.uid, "false")
+
                     }
                     withContext(Dispatchers.Main) {
                         _eventFlow.emit(
@@ -120,6 +163,7 @@ class SignInViewModel @Inject constructor(
                         setLoading(false)
                     }
                 }
+
                 is ResponseState.Error -> {
                     withContext(Dispatchers.Main) {
                         _eventFlow.emit(SignInUiEvent.ShowError(signUpResponse.message))
@@ -193,7 +237,8 @@ class SignInViewModel @Inject constructor(
 
     fun isValidEmail(email: String): Boolean {
         return try {
-            Patterns.EMAIL_ADDRESS.matcher(email).matches()
+            Patterns.EMAIL_ADDRESS.matcher(email)
+                .matches()
         } catch (e: Exception) {
             false
         }

@@ -10,4 +10,5 @@ data class InternalContact(
     val title: String? = null,
     val address: String? = null,
     val note: String? = null,
+    val isInternalContact: Boolean = true
 )

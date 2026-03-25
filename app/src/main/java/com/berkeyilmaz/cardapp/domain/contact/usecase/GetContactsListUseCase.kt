@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import com.berkeyilmaz.cardapp.domain.contact.ContactRepository
 import javax.inject.Inject
 
+// Gets internal contacts
 class GetContactsListUseCase @Inject constructor(
     private val repository: ContactRepository
 ) {

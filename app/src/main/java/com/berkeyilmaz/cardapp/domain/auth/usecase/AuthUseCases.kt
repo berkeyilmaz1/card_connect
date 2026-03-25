@@ -53,3 +53,10 @@ class GetCurrentUserUseCase @Inject constructor(
     suspend operator fun invoke(): ResponseState<FirebaseUser?> =
         repository.getCurrentUser()
 }
+
+class WriteInitContactSyncDataUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
+    suspend operator fun invoke(userId: String, syncValue: String): ResponseState<Unit> =
+        repository.writeInitContactSyncData(userId, syncValue)
+}

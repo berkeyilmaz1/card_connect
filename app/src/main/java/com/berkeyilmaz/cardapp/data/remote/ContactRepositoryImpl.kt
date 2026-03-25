@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.core.manager.GeminiExtractor
 import com.berkeyilmaz.cardapp.core.manager.LocalLlmExtractor
 import com.berkeyilmaz.cardapp.core.util.ContactsHelper
@@ -66,8 +67,7 @@ class ContactRepositoryImpl @Inject constructor(
         cursor?.use {
             val idIndex = it.getColumnIndex(ContactsContract.Contacts._ID)
             val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-            val hasPhoneNumberIndex =
-                it.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
+            val hasPhoneNumberIndex = it.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
 
             while (it.moveToNext()) {
                 val id = it.getString(idIndex)
@@ -126,8 +126,7 @@ class ContactRepositoryImpl @Inject constructor(
                     null
                 )
                 websiteCursor?.use { wc ->
-                    val urlIndex =
-                        wc.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL)
+                    val urlIndex = wc.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL)
                     while (wc.moveToNext()) {
                         val url = wc.getString(urlIndex)
                         if (!url.isNullOrEmpty()) {
@@ -147,8 +146,7 @@ class ContactRepositoryImpl @Inject constructor(
                     ),
                     "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
                     arrayOf(
-                        id,
-                        ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE
+                        id, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE
                     ),
                     null
                 )
@@ -170,8 +168,7 @@ class ContactRepositoryImpl @Inject constructor(
                     arrayOf(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS),
                     "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
                     arrayOf(
-                        id,
-                        ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE
+                        id, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE
                     ),
                     null
                 )
@@ -229,7 +226,8 @@ class ContactRepositoryImpl @Inject constructor(
                 )
 
                 // Get saved contacts from database
-                val savedContacts = internalContactDao.getAllContacts().toDomainList()
+                val savedContacts = internalContactDao.getAllContacts()
+                    .toDomainList()
                 Log.d(
                     "BerkeTag",
                     "ContactRepositoryImpl - fetched ${savedContacts.size} contacts from database"
@@ -255,9 +253,7 @@ class ContactRepositoryImpl @Inject constructor(
                 internalContactDao.replaceAllContacts(currentContacts.toEntityList())
 
                 val changes = InternalContactChanges(
-                    added = added,
-                    removed = removed,
-                    modified = modified
+                    added = added, removed = removed, modified = modified
                 )
                 Log.d(
                     "BerkeTag",
@@ -284,7 +280,8 @@ class ContactRepositoryImpl @Inject constructor(
             val documentRef = database.collection("users")
                 .document(currentUser.uid)
                 .collection("contacts")
-                .get().await()
+                .get()
+                .await()
             Log.i("BerkeTag", "Fetched ${documentRef.size()} contacts from Firestore")
 
             val contacts = documentRef.documents.mapNotNull { documentSnapshot ->
@@ -307,21 +304,25 @@ class ContactRepositoryImpl @Inject constructor(
             val useLocalLlm = getUseLocalLlmUseCase().first()
             val isModelReady = localLlmExtractor.isModelReady()
             Log.i("ContactRepositoryImpl", "contacts to search: $contacts")
-            Log.i("ContactRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady")
+            Log.i(
+                "ContactRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady"
+            )
 
             val response = if (useLocalLlm && isModelReady) {
                 Log.i("ContactRepositoryImpl", "Using Local LLM for contact search")
                 val localResult = localLlmExtractor.findContactThatUserAsked(text, contacts)
                 localResult.ifEmpty {
                     Log.w(
-                        "ContactRepositoryImpl",
-                        "Local LLM returned empty, falling back to Gemini"
+                        "ContactRepositoryImpl", "Local LLM returned empty, falling back to Gemini"
                     )
                     GeminiExtractor.findContactThatUserAsked(text, contacts)
                 }
             } else {
                 if (useLocalLlm) {
-                    Log.w("ContactRepositoryImpl", "Local LLM enabled but model not ready, using Gemini")
+                    Log.w(
+                        "ContactRepositoryImpl",
+                        "Local LLM enabled but model not ready, using Gemini"
+                    )
                 }
                 GeminiExtractor.findContactThatUserAsked(text, contacts)
             }
@@ -338,10 +339,11 @@ class ContactRepositoryImpl @Inject constructor(
             val useLocalLlm = getUseLocalLlmUseCase().first()
             val isModelReady = localLlmExtractor.isModelReady()
             Log.i(
-                "ContactRepositoryImpl",
-                "Suggesting tags for ${internalContactList.size} contacts"
+                "ContactRepositoryImpl", "Suggesting tags for ${internalContactList.size} contacts"
             )
-            Log.i("ContactRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady")
+            Log.i(
+                "ContactRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady"
+            )
 
             val response = if (useLocalLlm && isModelReady) {
                 Log.i("ContactRepositoryImpl", "Using Local LLM for tag suggestion")
@@ -349,13 +351,18 @@ class ContactRepositoryImpl @Inject constructor(
                 if (localResult.isNotEmpty()) {
                     localResult.map { it.copy(llmSource = "Local LLM") }
                 } else {
-                    Log.w("ContactRepositoryImpl", "Local LLM returned empty, falling back to Gemini")
+                    Log.w(
+                        "ContactRepositoryImpl", "Local LLM returned empty, falling back to Gemini"
+                    )
                     GeminiExtractor.suggestTagsForNewContact(internalContactList)
                         .map { it.copy(llmSource = "Gemini LLM") }
                 }
             } else {
                 if (useLocalLlm) {
-                    Log.w("ContactRepositoryImpl", "Local LLM enabled but model not ready, using Gemini")
+                    Log.w(
+                        "ContactRepositoryImpl",
+                        "Local LLM enabled but model not ready, using Gemini"
+                    )
                 }
                 GeminiExtractor.suggestTagsForNewContact(internalContactList)
                     .map { it.copy(llmSource = "Gemini LLM") }
@@ -407,11 +414,11 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun normalizeEmail(email: String) = email.trim().lowercase()
+    private fun normalizeEmail(email: String) = email.trim()
+        .lowercase()
 
     override suspend fun findDuplicateContacts(
-        remoteContacts: List<Contact>,
-        internalContacts: List<InternalContact>
+        remoteContacts: List<Contact>, internalContacts: List<InternalContact>
     ): List<DuplicateContactGroup> = withContext(Dispatchers.IO) {
         // normalized phone -> list of remote contacts
         val phoneMap = mutableMapOf<String, MutableList<Contact>>()
@@ -422,13 +429,15 @@ class ContactRepositoryImpl @Inject constructor(
             for (phone in contact.phones) {
                 val normalized = normalizePhone(phone)
                 if (normalized.isNotEmpty()) {
-                    phoneMap.getOrPut(normalized) { mutableListOf() }.add(contact)
+                    phoneMap.getOrPut(normalized) { mutableListOf() }
+                        .add(contact)
                 }
             }
             for (email in contact.emails) {
                 val normalized = normalizeEmail(email)
                 if (normalized.isNotEmpty()) {
-                    emailMap.getOrPut(normalized) { mutableListOf() }.add(contact)
+                    emailMap.getOrPut(normalized) { mutableListOf() }
+                        .add(contact)
                 }
             }
         }
@@ -442,13 +451,15 @@ class ContactRepositoryImpl @Inject constructor(
             for (phone in internal.phoneNumbers) {
                 val normalized = normalizePhone(phone)
                 if (normalized.isNotEmpty()) {
-                    internalPhoneMap.getOrPut(normalized) { mutableListOf() }.add(internal)
+                    internalPhoneMap.getOrPut(normalized) { mutableListOf() }
+                        .add(internal)
                 }
             }
             for (email in internal.emails ?: emptyList()) {
                 val normalized = normalizeEmail(email)
                 if (normalized.isNotEmpty()) {
-                    internalEmailMap.getOrPut(normalized) { mutableListOf() }.add(internal)
+                    internalEmailMap.getOrPut(normalized) { mutableListOf() }
+                        .add(internal)
                 }
             }
         }
@@ -463,8 +474,7 @@ class ContactRepositoryImpl @Inject constructor(
 
         // Firebase contact'lardan internalContactId'si olan → zaten uygulamadan kaydedilmiş,
         // telefon rehberindeki karşılığı bilinen kişiler. Bunların internal ID'lerini set'e al.
-        val linkedInternalIds = remoteContacts
-            .filter { it.internalContactId.isNotEmpty() }
+        val linkedInternalIds = remoteContacts.filter { it.internalContactId.isNotEmpty() }
             .map { it.internalContactId }
             .toSet()
 
@@ -472,21 +482,25 @@ class ContactRepositoryImpl @Inject constructor(
         for (phone in allPhoneKeys) {
             val remotes = phoneMap[phone] ?: emptyList()
             // Uygulamadan kaydedildiği bilinen internal'ları çıkar
-            val internals = (internalPhoneMap[phone] ?: emptyList())
-                .filter { it.contactId !in linkedInternalIds }
+            val internals = (internalPhoneMap[phone]
+                ?: emptyList()).filter { it.contactId !in linkedInternalIds }
 
             if (remotes.size < 2 && internals.size < 2) continue
 
-            val remoteIds = remotes.map { it.contactId }.toSet()
-            val internalIds = internals.map { it.contactId }.toSet()
+            val remoteIds = remotes.map { it.contactId }
+                .toSet()
+            val internalIds = internals.map { it.contactId }
+                .toSet()
             val key = remoteIds to internalIds
             if (key in processedKeys) continue
 
             val matchingEmailKey = allEmailKeys.firstOrNull { email ->
-                val er = (emailMap[email] ?: emptyList()).map { it.contactId }.toSet()
-                val ei = (internalEmailMap[email] ?: emptyList())
-                    .filter { it.contactId !in linkedInternalIds }
-                    .map { it.contactId }.toSet()
+                val er = (emailMap[email] ?: emptyList()).map { it.contactId }
+                    .toSet()
+                val ei = (internalEmailMap[email]
+                    ?: emptyList()).filter { it.contactId !in linkedInternalIds }
+                    .map { it.contactId }
+                    .toSet()
                 er == remoteIds && ei == internalIds
             }
 
@@ -505,12 +519,14 @@ class ContactRepositoryImpl @Inject constructor(
         // Email duplicate groups (only those not already covered by phone pass)
         for (email in allEmailKeys) {
             val remotes = emailMap[email] ?: emptyList()
-            val internals = (internalEmailMap[email] ?: emptyList())
-                .filter { it.contactId !in linkedInternalIds }
+            val internals = (internalEmailMap[email]
+                ?: emptyList()).filter { it.contactId !in linkedInternalIds }
             if (remotes.size < 2 && internals.size < 2) continue
 
-            val remoteIds = remotes.map { it.contactId }.toSet()
-            val internalIds = internals.map { it.contactId }.toSet()
+            val remoteIds = remotes.map { it.contactId }
+                .toSet()
+            val internalIds = internals.map { it.contactId }
+                .toSet()
             val key = remoteIds to internalIds
             if (key in processedKeys) continue
 
@@ -525,7 +541,10 @@ class ContactRepositoryImpl @Inject constructor(
             processedKeys.add(key)
         }
 
-        Log.d("BerkeTag", "findDuplicateContacts: found ${result.size} duplicate groups (remote+internal)")
+        Log.d(
+            "BerkeTag",
+            "findDuplicateContacts: found ${result.size} duplicate groups (remote+internal)"
+        )
         result
     }
 
@@ -543,36 +562,54 @@ class ContactRepositoryImpl @Inject constructor(
             val allInternal = internalDuplicates
 
             // --- Merge alanları ---
-            val mergedPhones = (allRemote.flatMap { it.phones } + allInternal.flatMap { it.phoneNumbers })
-                .map { normalizePhone(it) }.filter { it.isNotEmpty() }.distinct()
-            val mergedEmails = (allRemote.flatMap { it.emails } + allInternal.flatMap { it.emails ?: emptyList() })
-                .map { normalizeEmail(it) }.filter { it.isNotEmpty() }.distinct()
-            val mergedTags = allRemote.flatMap { it.tags }.distinctBy { it.name }
-            val mergedWebsites = (allRemote.flatMap { it.websites } + allInternal.flatMap { it.websites ?: emptyList() }).distinct()
-            val mergedSocialMedias = allRemote.flatMap { it.socialMedias }.distinctBy { it.url }
+            val mergedPhones =
+                (allRemote.flatMap { it.phones } + allInternal.flatMap { it.phoneNumbers }).map {
+                    normalizePhone(it)
+                }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+            val mergedEmails = (allRemote.flatMap { it.emails } + allInternal.flatMap {
+                it.emails ?: emptyList()
+            }).map { normalizeEmail(it) }
+                .filter { it.isNotEmpty() }
+                .distinct()
+            val mergedTags = allRemote.flatMap { it.tags }
+                .distinctBy { it.name }
+            val mergedWebsites = (allRemote.flatMap { it.websites } + allInternal.flatMap {
+                it.websites ?: emptyList()
+            }).distinct()
+            val mergedSocialMedias = allRemote.flatMap { it.socialMedias }
+                .distinctBy { it.url }
 
             val fullName = primaryContact.fullName.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.fullName.isNotEmpty() }?.fullName
+                allRemote.drop(1)
+                    .firstOrNull { it.fullName.isNotEmpty() }?.fullName
                     ?: allInternal.firstOrNull { it.fullName.isNotEmpty() }?.fullName ?: ""
             }
             val title = primaryContact.title.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.title.isNotEmpty() }?.title
+                allRemote.drop(1)
+                    .firstOrNull { it.title.isNotEmpty() }?.title
                     ?: allInternal.firstOrNull { !it.title.isNullOrEmpty() }?.title ?: ""
             }
             val organization = primaryContact.organization.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.organization.isNotEmpty() }?.organization
-                    ?: allInternal.firstOrNull { !it.organization.isNullOrEmpty() }?.organization ?: ""
+                allRemote.drop(1)
+                    .firstOrNull { it.organization.isNotEmpty() }?.organization
+                    ?: allInternal.firstOrNull { !it.organization.isNullOrEmpty() }?.organization
+                    ?: ""
             }
             val note = primaryContact.note.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.note.isNotEmpty() }?.note
+                allRemote.drop(1)
+                    .firstOrNull { it.note.isNotEmpty() }?.note
                     ?: allInternal.firstOrNull { !it.note.isNullOrEmpty() }?.note ?: ""
             }
             val address = primaryContact.address.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.address.isNotEmpty() }?.address
+                allRemote.drop(1)
+                    .firstOrNull { it.address.isNotEmpty() }?.address
                     ?: allInternal.firstOrNull { !it.address.isNullOrEmpty() }?.address ?: ""
             }
             val imageUrl = primaryContact.imageUrl.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.imageUrl.isNotEmpty() }?.imageUrl ?: ""
+                allRemote.drop(1)
+                    .firstOrNull { it.imageUrl.isNotEmpty() }?.imageUrl ?: ""
             }
 
             val mergedContact = primaryContact.copy(
@@ -598,8 +635,12 @@ class ContactRepositoryImpl @Inject constructor(
             for (duplicate in duplicates) {
                 batch.delete(contactsCollection.document(duplicate.contactId))
             }
-            batch.commit().await()
-            Log.d("BerkeTag", "mergeContacts: Firebase batch done — updated primary, deleted ${duplicates.size} duplicates")
+            batch.commit()
+                .await()
+            Log.d(
+                "BerkeTag",
+                "mergeContacts: Firebase batch done — updated primary, deleted ${duplicates.size} duplicates"
+            )
 
             // --- Local rehber: tüm internal duplicate'leri sil ---
             if (internalDuplicates.isNotEmpty()) {
@@ -616,9 +657,10 @@ class ContactRepositoryImpl @Inject constructor(
                 jobTitle = mergedContact.title.ifEmpty { null },
                 address = mergedContact.address.ifEmpty { null },
                 website = mergedContact.websites.firstOrNull(),
-                notes = mergedContact.note.ifEmpty { null }
+                notes = mergedContact.note.ifEmpty { null })
+            Log.d(
+                "BerkeTag", "mergeContacts: local contact created for '${mergedContact.fullName}'"
             )
-            Log.d("BerkeTag", "mergeContacts: local contact created for '${mergedContact.fullName}'")
 
             Result.success(mergedContact)
         } catch (e: Exception) {
@@ -628,7 +670,34 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun deleteInternalContacts(contentResolver: ContentResolver, contacts: List<InternalContact>) {
+    override suspend fun saveInternalContactList(
+        userId: String, internalContacts: List<InternalContact>
+    ): ResponseState<Boolean> {
+        return try {
+            val currentUser =
+                firebaseAuth.currentUser ?: return ResponseState.Error("User not authenticated")
+
+            val ref = database.document("users")
+                .collection(userId)
+                .document("contacts")
+                .set(internalContacts)
+                .await()
+
+            Log.d(
+                "BerkeTag",
+                "saveInternalContactList: saved ${internalContacts.size} contacts for user $userId"
+            )
+            ResponseState.Success(true)
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            Log.e("BerkeTag", "saveInternalContactList error: ${e.message}", e)
+            return ResponseState.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    private suspend fun deleteInternalContacts(
+        contentResolver: ContentResolver, contacts: List<InternalContact>
+    ) {
         if (contacts.isEmpty()) return
 
         val ops = arrayListOf<ContentProviderOperation>()
@@ -649,8 +718,7 @@ class ContactRepositoryImpl @Inject constructor(
                     ops.add(
                         ContentProviderOperation.newDelete(ContactsContract.RawContacts.CONTENT_URI)
                             .withSelection(
-                                "${ContactsContract.RawContacts._ID} = ?",
-                                arrayOf(rawId)
+                                "${ContactsContract.RawContacts._ID} = ?", arrayOf(rawId)
                             )
                             .build()
                     )
@@ -661,7 +729,10 @@ class ContactRepositoryImpl @Inject constructor(
         if (ops.isNotEmpty()) {
             try {
                 contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
-                Log.d("BerkeTag", "deleteInternalContacts: deleted ${contacts.size} contacts (${ops.size} raw rows)")
+                Log.d(
+                    "BerkeTag",
+                    "deleteInternalContacts: deleted ${contacts.size} contacts (${ops.size} raw rows)"
+                )
             } catch (e: Exception) {
                 crashlytics.recordNonFatal(e)
                 Log.e("BerkeTag", "deleteInternalContacts error: ${e.message}", e)

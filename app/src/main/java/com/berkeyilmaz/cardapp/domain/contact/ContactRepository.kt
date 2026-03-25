@@ -1,6 +1,7 @@
 package com.berkeyilmaz.cardapp.domain.contact
 
 import android.content.ContentResolver
+import com.berkeyilmaz.cardapp.core.common.ResponseState
 import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.contact.model.DuplicateContactGroup
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
@@ -15,13 +16,17 @@ interface ContactRepository {
     suspend fun searchContactThatUserAsked(text: String, contacts: List<Contact>): List<Contact>
     suspend fun suggestTagsForNewContact(internalContactList: List<InternalContact>): List<ContactRequest>
     suspend fun findDuplicateContacts(
-        remoteContacts: List<Contact>,
-        internalContacts: List<InternalContact>
+        remoteContacts: List<Contact>, internalContacts: List<InternalContact>
     ): List<DuplicateContactGroup>
+
     suspend fun mergeContacts(
         contentResolver: ContentResolver,
         primaryContact: Contact,
         duplicates: List<Contact>,
         internalDuplicates: List<InternalContact>
     ): Result<Contact>
+
+    suspend fun saveInternalContactList(
+        userId: String, internalContacts: List<InternalContact>
+    ): ResponseState<Boolean>
 }

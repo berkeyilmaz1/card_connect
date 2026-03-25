@@ -20,8 +20,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.berkeyilmaz.cardapp.core.util.recordNonFatal
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.type.DateTimeProto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -29,6 +32,7 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     @param:ApplicationContext val context: Context,
     private val firebaseAuth: FirebaseAuth,
+    private val firestore: FirebaseFirestore,
     private val credentialManager: CredentialManager,
     private val crashlytics: FirebaseCrashlytics
 ) : AuthRepository {
@@ -221,6 +225,25 @@ class AuthRepositoryImpl @Inject constructor(
                     e.localizedMessage ?: context.getString(R.string.account_deletion_error)
                 )
             }
+        }
+    }
+
+    override suspend fun writeInitContactSyncData(userId: String,syncValue:String): ResponseState<Unit> {
+        return try {
+            firebaseAuth.currentUser
+                ?: return ResponseState.Error(context.getString(R.string.no_user_logged_in))
+            firestore.collection("users").document(userId).set(
+                mapOf(
+                    "initSync" to syncValue,
+                    "lastSynced" to null,
+                )
+            ).await()
+            ResponseState.Success(Unit, "Initial contact sync data yazıldı")
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            ResponseState.Error(
+                e.localizedMessage ?: "Initial contact sync data yazılırken hata oluştu"
+            )
         }
     }
 
