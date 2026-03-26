@@ -6,11 +6,15 @@ import android.util.Log
 import com.berkeyilmaz.cardapp.core.manager.GeminiExtractor
 import com.berkeyilmaz.cardapp.core.manager.LocalLlmExtractor
 import com.berkeyilmaz.cardapp.domain.scan.ScanRepository
+import com.berkeyilmaz.cardapp.domain.scan.usecase.MergeQrIntoScanResponseUseCase
 import com.berkeyilmaz.cardapp.domain.scan_result.model.ScanResponse
 import com.berkeyilmaz.cardapp.domain.settings.usecase.GetUseLocalLlmUseCase
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognizer
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import java.io.File
@@ -21,6 +25,8 @@ class ScanRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val getUseLocalLlmUseCase: GetUseLocalLlmUseCase,
     private val localLlmExtractor: LocalLlmExtractor,
+    private val qrCodeScanner: QrCodeScanner,
+    private val mergeQrIntoScanResponse: MergeQrIntoScanResponseUseCase,
 ) : ScanRepository {
 
 //    override suspend fun scanImage(image: MultipartBody.Part): Result<ScanResponse> {
@@ -39,44 +45,57 @@ class ScanRepositoryImpl @Inject constructor(
 
     override suspend fun scanImageOnDevice(file: File): Result<ScanResponse> {
         return try {
-            val startTime = System.currentTimeMillis()
-            val inputImage = InputImage.fromFilePath(context, Uri.fromFile(file))
-            val result = textRecognizer.process(inputImage).await()
+            coroutineScope {
+                val startTime = System.currentTimeMillis()
 
-            val recognizedText = result.text
-            Log.i("BerkeTAG", "Recognized text: $recognizedText")
+                // QR taraması OCR ile paralel başlar
+                val qrDeferred = async(Dispatchers.IO) {
+                    qrCodeScanner.scanForQrCodes(file, context)
+                }
 
-            val useLocalLlm = getUseLocalLlmUseCase().first()
-            val isModelReady = localLlmExtractor.isModelReady()
-            Log.i("ScanRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady")
+                val inputImage = InputImage.fromFilePath(context, Uri.fromFile(file))
+                val result = textRecognizer.process(inputImage).await()
 
-            val llmTime = System.currentTimeMillis()
-            val scanResponse = if (useLocalLlm && isModelReady) {
-                Log.i("ScanRepositoryImpl", "Using Local LLM for extraction")
-                val localResult = localLlmExtractor.extractFromText(recognizedText)
-                if (localResult != null) {
-                    localResult
+                val recognizedText = result.text
+                Log.i("BerkeTAG", "Recognized text: $recognizedText")
+
+                val useLocalLlm = getUseLocalLlmUseCase().first()
+                val isModelReady = localLlmExtractor.isModelReady()
+                Log.i("ScanRepositoryImpl", "Using Local LLM: $useLocalLlm, Model Ready: $isModelReady")
+
+                val llmTime = System.currentTimeMillis()
+                val scanResponse = if (useLocalLlm && isModelReady) {
+                    Log.i("ScanRepositoryImpl", "Using Local LLM for extraction")
+                    val localResult = localLlmExtractor.extractFromText(recognizedText)
+                    if (localResult != null) {
+                        localResult
+                    } else {
+                        Log.w("ScanRepositoryImpl", "Local LLM failed, falling back to Gemini")
+                        GeminiExtractor.extractFromText(recognizedText)
+                    }
                 } else {
-                    Log.w("ScanRepositoryImpl", "Local LLM failed, falling back to Gemini")
+                    if (useLocalLlm) {
+                        Log.w("ScanRepositoryImpl", "Local LLM enabled but model not ready, using Gemini")
+                    }
                     GeminiExtractor.extractFromText(recognizedText)
                 }
-            } else {
-                if (useLocalLlm) {
-                    Log.w("ScanRepositoryImpl", "Local LLM enabled but model not ready, using Gemini")
-                }
-                GeminiExtractor.extractFromText(recognizedText)
+
+                val endTime = System.currentTimeMillis()
+                Log.i(
+                    "BerkeTIME",
+                    "Total time: ${endTime - startTime}) ms , OCR time: ${llmTime - startTime} ms, LLM time: ${endTime - llmTime} ms"
+                )
+
+                // QR sonuçları (OCR/LLM ile paralel çalıştığından genellikle hazır)
+                val qrRawValues = qrDeferred.await()
+                Log.i("ScanRepositoryImpl", "QR codes found: ${qrRawValues.size}")
+
+                val mergedResponse = mergeQrIntoScanResponse(scanResponse, qrRawValues)
+                mergedResponse.imageUrl = file.absolutePath
+                val llmSource = if (useLocalLlm && isModelReady) "Local LLM" else "Gemini LLM"
+
+                Result.success(mergedResponse.copy(llmSource = llmSource))
             }
-
-            val endTime = System.currentTimeMillis()
-            Log.i(
-                "BerkeTIME",
-                "Total time: ${endTime - startTime}) ms , OCR time: ${llmTime - startTime} ms, LLM time: ${endTime - llmTime} ms"
-            )
-            scanResponse.imageUrl = file.absolutePath
-            val llmSource = if (useLocalLlm && isModelReady) "Local LLM" else "Gemini LLM"
-            scanResponse.copy(llmSource = llmSource)
-
-            Result.success(scanResponse)
         } catch (e: Exception) {
             Result.failure(e)
         }
