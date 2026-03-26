@@ -24,4 +24,6 @@ interface AuthRepository {
     suspend fun deleteAccount(): ResponseState<Unit>
 
     suspend fun reAuthenticate(password: String): ResponseState<Unit>
+
+    suspend fun updatePassword(newPassword: String): ResponseState<Unit>
 }

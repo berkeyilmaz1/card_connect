@@ -64,9 +64,21 @@ fun ProfileView(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    // String resources for snackbars
+    val passwordChangedMsg = stringResource(R.string.password_changed_successfully)
+    val profileSavedMsg = stringResource(R.string.contact_saved_successfully)
+
+    // Delete Account states
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    var showPasswordDialog by remember { mutableStateOf(false) }
-    var password by remember { mutableStateOf("") }
+    var showDeletePasswordDialog by remember { mutableStateOf(false) }
+    var deletePassword by remember { mutableStateOf("") }
+
+    // Change Password states
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmNewPassword by remember { mutableStateOf("") }
 
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -76,7 +88,14 @@ fun ProfileView(
 
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
-            snackbarHostState.showSnackbar("Profil kaydedildi")
+            snackbarHostState.showSnackbar(profileSavedMsg)
+        }
+    }
+
+    LaunchedEffect(uiState.passwordUpdateSuccess) {
+        if (uiState.passwordUpdateSuccess) {
+            snackbarHostState.showSnackbar(passwordChangedMsg)
+            viewModel.resetPasswordUpdateSuccess()
         }
     }
 
@@ -93,7 +112,9 @@ fun ProfileView(
         }
     }
 
-    // İlk Onay Diyaloğu
+    // --- DIALOGS ---
+
+    // Hesap Silme Onay Diyaloğu
     if (showDeleteConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
@@ -103,7 +124,7 @@ fun ProfileView(
                 TextButton(
                     onClick = {
                         showDeleteConfirmDialog = false
-                        showPasswordDialog = true
+                        showDeletePasswordDialog = true
                     }
                 ) {
                     Text(stringResource(R.string.next), color = MaterialTheme.colorScheme.error)
@@ -117,21 +138,21 @@ fun ProfileView(
         )
     }
 
-    // Şifre Onay Diyaloğu
-    if (showPasswordDialog) {
+    // Hesap Silme Şifre Onay Diyaloğu
+    if (showDeletePasswordDialog) {
         AlertDialog(
             onDismissRequest = { 
-                showPasswordDialog = false
-                password = ""
+                showDeletePasswordDialog = false
+                deletePassword = ""
             },
             title = { Text(stringResource(R.string.delete_account)) },
             text = {
                 Column {
-                    Text("Lütfen onaylamak için şifrenizi girin.")
+                    Text(stringResource(R.string.enter_password_to_delete))
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
+                        value = deletePassword,
+                        onValueChange = { deletePassword = it },
                         label = { Text(stringResource(R.string.password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
@@ -142,21 +163,105 @@ fun ProfileView(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (password.isNotEmpty()) {
-                            viewModel.deleteAccount(password)
-                            showPasswordDialog = false
-                            password = ""
+                        if (deletePassword.isNotEmpty()) {
+                            viewModel.deleteAccount(deletePassword)
+                            showDeletePasswordDialog = false
+                            deletePassword = ""
                         }
                     },
-                    enabled = password.isNotEmpty()
+                    enabled = deletePassword.isNotEmpty()
                 ) {
                     Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { 
-                    showPasswordDialog = false 
-                    password = ""
+                    showDeletePasswordDialog = false 
+                    deletePassword = ""
+                }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Şifre Değiştirme Diyaloğu
+    if (showChangePasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showChangePasswordDialog = false
+                currentPassword = ""
+                newPassword = ""
+                confirmNewPassword = ""
+            },
+            title = { Text(stringResource(R.string.change_password)) },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        label = { Text(stringResource(R.string.current_password)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        label = { Text(stringResource(R.string.new_password)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = newPassword.isNotEmpty() && newPassword == currentPassword,
+                        supportingText = {
+                            if (newPassword.isNotEmpty() && newPassword == currentPassword) {
+                                Text(stringResource(R.string.password_cannot_be_same), color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = confirmNewPassword,
+                        onValueChange = { confirmNewPassword = it },
+                        label = { Text(stringResource(R.string.confirm_new_password)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = confirmNewPassword.isNotEmpty() && confirmNewPassword != newPassword,
+                        supportingText = {
+                            if (confirmNewPassword.isNotEmpty() && confirmNewPassword != newPassword) {
+                                Text(stringResource(R.string.passwords_do_not_match), color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (newPassword == confirmNewPassword && newPassword != currentPassword) {
+                            viewModel.changePassword(currentPassword, newPassword)
+                            showChangePasswordDialog = false
+                            currentPassword = ""
+                            newPassword = ""
+                            confirmNewPassword = ""
+                        }
+                    },
+                    enabled = currentPassword.isNotEmpty() && 
+                             newPassword.isNotEmpty() && 
+                             newPassword == confirmNewPassword && 
+                             newPassword != currentPassword
+                ) {
+                    Text(stringResource(R.string.save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showChangePasswordDialog = false
+                    currentPassword = ""
+                    newPassword = ""
+                    confirmNewPassword = ""
                 }) {
                     Text(stringResource(R.string.cancel))
                 }
@@ -305,7 +410,17 @@ fun ProfileView(
                 fullWidth = true
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            CustomAppButton(
+                text = stringResource(R.string.change_password),
+                onClick = { showChangePasswordDialog = true },
+                loading = uiState.isUpdatingPassword,
+                fullWidth = true,
+                style = com.berkeyilmaz.cardapp.core.widgets.AppButtonStyle.OUTLINED
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             CustomAppButton(
                 text = stringResource(R.string.delete_account),

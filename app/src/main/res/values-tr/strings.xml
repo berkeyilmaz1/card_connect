@@ -224,4 +224,14 @@
     <string name="delete">Sil</string>
     <string name="account_deleted_successfully_toast">Hesabınız başarıyla silindi.</string>
 
+    <!-- Password Change -->
+    <string name="change_password">Şifre Değiştir</string>
+    <string name="current_password">Mevcut Şifre</string>
+    <string name="new_password">Yeni Şifre</string>
+    <string name="confirm_new_password">Yeni Şifre (Tekrar)</string>
+    <string name="passwords_do_not_match">Şifreler eşleşmiyor</string>
+    <string name="password_changed_successfully">Şifre başarıyla güncellendi</string>
+    <string name="password_cannot_be_same">Yeni şifre eskisiyle aynı olamaz</string>
+    <string name="enter_password_to_delete">Hesabınızı silmek için lütfen şifrenizi girin.</string>
+
 </resources>

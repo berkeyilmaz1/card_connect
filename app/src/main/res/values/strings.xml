@@ -222,4 +222,14 @@
     <string name="delete">Delete</string>
     <string name="account_deleted_successfully_toast">Your account has been successfully deleted.</string>
 
+    <!-- Password Change -->
+    <string name="change_password">Change Password</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="password_changed_successfully">Password changed successfully</string>
+    <string name="password_cannot_be_same">New password cannot be the same as current password</string>
+    <string name="enter_password_to_delete">Please enter your password to delete your account.</string>
+
 </resources>

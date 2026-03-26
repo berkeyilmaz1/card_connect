@@ -61,6 +61,12 @@ class ReAuthenticateUseCase @Inject constructor(
     suspend operator fun invoke(password: String) = repository.reAuthenticate(password)
 }
 
+class UpdatePasswordUseCase @Inject constructor(
+    private val repository: AuthRepository
+) {
+    suspend operator fun invoke(newPassword: String) = repository.updatePassword(newPassword)
+}
+
 class DeleteAccountUseCase @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository
