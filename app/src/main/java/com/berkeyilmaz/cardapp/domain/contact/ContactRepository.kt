@@ -20,9 +20,9 @@ interface ContactRepository {
     ): List<DuplicateContactGroup>
     suspend fun mergeContacts(
         contentResolver: ContentResolver,
-        primaryContact: Contact,
-        duplicates: List<Contact>,
-        internalDuplicates: List<InternalContact>
+        primaryInternal: InternalContact,
+        duplicateInternals: List<InternalContact>,
+        remoteContacts: List<Contact>
     ): Result<Contact>
     suspend fun syncInternalContactsToFirestore(contacts: List<InternalContact>): Result<Unit>
     suspend fun getContactById(contactId: String): Result<Contact>

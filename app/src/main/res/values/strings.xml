@@ -204,6 +204,7 @@
     <string name="duplicate_match_email">People who have the same e-mail</string>
     <string name="merge_contacts">Merge</string>
     <string name="skip_group">Skip</string>
+    <string name="dismiss_all_duplicates">Dismiss All</string>
     <string name="select_primary">Select primary</string>
     <string name="duplicate_group_progress">%1$d / %2$d Group</string>
     <string name="scanning_duplicates">Scanning for duplicate contacts…</string>

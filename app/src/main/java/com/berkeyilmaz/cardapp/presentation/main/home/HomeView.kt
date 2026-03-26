@@ -178,6 +178,7 @@ fun HomeView(
                 state = duplicateState,
                 onMerge = { group, primarySelection -> viewModel.onMergeApproved(group, primarySelection) },
                 onSkip = { viewModel.onDuplicateGroupSkipped() },
+                onDismissAll = { viewModel.onDismissAllDuplicates() },
                 onDismiss = { viewModel.dismissDuplicateBottomSheet() }
             )
         }

@@ -44,14 +44,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.berkeyilmaz.cardapp.R
-import com.berkeyilmaz.cardapp.domain.contact.model.Contact
 import com.berkeyilmaz.cardapp.domain.contact.model.DuplicateContactGroup
 import com.berkeyilmaz.cardapp.domain.contact.model.DuplicateMatchReason
 import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.presentation.main.home.viewmodel.DuplicateBottomSheetState
 
 sealed class PrimarySelection {
-    data class Remote(val contact: Contact) : PrimarySelection()
     data class Internal(val contact: InternalContact) : PrimarySelection()
 }
 
@@ -60,6 +58,7 @@ fun DuplicateContactsBottomSheet(
     state: DuplicateBottomSheetState,
     onMerge: (DuplicateContactGroup, PrimarySelection) -> Unit,
     onSkip: () -> Unit,
+    onDismissAll: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -74,7 +73,8 @@ fun DuplicateContactsBottomSheet(
             is DuplicateBottomSheetState.Found -> FoundContent(
                 state = state,
                 onMerge = onMerge,
-                onSkip = onSkip
+                onSkip = onSkip,
+                onDismissAll = onDismissAll
             )
             is DuplicateBottomSheetState.Error -> DuplicateErrorContent(
                 message = state.message,
@@ -112,13 +112,13 @@ private fun ScanningContent() {
 private fun FoundContent(
     state: DuplicateBottomSheetState.Found,
     onMerge: (DuplicateContactGroup, PrimarySelection) -> Unit,
-    onSkip: () -> Unit
+    onSkip: () -> Unit,
+    onDismissAll: () -> Unit
 ) {
     val group = state.groups[state.currentIndex]
     var selectedPrimary by remember(state.currentIndex) {
         mutableStateOf<PrimarySelection?>(
-            group.contacts.firstOrNull()?.let { PrimarySelection.Remote(it) }
-                ?: group.internalContacts.firstOrNull()?.let { PrimarySelection.Internal(it) }
+            group.internalContacts.firstOrNull()?.let { PrimarySelection.Internal(it) }
         )
     }
 
@@ -163,8 +163,7 @@ private fun FoundContent(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Contacts list
-    val totalCount = group.contacts.size + group.internalContacts.size
+    // Contacts list — sadece telefon rehberi kişileri gösterilir
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -174,17 +173,9 @@ private fun FoundContent(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .height((totalCount * 120).coerceAtMost(320).dp),
+                .height((group.internalContacts.size * 120).coerceAtMost(320).dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(group.contacts) { contact ->
-                DuplicateContactItem(
-                    contact = contact,
-                    isSelected = selectedPrimary is PrimarySelection.Remote &&
-                            (selectedPrimary as PrimarySelection.Remote).contact.contactId == contact.contactId,
-                    onSelect = { selectedPrimary = PrimarySelection.Remote(contact) }
-                )
-            }
             items(group.internalContacts) { internal ->
                 InternalContactItem(
                     internal = internal,
@@ -233,86 +224,19 @@ private fun FoundContent(
         )
     }
 
-    Spacer(modifier = Modifier.height(8.dp))
-}
-
-@Composable
-private fun DuplicateContactItem(
-    contact: Contact,
-    isSelected: Boolean,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (state.groups.size > 1) {
+        androidx.compose.material3.TextButton(
+            onClick = onDismissAll,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            RadioButton(
-                selected = isSelected,
-                onClick = onSelect
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = contact.fullName.ifEmpty { stringResource(R.string.unknown_contact) },
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (contact.organization.isNotEmpty()) {
-                    Text(
-                        text = contact.organization,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                if (contact.phones.isNotEmpty()) {
-                    Text(
-                        text = contact.phones.first(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                if (contact.emails.isNotEmpty()) {
-                    Text(
-                        text = contact.emails.first(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            // Radio button label
             Text(
-                text = stringResource(R.string.select_primary),
-                style = MaterialTheme.typography.labelSmall,
-                color = if (isSelected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.End
+                text = stringResource(R.string.dismiss_all_duplicates),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    } else {
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
