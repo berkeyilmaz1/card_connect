@@ -6,6 +6,10 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isUploadingPhoto: Boolean = false,
+    val isDeletingAccount: Boolean = false,
+    val isUpdatingPassword: Boolean = false,
+    val accountDeleted: Boolean = false,
+    val passwordUpdateSuccess: Boolean = false,
     val displayName: String = "",
     val email: String = "",
     val phone: String = "",
@@ -19,6 +23,10 @@ data class ProfileUiState(
         return isLoading == other.isLoading &&
             isSaving == other.isSaving &&
             isUploadingPhoto == other.isUploadingPhoto &&
+            isDeletingAccount == other.isDeletingAccount &&
+            isUpdatingPassword == other.isUpdatingPassword &&
+            accountDeleted == other.accountDeleted &&
+            passwordUpdateSuccess == other.passwordUpdateSuccess &&
             displayName == other.displayName &&
             email == other.email &&
             phone == other.phone &&
@@ -31,6 +39,10 @@ data class ProfileUiState(
         var result = isLoading.hashCode()
         result = 31 * result + isSaving.hashCode()
         result = 31 * result + isUploadingPhoto.hashCode()
+        result = 31 * result + isDeletingAccount.hashCode()
+        result = 31 * result + isUpdatingPassword.hashCode()
+        result = 31 * result + accountDeleted.hashCode()
+        result = 31 * result + passwordUpdateSuccess.hashCode()
         result = 31 * result + displayName.hashCode()
         result = 31 * result + email.hashCode()
         result = 31 * result + phone.hashCode()

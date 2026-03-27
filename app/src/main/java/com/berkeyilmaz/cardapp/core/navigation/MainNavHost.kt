@@ -179,7 +179,16 @@ fun MainNavHost(
 
         composable(Screen.Main.Profile.route) {
             LaunchedEffect(Unit) { analyticsManager.logScreenView("Profile") }
-            ProfileView(onNavigateBack = { navController.safePopBack() })
+            ProfileView(
+                onNavigateBack = { navController.safePopBack() },
+                onNavigateToAuth = {
+                    rootNavController.navigate(Screen.Auth.Graph.route) {
+                        popUpTo(Screen.Main.Graph.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
     }
 }

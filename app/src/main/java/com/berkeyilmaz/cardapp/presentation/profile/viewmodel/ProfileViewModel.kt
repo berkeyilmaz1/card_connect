@@ -7,7 +7,10 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.berkeyilmaz.cardapp.core.common.ResponseState
+import com.berkeyilmaz.cardapp.domain.auth.usecase.DeleteAccountUseCase
 import com.berkeyilmaz.cardapp.domain.auth.usecase.GetCurrentUserUseCase
+import com.berkeyilmaz.cardapp.domain.auth.usecase.ReAuthenticateUseCase
+import com.berkeyilmaz.cardapp.domain.auth.usecase.UpdatePasswordUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.GetPhotoUrlUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.GetUserInfoUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.SavePhotoUrlUseCase
@@ -32,6 +35,9 @@ class ProfileViewModel @Inject constructor(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val savePhotoUrlUseCase: SavePhotoUrlUseCase,
     private val getPhotoUrlUseCase: GetPhotoUrlUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val reAuthenticateUseCase: ReAuthenticateUseCase,
+    private val updatePasswordUseCase: UpdatePasswordUseCase,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -100,6 +106,52 @@ class ProfileViewModel @Inject constructor(
                 }
                 is ResponseState.Error -> _uiState.update {
                     it.copy(isSaving = false, errorMessage = result.message)
+                }
+            }
+        }
+    }
+
+    fun deleteAccount(password: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingAccount = true, errorMessage = null) }
+            
+            // 1. Re-authenticate
+            val authResult = reAuthenticateUseCase(password)
+            if (authResult is ResponseState.Error) {
+                _uiState.update { it.copy(isDeletingAccount = false, errorMessage = authResult.message) }
+                return@launch
+            }
+            
+            // 2. Delete account and data
+            when (val result = deleteAccountUseCase()) {
+                is ResponseState.Success -> {
+                    _uiState.update { it.copy(isDeletingAccount = false, accountDeleted = true) }
+                }
+                is ResponseState.Error -> {
+                    _uiState.update { it.copy(isDeletingAccount = false, errorMessage = result.message) }
+                }
+            }
+        }
+    }
+
+    fun changePassword(currentPassword: String, newPassword: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUpdatingPassword = true, errorMessage = null, passwordUpdateSuccess = false) }
+            
+            // 1. Re-authenticate
+            val authResult = reAuthenticateUseCase(currentPassword)
+            if (authResult is ResponseState.Error) {
+                _uiState.update { it.copy(isUpdatingPassword = false, errorMessage = authResult.message) }
+                return@launch
+            }
+            
+            // 2. Update password
+            when (val result = updatePasswordUseCase(newPassword)) {
+                is ResponseState.Success -> {
+                    _uiState.update { it.copy(isUpdatingPassword = false, passwordUpdateSuccess = true) }
+                }
+                is ResponseState.Error -> {
+                    _uiState.update { it.copy(isUpdatingPassword = false, errorMessage = result.message) }
                 }
             }
         }
@@ -178,5 +230,9 @@ class ProfileViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+    
+    fun resetPasswordUpdateSuccess() {
+        _uiState.update { it.copy(passwordUpdateSuccess = false) }
     }
 }

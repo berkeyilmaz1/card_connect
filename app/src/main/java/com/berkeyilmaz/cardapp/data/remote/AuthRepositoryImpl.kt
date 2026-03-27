@@ -225,7 +225,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
 
-    suspend fun reAuthenticate(password: String): ResponseState<Unit> {
+    override suspend fun reAuthenticate(password: String): ResponseState<Unit> {
         val user = firebaseAuth.currentUser ?: return ResponseState.Error(
             context.getString(
                 R.string.no_user_logged_in
@@ -242,6 +242,24 @@ class AuthRepositoryImpl @Inject constructor(
             ResponseState.Error(
                 e.localizedMessage ?: context.getString(R.string.re_authentication_failed)
             )
+        }
+    }
+
+    override suspend fun updatePassword(newPassword: String): ResponseState<Unit> {
+        return try {
+            val user = firebaseAuth.currentUser ?: return ResponseState.Error(context.getString(R.string.no_user_logged_in))
+            user.updatePassword(newPassword).await()
+            ResponseState.Success(Unit)
+        } catch (e: FirebaseAuthException) {
+            if (e.errorCode == "ERROR_REQUIRES_RECENT_LOGIN") {
+                ResponseState.Error(context.getString(R.string.re_authentication_required))
+            } else {
+                crashlytics.recordNonFatal(e)
+                ResponseState.Error(e.localizedMessage ?: context.getString(R.string.unknown_error))
+            }
+        } catch (e: Exception) {
+            crashlytics.recordNonFatal(e)
+            ResponseState.Error(e.localizedMessage ?: context.getString(R.string.unknown_error))
         }
     }
 }
