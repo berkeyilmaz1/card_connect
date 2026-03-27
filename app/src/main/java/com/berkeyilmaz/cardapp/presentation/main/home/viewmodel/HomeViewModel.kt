@@ -13,7 +13,6 @@ import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.domain.contact.usecase.FindDuplicateContactsUseCase
 import com.berkeyilmaz.cardapp.domain.contact.usecase.GetRemoteContactsUseCase
 import com.berkeyilmaz.cardapp.domain.contact.usecase.MergeContactsUseCase
-import com.berkeyilmaz.cardapp.domain.scan_result.model.ContactRequest
 import com.berkeyilmaz.cardapp.presentation.main.home.widgets.PrimarySelection
 import com.berkeyilmaz.cardapp.domain.home.usecase.GetCurrentUserUseCase
 import com.berkeyilmaz.cardapp.domain.user.usecase.GetUserInfoUseCase
@@ -144,7 +143,7 @@ class HomeViewModel @Inject constructor(
     }
 
 
-fun fetchContacts() {
+fun fetchContacts(scanForDuplicates: Boolean = true) {
     viewModelScope.launch {
         try {
             setLoading(true)
@@ -158,14 +157,15 @@ fun fetchContacts() {
             }
             _uiState.update { it.copy(contacts = contacts) }
             calculateRecentlyScannedCards()
-            checkForDuplicates(contacts)
+            if (scanForDuplicates) {
+                checkForDuplicates(contacts)
+            }
         } catch (e: Exception) {
             updateErrorState(context.getString(R.string.an_error_occurred))
         } finally {
             setLoading(false)
         }
     }
-
 }
 
 private fun checkForDuplicates(contacts: List<Contact>) {
@@ -202,50 +202,28 @@ private fun checkForDuplicates(contacts: List<Contact>) {
 
 fun onMergeApproved(group: DuplicateContactGroup, primarySelection: PrimarySelection) {
     viewModelScope.launch {
-        when (primarySelection) {
-            is PrimarySelection.Remote -> {
-                val primary = primarySelection.contact
-                val duplicates = group.contacts.filter { it.contactId != primary.contactId }
-                val internalDuplicates = group.internalContacts
-                mergeContactsUseCase(context.contentResolver, primary, duplicates, internalDuplicates)
-            }
-            is PrimarySelection.Internal -> {
-                val internalPrimary = primarySelection.contact
-                // InternalContact'tan ContactRequest oluştur
-                val contactRequest = ContactRequest(
-                    fullName = internalPrimary.fullName,
-                    title = internalPrimary.title ?: "",
-                    organization = internalPrimary.organization ?: "",
-                    phones = internalPrimary.phones,
-                    emails = internalPrimary.emails ?: emptyList(),
-                    websites = internalPrimary.websites ?: emptyList(),
-                    address = internalPrimary.address ?: "",
-                    note = internalPrimary.note ?: ""
-                )
-                // Firebase'e yeni contact oluştur — bu primary olacak
-                val createResult = contactRepository.createContact(contactRequest)
-                val newPrimary = createResult.getOrNull()
-                if (newPrimary != null) {
-                    // Tüm remote'lar duplicate, internal'dan sadece seçilen korunacak (diğerleri silinecek)
-                    val internalDuplicates = group.internalContacts.filter {
-                        it.contactId != internalPrimary.contactId
-                    }
-                    mergeContactsUseCase(
-                        context.contentResolver,
-                        newPrimary,
-                        group.contacts, // tüm remote'lar silinecek (newPrimary ayrı oluşturuldu)
-                        internalDuplicates
-                    )
-                }
-            }
+        val primaryInternal = (primarySelection as? PrimarySelection.Internal)?.contact
+            ?: return@launch
+        val duplicateInternals = group.internalContacts.filter {
+            it.contactId != primaryInternal.contactId
         }
+        mergeContactsUseCase(
+            context.contentResolver,
+            primaryInternal,
+            duplicateInternals,
+            _uiState.value.contacts ?: emptyList()
+        )
         advanceToNextGroup()
-        fetchContacts()
+        fetchContacts(scanForDuplicates = false)
     }
 }
 
 fun onDuplicateGroupSkipped() {
     advanceToNextGroup()
+}
+
+fun onDismissAllDuplicates() {
+    _uiState.update { it.copy(duplicateBottomSheetState = DuplicateBottomSheetState.Hidden) }
 }
 
 fun dismissDuplicateBottomSheet() {

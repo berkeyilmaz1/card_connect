@@ -414,214 +414,186 @@ class ContactRepositoryImpl @Inject constructor(
         remoteContacts: List<Contact>,
         internalContacts: List<InternalContact>
     ): List<DuplicateContactGroup> = withContext(Dispatchers.IO) {
-        // normalized phone -> list of remote contacts
-        val phoneMap = mutableMapOf<String, MutableList<Contact>>()
-        // normalized email -> list of remote contacts
-        val emailMap = mutableMapOf<String, MutableList<Contact>>()
-
-        for (contact in remoteContacts) {
-            for (phone in contact.phones) {
-                val normalized = normalizePhone(phone)
-                if (normalized.isNotEmpty()) {
-                    phoneMap.getOrPut(normalized) { mutableListOf() }.add(contact)
-                }
-            }
-            for (email in contact.emails) {
-                val normalized = normalizeEmail(email)
-                if (normalized.isNotEmpty()) {
-                    emailMap.getOrPut(normalized) { mutableListOf() }.add(contact)
-                }
-            }
-        }
-
-        // normalized phone -> list of internal contacts
-        val internalPhoneMap = mutableMapOf<String, MutableList<InternalContact>>()
-        // normalized email -> list of internal contacts
-        val internalEmailMap = mutableMapOf<String, MutableList<InternalContact>>()
+        // Sadece telefon rehberindeki (internal) kişiler kendi içinde karşılaştırılır.
+        // Firebase contacts zaten her halükarda telefon rehberine kaydedildiği için
+        // cross-list karşılaştırmaya gerek yok.
+        val phoneMap = mutableMapOf<String, MutableList<InternalContact>>()
+        val emailMap = mutableMapOf<String, MutableList<InternalContact>>()
 
         for (internal in internalContacts) {
+            val addedPhoneKeys = mutableSetOf<String>()
             for (phone in internal.phones) {
                 val normalized = normalizePhone(phone)
-                if (normalized.isNotEmpty()) {
-                    internalPhoneMap.getOrPut(normalized) { mutableListOf() }.add(internal)
+                if (normalized.isNotEmpty() && addedPhoneKeys.add(normalized)) {
+                    phoneMap.getOrPut(normalized) { mutableListOf() }.add(internal)
                 }
             }
+            val addedEmailKeys = mutableSetOf<String>()
             for (email in internal.emails ?: emptyList()) {
                 val normalized = normalizeEmail(email)
-                if (normalized.isNotEmpty()) {
-                    internalEmailMap.getOrPut(normalized) { mutableListOf() }.add(internal)
+                if (normalized.isNotEmpty() && addedEmailKeys.add(normalized)) {
+                    emailMap.getOrPut(normalized) { mutableListOf() }.add(internal)
                 }
             }
         }
 
         val result = mutableListOf<DuplicateContactGroup>()
-        // Track which (remoteContactId sets + internalContactId sets) combos already added
-        val processedKeys = mutableSetOf<Pair<Set<String>, Set<String>>>()
+        val processedIds = mutableSetOf<Set<String>>()
 
-        // Collect all normalized keys that appear in at least one map on both sides OR in 2+ remotes
-        val allPhoneKeys = (phoneMap.keys + internalPhoneMap.keys).toSet()
-        val allEmailKeys = (emailMap.keys + internalEmailMap.keys).toSet()
+        // Phone pass
+        for ((phone, contacts) in phoneMap) {
+            val uniqueContacts = contacts.distinctBy { it.contactId }
+            if (uniqueContacts.size < 2) continue
+            val ids = uniqueContacts.map { it.contactId }.toSet()
+            if (ids in processedIds) continue
 
-        // Firebase contact'lardan internalContactId'si olan → zaten uygulamadan kaydedilmiş,
-        // telefon rehberindeki karşılığı bilinen kişiler. Bunların internal ID'lerini set'e al.
-        val linkedInternalIds = remoteContacts
-            .filter { it.internalContactId.isNotEmpty() }
-            .map { it.internalContactId }
-            .toSet()
-
-        // Phone duplicate groups
-        for (phone in allPhoneKeys) {
-            val remotes = phoneMap[phone] ?: emptyList()
-            // Uygulamadan kaydedildiği bilinen internal'ları çıkar
-            val internals = (internalPhoneMap[phone] ?: emptyList())
-                .filter { it.contactId !in linkedInternalIds }
-
-            if (remotes.size < 2 && internals.size < 2) continue
-
-            val remoteIds = remotes.map { it.contactId }.toSet()
-            val internalIds = internals.map { it.contactId }.toSet()
-            val key = remoteIds to internalIds
-            if (key in processedKeys) continue
-
-            val matchingEmailKey = allEmailKeys.firstOrNull { email ->
-                val er = (emailMap[email] ?: emptyList()).map { it.contactId }.toSet()
-                val ei = (internalEmailMap[email] ?: emptyList())
-                    .filter { it.contactId !in linkedInternalIds }
-                    .map { it.contactId }.toSet()
-                er == remoteIds && ei == internalIds
-            }
+            val matchingEmail = emailMap.entries.firstOrNull { (_, ec) ->
+                ec.distinctBy { it.contactId }.map { it.contactId }.toSet() == ids
+            }?.key
 
             result.add(
                 DuplicateContactGroup(
-                    contacts = remotes,
-                    internalContacts = internals,
-                    matchReason = if (matchingEmailKey != null) DuplicateMatchReason.PHONE_AND_EMAIL
+                    contacts = emptyList(),
+                    internalContacts = uniqueContacts,
+                    matchReason = if (matchingEmail != null) DuplicateMatchReason.PHONE_AND_EMAIL
                     else DuplicateMatchReason.PHONE,
-                    sharedValue = if (matchingEmailKey != null) "$phone / $matchingEmailKey" else phone
+                    sharedValue = if (matchingEmail != null) "$phone / $matchingEmail" else phone
                 )
             )
-            processedKeys.add(key)
+            processedIds.add(ids)
         }
 
-        // Email duplicate groups (only those not already covered by phone pass)
-        for (email in allEmailKeys) {
-            val remotes = emailMap[email] ?: emptyList()
-            val internals = (internalEmailMap[email] ?: emptyList())
-                .filter { it.contactId !in linkedInternalIds }
-            if (remotes.size < 2 && internals.size < 2) continue
-
-            val remoteIds = remotes.map { it.contactId }.toSet()
-            val internalIds = internals.map { it.contactId }.toSet()
-            val key = remoteIds to internalIds
-            if (key in processedKeys) continue
+        // Email pass (not already reported via phone)
+        for ((email, contacts) in emailMap) {
+            val uniqueContacts = contacts.distinctBy { it.contactId }
+            if (uniqueContacts.size < 2) continue
+            val ids = uniqueContacts.map { it.contactId }.toSet()
+            if (ids in processedIds) continue
 
             result.add(
                 DuplicateContactGroup(
-                    contacts = remotes,
-                    internalContacts = internals,
+                    contacts = emptyList(),
+                    internalContacts = uniqueContacts,
                     matchReason = DuplicateMatchReason.EMAIL,
                     sharedValue = email
                 )
             )
-            processedKeys.add(key)
+            processedIds.add(ids)
         }
 
-        Log.d("BerkeTag", "findDuplicateContacts: found ${result.size} duplicate groups (remote+internal)")
+        Log.d("BerkeTag", "findDuplicateContacts: found ${result.size} duplicate groups (internal-only)")
         result
     }
 
     override suspend fun mergeContacts(
         contentResolver: ContentResolver,
-        primaryContact: Contact,
-        duplicates: List<Contact>,
-        internalDuplicates: List<InternalContact>
+        primaryInternal: InternalContact,
+        duplicateInternals: List<InternalContact>,
+        remoteContacts: List<Contact>
     ): Result<Contact> {
         return try {
             val currentUser = firebaseAuth.currentUser
                 ?: return Result.failure(Exception("User not authenticated"))
 
-            val allRemote = listOf(primaryContact) + duplicates
-            val allInternal = internalDuplicates
+            val allInternals = listOf(primaryInternal) + duplicateInternals
 
-            // --- Merge alanları ---
-            val mergedPhones = (allRemote.flatMap { it.phones } + allInternal.flatMap { it.phones })
+            // --- Merge alanları: primary'ye diğerlerinden eksik bilgileri taşı ---
+            val mergedPhones = allInternals.flatMap { it.phones }
                 .map { normalizePhone(it) }.filter { it.isNotEmpty() }.distinct()
-            val mergedEmails = (allRemote.flatMap { it.emails } + allInternal.flatMap { it.emails ?: emptyList() })
+            val mergedEmails = allInternals.flatMap { it.emails ?: emptyList() }
                 .map { normalizeEmail(it) }.filter { it.isNotEmpty() }.distinct()
-            val mergedTags = allRemote.flatMap { it.tags }.distinctBy { it.name }
-            val mergedWebsites = (allRemote.flatMap { it.websites } + allInternal.flatMap { it.websites ?: emptyList() }).distinct()
-            val mergedSocialMedias = allRemote.flatMap { it.socialMedias }.distinctBy { it.url }
+            val mergedWebsites = allInternals.flatMap { it.websites ?: emptyList() }.distinct()
 
-            val fullName = primaryContact.fullName.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.fullName.isNotEmpty() }?.fullName
-                    ?: allInternal.firstOrNull { it.fullName.isNotEmpty() }?.fullName ?: ""
+            val fullName = primaryInternal.fullName.ifEmpty {
+                duplicateInternals.firstOrNull { it.fullName.isNotEmpty() }?.fullName ?: ""
             }
-            val title = primaryContact.title.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.title.isNotEmpty() }?.title
-                    ?: allInternal.firstOrNull { !it.title.isNullOrEmpty() }?.title ?: ""
-            }
-            val organization = primaryContact.organization.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.organization.isNotEmpty() }?.organization
-                    ?: allInternal.firstOrNull { !it.organization.isNullOrEmpty() }?.organization ?: ""
-            }
-            val note = primaryContact.note.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.note.isNotEmpty() }?.note
-                    ?: allInternal.firstOrNull { !it.note.isNullOrEmpty() }?.note ?: ""
-            }
-            val address = primaryContact.address.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.address.isNotEmpty() }?.address
-                    ?: allInternal.firstOrNull { !it.address.isNullOrEmpty() }?.address ?: ""
-            }
-            val imageUrl = primaryContact.imageUrl.ifEmpty {
-                allRemote.drop(1).firstOrNull { it.imageUrl.isNotEmpty() }?.imageUrl ?: ""
-            }
+            val title = primaryInternal.title?.ifEmpty { null }
+                ?: duplicateInternals.firstOrNull { !it.title.isNullOrEmpty() }?.title ?: ""
+            val organization = primaryInternal.organization?.ifEmpty { null }
+                ?: duplicateInternals.firstOrNull { !it.organization.isNullOrEmpty() }?.organization ?: ""
+            val note = primaryInternal.note?.ifEmpty { null }
+                ?: duplicateInternals.firstOrNull { !it.note.isNullOrEmpty() }?.note ?: ""
+            val address = primaryInternal.address?.ifEmpty { null }
+                ?: duplicateInternals.firstOrNull { !it.address.isNullOrEmpty() }?.address ?: ""
 
-            val mergedContact = primaryContact.copy(
-                fullName = fullName,
-                title = title,
-                organization = organization,
-                phones = mergedPhones,
-                emails = mergedEmails,
-                tags = mergedTags,
-                note = note,
-                address = address,
-                imageUrl = imageUrl,
-                socialMedias = mergedSocialMedias,
-                websites = mergedWebsites
+            // --- Local rehber: primary'yi sil ve merge edilmiş bilgilerle yeniden oluştur ---
+            deleteInternalContacts(contentResolver, listOf(primaryInternal))
+            val newLocalId = ContactsHelper.addContactToPhone(
+                context = context,
+                displayName = fullName,
+                phoneNumber = mergedPhones.firstOrNull(),
+                email = mergedEmails.firstOrNull(),
+                company = organization.ifEmpty { null },
+                jobTitle = title.ifEmpty { null },
+                address = address.ifEmpty { null },
+                website = mergedWebsites.firstOrNull(),
+                notes = note.ifEmpty { null }
             )
+            Log.d("BerkeTag", "mergeContacts: primary local contact recreated as '$fullName' (id=$newLocalId)")
 
-            // --- Firebase: primary'yi güncelle, duplicate'leri sil ---
-            val batch = database.batch()
+            // --- Local rehber: duplicate'leri sil ---
+            if (duplicateInternals.isNotEmpty()) {
+                deleteInternalContacts(contentResolver, duplicateInternals)
+            }
+
+            // --- Firebase: internal ID'lere göre eşleşen remote contact'ları bul ---
             val contactsCollection = database.collection("users")
                 .document(currentUser.uid)
                 .collection("contacts")
-            batch.set(contactsCollection.document(primaryContact.contactId), mergedContact)
-            for (duplicate in duplicates) {
-                batch.delete(contactsCollection.document(duplicate.contactId))
-            }
-            batch.commit().await()
-            Log.d("BerkeTag", "mergeContacts: Firebase batch done — updated primary, deleted ${duplicates.size} duplicates")
 
-            // --- Local rehber: tüm internal duplicate'leri sil ---
-            if (internalDuplicates.isNotEmpty()) {
-                deleteInternalContacts(contentResolver, internalDuplicates)
+            val primaryRemote = remoteContacts.firstOrNull {
+                it.internalContactId == primaryInternal.contactId
+            }
+            val duplicateRemotes = duplicateInternals.mapNotNull { dup ->
+                remoteContacts.firstOrNull { it.internalContactId == dup.contactId }
             }
 
-            // --- Local rehber: merged contact'ı ekle ---
-            ContactsHelper.addContactToPhone(
-                context = context,
-                displayName = mergedContact.fullName,
-                phoneNumber = mergedContact.phones.firstOrNull(),
-                email = mergedContact.emails.firstOrNull(),
-                company = mergedContact.organization.ifEmpty { null },
-                jobTitle = mergedContact.title.ifEmpty { null },
-                address = mergedContact.address.ifEmpty { null },
-                website = mergedContact.websites.firstOrNull(),
-                notes = mergedContact.note.ifEmpty { null }
+            val batch = database.batch()
+
+            if (primaryRemote != null) {
+                // Primary'nin Firebase kaydını merge edilmiş bilgilerle güncelle
+                val mergedTags = (listOf(primaryRemote) + duplicateRemotes).flatMap { it.tags }.distinctBy { it.name }
+                val mergedSocialMedias = (listOf(primaryRemote) + duplicateRemotes).flatMap { it.socialMedias }.distinctBy { it.url }
+                val mergedContact = primaryRemote.copy(
+                    fullName = fullName,
+                    title = title,
+                    organization = organization,
+                    phones = mergedPhones,
+                    emails = mergedEmails,
+                    tags = mergedTags,
+                    note = note,
+                    address = address,
+                    websites = mergedWebsites,
+                    socialMedias = mergedSocialMedias,
+                    internalContactId = newLocalId ?: primaryInternal.contactId
+                )
+                batch.set(contactsCollection.document(primaryRemote.contactId), mergedContact)
+                Log.d("BerkeTag", "mergeContacts: Firebase primary '${primaryRemote.contactId}' will be updated")
+            }
+
+            // Duplicate'lerin Firebase kayıtlarını sil
+            for (dup in duplicateRemotes) {
+                batch.delete(contactsCollection.document(dup.contactId))
+            }
+
+            if (primaryRemote != null || duplicateRemotes.isNotEmpty()) {
+                batch.commit().await()
+                Log.d("BerkeTag", "mergeContacts: Firebase batch done — updated primary, deleted ${duplicateRemotes.size} duplicates")
+            }
+
+            val resultContact = primaryRemote?.copy(
+                fullName = fullName,
+                phones = mergedPhones,
+                emails = mergedEmails,
+                internalContactId = newLocalId ?: primaryInternal.contactId
+            ) ?: Contact(
+                fullName = fullName,
+                phones = mergedPhones,
+                emails = mergedEmails,
+                internalContactId = newLocalId ?: primaryInternal.contactId
             )
-            Log.d("BerkeTag", "mergeContacts: local contact created for '${mergedContact.fullName}'")
 
-            Result.success(mergedContact)
+            Result.success(resultContact)
         } catch (e: Exception) {
             crashlytics.recordNonFatal(e)
             Log.e("BerkeTag", "mergeContacts error: ${e.message}", e)

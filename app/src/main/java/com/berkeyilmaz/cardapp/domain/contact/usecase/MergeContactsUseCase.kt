@@ -9,8 +9,8 @@ import javax.inject.Inject
 class MergeContactsUseCase @Inject constructor(private val repository: ContactRepository) {
     suspend operator fun invoke(
         contentResolver: ContentResolver,
-        primary: Contact,
-        duplicates: List<Contact>,
-        internalDuplicates: List<InternalContact>
-    ) = repository.mergeContacts(contentResolver, primary, duplicates, internalDuplicates)
+        primaryInternal: InternalContact,
+        duplicateInternals: List<InternalContact>,
+        remoteContacts: List<Contact>
+    ) = repository.mergeContacts(contentResolver, primaryInternal, duplicateInternals, remoteContacts)
 }

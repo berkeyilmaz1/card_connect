@@ -201,6 +201,7 @@
     <string name="error_fetching_groups">Gruplar yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</string>
 
     <!-- Analytics Consent -->
+    <string name="other">Diğer</string>
     <string name="analytics_data_collection">Analitik Veri Toplama</string>
     <string name="analytics_consent_title">Bizi Geliştirmemize Yardım Edin</string>
     <string name="analytics_consent_description">Deneyiminizi iyileştirmek için anonim kullanım verileri toplamak istiyoruz. Bu tamamen isteğe bağlıdır ve Ayarlar\'dan daha sonra değiştirebilirsiniz.</string>
@@ -212,6 +213,7 @@
     <string name="duplicate_match_email">Aynı e-postaya sahip kişiler</string>
     <string name="merge_contacts">Birleştir</string>
     <string name="skip_group">Atla</string>
+    <string name="dismiss_all_duplicates">Hepsini Atla</string>
     <string name="select_primary">Ana kişi olarak seç</string>
     <string name="duplicate_group_progress">%1$d / %2$d Grup</string>
     <string name="scanning_duplicates">Tekrarlı kişiler taranıyor...</string>
@@ -234,4 +236,8 @@
     <string name="password_cannot_be_same">Yeni şifre eskisiyle aynı olamaz</string>
     <string name="enter_password_to_delete">Hesabınızı silmek için lütfen şifrenizi girin.</string>
 
+    <string name="phones">Numara</string>
+    <string name="note">Not</string>
+    <string name="share">Paylaş</string>
 </resources>
+
