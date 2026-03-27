@@ -27,7 +27,7 @@ class GetContactsListUseCaseTest {
 
     @Test
     fun `invoke delegates to repository getInternalContactsWithChanges`() = runTest {
-        val contacts = listOf(InternalContact(contactId = "1", fullName = "Ali", phoneNumbers = listOf()))
+        val contacts = listOf(InternalContact(contactId = "1", fullName = "Ali", phones = listOf()))
         val changes = InternalContactChanges(added = contacts)
         val expected = Pair(contacts, changes)
 
@@ -53,8 +53,8 @@ class GetContactsListUseCaseTest {
     @Test
     fun `invoke returns contacts with no changes`() = runTest {
         val contacts = listOf(
-            InternalContact(contactId = "1", fullName = "Ali", phoneNumbers = listOf()),
-            InternalContact(contactId = "2", fullName = "Veli", phoneNumbers = listOf())
+            InternalContact(contactId = "1", fullName = "Ali", phones = listOf()),
+            InternalContact(contactId = "2", fullName = "Veli", phones = listOf())
         )
         val changes = InternalContactChanges()
         whenever(repository.getInternalContactsWithChanges(contentResolver))

@@ -130,6 +130,9 @@ dependencies {
     // To recognize Latin script
     implementation(libs.text.recognition)
 
+    //ML Kit Barcode Scanning (QR Code)
+    implementation(libs.barcode.scanning)
+
     //Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx.v284)

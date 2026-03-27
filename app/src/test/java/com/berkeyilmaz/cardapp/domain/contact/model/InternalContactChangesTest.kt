@@ -8,7 +8,7 @@ class InternalContactChangesTest {
     private val sampleContact = InternalContact(
         contactId = "1",
         fullName = "Ali Veli",
-        phoneNumbers = listOf("+905551234567")
+        phones = listOf("+905551234567")
     )
 
     @Test

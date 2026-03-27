@@ -7,7 +7,7 @@ class DuplicateContactGroupTest {
 
     private val contact1 = Contact(contactId = "1", fullName = "Ali Veli", phones = listOf("+905551111111"))
     private val contact2 = Contact(contactId = "2", fullName = "Ali Veli", phones = listOf("+905551111111"))
-    private val internalContact = InternalContact(contactId = "ic1", fullName = "Ali Veli", phoneNumbers = listOf("+905551111111"))
+    private val internalContact = InternalContact(contactId = "ic1", fullName = "Ali Veli", phones = listOf("+905551111111"))
 
     @Test
     fun `DuplicateContactGroup created with PHONE reason`() {

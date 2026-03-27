@@ -11,7 +11,7 @@ data class InternalContactEntity(
     @PrimaryKey
     val contactId: String,
     val fullName: String,
-    val phoneNumbers: List<String>,
+    val phones: List<String>,
     val emails: List<String>,
     val websites: List<String>,
     val organization: String?,

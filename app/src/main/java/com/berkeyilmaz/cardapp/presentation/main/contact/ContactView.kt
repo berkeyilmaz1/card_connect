@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.berkeyilmaz.cardapp.R
+import com.berkeyilmaz.cardapp.domain.contact.model.InternalContact
 import com.berkeyilmaz.cardapp.presentation.main.contact.viewmodel.AnalyzeBottomSheetState
 import com.berkeyilmaz.cardapp.presentation.main.contact.viewmodel.ContactUiEvent
 import com.berkeyilmaz.cardapp.presentation.main.contact.viewmodel.ContactViewModel
@@ -34,7 +35,7 @@ import com.berkeyilmaz.cardapp.presentation.main.contact.widgets.ContactContent
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactView(
-    onContactClick: (String) -> Unit, viewModel: ContactViewModel = hiltViewModel()
+    onContactClick: (InternalContact) -> Unit, viewModel: ContactViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()

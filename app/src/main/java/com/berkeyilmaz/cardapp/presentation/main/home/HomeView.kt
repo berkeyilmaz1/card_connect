@@ -107,7 +107,8 @@ fun quickActionOptions(): List<QuickActionOption> = listOf(
 fun HomeView(
     uiState: HomeUiState,
     onNotificationAction: (HomeNotification) -> Unit,
-    onQuickOptionClick: (String) -> Unit = {}
+    onQuickOptionClick: (String) -> Unit = {},
+    onContactClick: (String) -> Unit = {}
 ) {
     val notification = uiState.notificationList.firstOrNull()
     val viewModel = hiltViewModel<HomeViewModel>()
@@ -153,7 +154,7 @@ fun HomeView(
             if (uiState.recentlyScannedCards.isEmpty()) {
                 ScanPromptSection()
             } else {
-                RecentlyScannedCards(uiState.recentlyScannedCards)
+                RecentlyScannedCards(uiState.recentlyScannedCards, onContactClick = onContactClick)
             }
 
         }
@@ -185,7 +186,8 @@ fun HomeView(
 
 @Composable
 fun RecentlyScannedCards(
-    recentlyScannedCards: List<Any>
+    recentlyScannedCards: List<Any>,
+    onContactClick: (String) -> Unit = {}
 ) {
     if (recentlyScannedCards.isEmpty()) return
 
@@ -204,7 +206,8 @@ fun RecentlyScannedCards(
                 RecentContactCard(
                     contact = contact,
                     modifier = Modifier.width(dimensionResource(R.dimen.card_width_min)),
-                    photo = photo
+                    photo = photo,
+                    onContactClick = onContactClick
                 )
             }
         }
@@ -215,7 +218,8 @@ fun RecentlyScannedCards(
 fun RecentContactCard(
     contact: Contact,
     modifier: Modifier = Modifier,
-    photo: Photo? = null
+    photo: Photo? = null,
+    onContactClick: (String) -> Unit = {}
 ) {
     Card(
         modifier = modifier
@@ -227,7 +231,7 @@ fun RecentContactCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        onClick = { /* TODO: Navigate to contact detail */ }
+        onClick = { onContactClick(contact.contactId) }
     ) {
         Row(
             modifier = Modifier

@@ -29,7 +29,7 @@ class MergeContactsUseCaseTest {
     fun `invoke delegates to repository mergeContacts`() = runTest {
         val primary = Contact(contactId = "1", fullName = "Ali Veli")
         val duplicates = listOf(Contact(contactId = "2", fullName = "Ali Veli"))
-        val internalDuplicates = listOf(InternalContact(contactId = "ic1", fullName = "Ali Veli", phoneNumbers = listOf()))
+        val internalDuplicates = listOf(InternalContact(contactId = "ic1", fullName = "Ali Veli", phones = listOf()))
         val expected = Result.success(primary)
 
         whenever(repository.mergeContacts(contentResolver, primary, duplicates, internalDuplicates))

@@ -11,7 +11,7 @@ import com.berkeyilmaz.cardapp.data.local.entity.PhotoEntity
 
 @Database(
     entities = [PhotoEntity::class, InternalContactEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(StringListConverter::class)

@@ -7,7 +7,7 @@ fun InternalContact.toEntity(): InternalContactEntity {
     return InternalContactEntity(
         contactId = contactId,
         fullName = fullName,
-        phoneNumbers = phoneNumbers,
+        phones = phones,
         emails = emails ?: emptyList(),
         websites = websites ?: emptyList(),
         organization = organization,
@@ -19,7 +19,7 @@ fun InternalContactEntity.toDomain(): InternalContact {
     return InternalContact(
         contactId = contactId,
         fullName = fullName,
-        phoneNumbers = phoneNumbers,
+        phones = phones,
         emails = emails.ifEmpty { null },
         websites = websites.ifEmpty { null },
         organization = organization,

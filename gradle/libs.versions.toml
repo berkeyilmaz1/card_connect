@@ -31,6 +31,7 @@ roomCompiler = "2.8.4"
 roomRuntime = "2.8.4"
 roomKtxVersion = "2.8.4"
 tasksGenai = "0.10.29"
+barcodeScanningVersion = "17.3.0"
 tessTwo = "9.1.0"
 textRecognition = "16.0.1"
 roomKtx = "2.8.3"
@@ -88,6 +89,7 @@ play-services-auth = { group = "com.google.android.gms", name = "play-services-a
 tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasksGenai" }
 tess-two = { module = "com.rmtheis:tess-two", version.ref = "tessTwo" }
 text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
+barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanningVersion" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }

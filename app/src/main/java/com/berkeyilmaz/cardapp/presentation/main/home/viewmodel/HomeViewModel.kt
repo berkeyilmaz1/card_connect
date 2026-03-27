@@ -216,7 +216,7 @@ fun onMergeApproved(group: DuplicateContactGroup, primarySelection: PrimarySelec
                     fullName = internalPrimary.fullName,
                     title = internalPrimary.title ?: "",
                     organization = internalPrimary.organization ?: "",
-                    phones = internalPrimary.phoneNumbers,
+                    phones = internalPrimary.phones,
                     emails = internalPrimary.emails ?: emptyList(),
                     websites = internalPrimary.websites ?: emptyList(),
                     address = internalPrimary.address ?: "",

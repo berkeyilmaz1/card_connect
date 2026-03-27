@@ -28,7 +28,7 @@ import com.berkeyilmaz.cardapp.presentation.main.groups.viewmodel.GroupsViewMode
 import com.berkeyilmaz.cardapp.presentation.main.groups.widgets.SuccessSection
 
 @Composable
-fun GroupsView() {
+fun GroupsView(onContactClick: (String) -> Unit = {}) {
     val viewModel: GroupsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(Unit) {
@@ -60,7 +60,8 @@ fun GroupsView() {
                     selectedSubGroup = state.selectedSubGroup,
                     contacts = state.contacts,
                     onMainGroupSelected = { viewModel.onMainGroupSelected(it) },
-                    onSubGroupSelected = { viewModel.onSubGroupSelected(it) })
+                    onSubGroupSelected = { viewModel.onSubGroupSelected(it) },
+                    onContactClick = onContactClick)
             }
         }
     }
