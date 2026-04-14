@@ -480,7 +480,7 @@ fun ProfileSection(uiState: HomeUiState) {
         LottieAnimation(
             composition = lottieComposition,
             progress = { lottieProgress },
-            modifier = Modifier.size(72.dp)
+            modifier = Modifier.size(58.dp)
         )
     }
 }
